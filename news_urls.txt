@@ -1,0 +1,42 @@
+1,FOX NEWS,http://feeds.foxnews.com/foxnews/politics?format=xml
+2,FOX NEWS,http://feeds.foxnews.com/foxnews/science?format=xml
+4,FOX NEWS,http://feeds.foxnews.com/foxnews/sports?format=xml
+5,FOX NEWS,http://feeds.foxnews.com/foxnews/entertainment?format=xml
+7,FOX NEWS,http://feeds.foxnews.com/foxnews/national?format=xml
+1,NY TIMES,http://rss.nytimes.com/services/xml/rss/nyt/Politics.xml
+2,NY TIMES,http://rss.nytimes.com/services/xml/rss/nyt/Science.xml
+3,NY TIMES,http://rss.nytimes.com/services/xml/rss/nyt/World.xml
+4,NY TIMES,http://rss.nytimes.com/services/xml/rss/nyt/Sports.xml
+6,NY TIMES,http://rss.nytimes.com/services/xml/rss/nyt/Health.xml
+1,CNN,http://rss.cnn.com/rss/cnn_allpolitics.rss
+3,CNN,http://rss.cnn.com/rss/cnn_world.rss
+5,CNN,http://rss.cnn.com/rss/cnn_showbiz.rss
+6,CNN,http://rss.cnn.com/rss/cnn_health.rss
+7,CNN,http://rss.cnn.com/rss/cnn_us.rss
+1,WSH POST,http://feeds.washingtonpost.com/rss/rss_powerpost
+2,WSH POST,http://www.washingtonpost.com/wp-dyn/rss/technology/index.xml
+6,WSH POST,http://www.washingtonpost.com/wp-dyn/rss/health/index.xml
+7,WSH POST,http://www.washingtonpost.com/wp-dyn/rss/nation/index.xml
+1,CNBC,http://www.cnbc.com/id/10000113/device/rss/rss.html
+2,CNBC,http://www.cnbc.com/id/19854910/device/rss/rss.html
+3,CNBC,http://www.cnbc.com/id/100727362/device/rss/rss.html
+6,CNBC,http://www.cnbc.com/id/10000108/device/rss/rss.html
+7,CNBC,http://www.cnbc.com/id/15837362/device/rss/rss.html
+1,ABC NEWS,http://feeds.abcnews.com/abcnews/politicsheadlines
+2,ABC NEWS,http://feeds.abcnews.com/abcnews/technologyheadlines
+3,ABC NEWS,http://feeds.abcnews.com/abcnews/internationalheadlines
+4,ABC NEWS,http://feeds.abcnews.com/abcnews/sportsheadlines
+5,ABC NEWS,http://feeds.abcnews.com/abcnews/entertainmentheadlines
+6,ABC NEWS,http://feeds.abcnews.com/abcnews/healthheadlines
+7,ABC NEWS,http://feeds.abcnews.com/abcnews/usheadlines
+1,REUTERS,http://feeds.reuters.com/Reuters/PoliticsNews
+2,REUTERS,http://feeds.reuters.com/reuters/scienceNews
+3,REUTERS,http://feeds.reuters.com/Reuters/worldNews
+4,REUTERS,http://feeds.reuters.com/reuters/sportsNews
+5,REUTERS,http://feeds.reuters.com/reuters/entertainment
+6,REUTERS,http://feeds.reuters.com/reuters/healthNews
+7,REUTERS,http://feeds.reuters.com/Reuters/domesticNews
+1,US TODAY,http://rssfeeds.usatoday.com/usatodaycomwashington-topstories&x=1
+4,US TODAY,http://rssfeeds.usatoday.com/usatodaycomsports-topstories&x=1
+5,US TODAY,http://rssfeeds.usatoday.com/usatoday-lifetopstories&amp;x=1
+7,US TODAY,http://rssfeeds.usatoday.com/usatodaycomnation-topstories&x=1

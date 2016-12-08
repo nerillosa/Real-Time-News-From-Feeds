@@ -1,0 +1,1 @@
+*/5 * * * * /home3/llosaus/cnews.sh
