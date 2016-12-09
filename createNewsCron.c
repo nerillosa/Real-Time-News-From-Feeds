@@ -1,7 +1,7 @@
 /*
 * C program that gets the latest rss feeds from various news agencies and categories and saves them to a database
-* Uses libcurl open source library to download feeds
-* The function accounts that the rss feeds downloaded are not neccesarily "proper"
+* Uses libcurl open source library to download feed.xml
+* The program accounts that the rss feeds downloaded are not neccesarily "proper"
 * Compile with : gcc createNewsCron.c -o createNewsCron -lcurl `mysql_config --cflags --libs`
 */
 
@@ -20,7 +20,7 @@
 #define IN  1
 #define MAX_TITLES 100
 #define BUFFER_SIZE 8192
-#define ITEM_SIZE 200
+#define ITEM_SIZE 400
 #define NUM_TITLES 20
 
 struct item{
@@ -28,7 +28,7 @@ struct item{
 	char agency[10];
 	char pubDate[50];
 	char url[256];
-};
+} itemArray[ITEM_SIZE];
 
 struct news {
 	char agency[10];
@@ -47,8 +47,6 @@ struct newsAgency {
         char url[100];
 	struct newsAgency *next;
 } news_agency;
-
-static struct item itemArray[ITEM_SIZE];
 
 
 static void download_feed(FILE *dst, const char *src);
@@ -104,11 +102,12 @@ static void getLatestItems(int type){
 
 	qsort(itemArray, currentItemsCount, sizeof(struct item), compare_pubDates); //sort by pubDate descending
 
+	printf("%s\n", type==1 ? "Politics" : type==2 ? "Science" : type==3 ? "World" : type==4 ? "Sports" : type==5 ? "Entertainment" : type==6 ? "Health" : "USA");
 	for(i=0;i<NUM_TITLES;i++){
 		printf("%s::",itemArray[i].title);
 		printf("%s::",itemArray[i].pubDate);
 		printf("%s\n",itemArray[i].agency);
-		printf("%s\n",itemArray[i].url);
+//		printf("%s\n",itemArray[i].url);
 	}
 	printf("\n\n");
 
@@ -168,7 +167,7 @@ int getUrls(struct newsAgency *news_agency){
                 pp = pp->next;
                 ii++;
         }
-	pp = NULL; // no need to free as program will terminate shortly
+	pp = NULL; // a little memory leak. program will exit quick anyways
         fclose(fptr);
         return ii;
 }
@@ -303,7 +302,7 @@ void getTitle(char *line){
 
 	int i =0;
 	while(line[i] && i<BUFFER_SIZE-1){
-		buff[i] = toupper(line[i]);
+		buff[i] = line[i];
 		i++;
 	}
 	buff[i] = '\0';//terminate string
