@@ -48,7 +48,6 @@ struct newsAgency {
 	struct newsAgency *next;
 } news_agency;
 
-
 static void download_feed(FILE *dst, const char *src);
 static int countTitleWords(char *str);
 static void getTitle(char *line);
@@ -73,27 +72,22 @@ static void downloadFeeds(int type);
 FILE *inputptr;
 FILE *logptr;
 
-
 int main(int argc, char *argv[]){
 
 	if(argc<3){
 		fprintf(stdout, "usage: %s inputFile logFile\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
-
 	inputptr = fopen(argv[1], "r");
 	if(inputptr == NULL){
 		fprintf(stdout, "Could not open file %s for reading \n", argv[1]);
 		exit(EXIT_FAILURE);
 	}
-
 	logptr = fopen(argv[2], "a");
 	if (logptr == NULL){
 		fprintf(stdout, "Could not open file %s for writing logs\n", argv[2]);
 		exit(EXIT_FAILURE);
 	}
-
-
         int size = getUrls(&news_agency);
 	fclose(inputptr);
 
@@ -103,7 +97,6 @@ int main(int argc, char *argv[]){
 		getLatestItems(i);
 
 	fclose(logptr);
-
 }
 
 static void getLatestItems(int type){
@@ -113,7 +106,6 @@ static void getLatestItems(int type){
 	downloadFeeds(type);
 
         struct newsAgency *pp = &news_agency;
-
 	do{
 		if(pp -> type != type) continue;
 		refreshFeed(*pp);
@@ -122,7 +114,6 @@ static void getLatestItems(int type){
 	}while((pp = pp ->next) != NULL);
 
 	fprintf(logptr, "currentItemsCount:%d\n",currentItemsCount);
-
 	for(i=0;i<currentItemsCount;i++){
 		cleanRssDateString(itemArray[i].pubDate); // attempt to normalize all dates to MST time
 	}
@@ -139,9 +130,7 @@ static void getLatestItems(int type){
 	fprintf(logptr, "\n\n");
 
 	char buff[1024];
-
 	MYSQL *con = mysql_init(NULL);
-
 	if (con == NULL){
 		fprintf(logptr, "mysql_init() failed\n");
 		return;
@@ -158,7 +147,6 @@ static void getLatestItems(int type){
 			fprintf(logptr, "%s\n", mysql_error(con));
 		}
 	}
-
 	//Leave at least 80 records for each category
 	strcpy(buff, "DELETE FROM news WHERE pubdate < (select pubdate from (select * from news)a where news_type=");
         char beth[5];
@@ -169,7 +157,6 @@ static void getLatestItems(int type){
 	if (mysql_query(con, buff)){
 		fprintf(logptr, "%s\n", mysql_error(con));
 	}
-
 	mysql_close(con);
 }
 
@@ -179,7 +166,6 @@ int getUrls(struct newsAgency *news_agency){
         ssize_t read;
 
         struct newsAgency *pp = news_agency;
-
         int ii = 0;
         while ((read = getline(&line, &len, inputptr)) != -1) {
                 sscanf( line, "%d,%10[^,],%s", &pp->type, pp->name, pp->url );
@@ -214,7 +200,6 @@ int refreshFeed(struct newsAgency newsAgency)
 		fprintf(logptr, "%s:Could not stat size of feed file\n", newsAgency.name);
 		return 1;
 	}
-
 	/*  open for reading */
 	fptr = fopen(newsAgency.name, "r");
 	if (fptr == NULL){
@@ -224,7 +209,6 @@ int refreshFeed(struct newsAgency newsAgency)
 
 	//char **news = newsItems.items;
 	int nlines = 0;
-
 	int state=OUT,i=0,j=0,pos=0;
 	char a;
 	char buffer[BUFFER_SIZE];
@@ -252,7 +236,6 @@ int refreshFeed(struct newsAgency newsAgency)
 				buffer[pos] = '\0';
 				cleanItem(buffer);
 				cleanHtml(buffer);
-
 				if(nlines<MAX_TITLES && countTitleWords(buffer)){
 					strncpy(newsItems.items[nlines], buffer, 512);
 					newsItems.items[nlines++][511] = '\0';
@@ -279,10 +262,8 @@ void download_feed(FILE *dst, const char *src){
 
 int fsize(const char *filename) {
 	struct stat st;
-
 	if (stat(filename, &st) == 0)
 		return (st.st_size + 0);
-
 	return -1;
 }
 
@@ -292,25 +273,19 @@ void cleanItem(char *buffer){
 
 	char *p = strstr(buffer, "<title>");
 	char *p1 = strstr(buffer, "</title>");
-
 	if(!p || !p1) return;
 	strncpy(temp, p, p1-p + strlen("</title>"));
 
 	p = strstr(buffer, "<link>");
 	p1 = strstr(buffer, "</link>");
-
 	if(!p || !p1) return;
 	strncat(temp, p, p1-p + strlen("</link>"));
-
 	p = strstr(buffer, "<pubDate>");
 	p1 = strstr(buffer, "</pubDate>");
-
 	if(p && p1){
 		strncat(temp, p, p1-p + strlen("</pubDate>"));
 	}
-
 	strcpy(buffer, temp);
-	//	fprintf(logptr, "%d:%s\n",strlen(buffer),buffer);
 }
 
 void getTitle(char *line){
@@ -327,19 +302,15 @@ void getTitle(char *line){
 	buff[i] = '\0';//terminate string
 
 	char *p1 = &buff[0];
-
 	if(strstr(p1, cdata) == p1){ // starts with cdata
 		p1 += strlen(cdata);
 	}
-
 	if(strstr(p1, watch) == p1){ // starts with watch
 		p1 += strlen(watch);
 	}
-
 	int k=0;
 	while(isspace(p1[k])) k++; //get rid of leading whitespace
 	p1 += k;
-
 	if(strstr(p1, "]]>") == p1+strlen(p1)-3){ // ends with ]]>
 		p1[strlen(p1)-3] = '\0';
 	}
@@ -363,10 +334,8 @@ void cleanTitle(int size, char *buff){
 	}
 }
 
-
 void cleanUrl(char *url){
 	static char *cdata = "<![CDATA[";
-
 	if(strstr(url, cdata) != &url[0]) return;
 	int cdataSize = strlen(cdata);
 	int last = strlen(url) - cdataSize - 3;
@@ -388,13 +357,11 @@ int countTitleWords(char *str)
 		// state as OUT
 		if (*str == ' ' || *str == '\n' || *str == '\t')
 			state = OUT;
-
 		else if (state == OUT)
 		{
 			state = IN;
 			++wc;
 		}
-
 		++str;
 	}
 	return wc > 4 ? 1 : 0;
@@ -415,25 +382,19 @@ void cleanHtml(char * const line) { // replaces some html codes
 }
 
 void getContent(int dest_size, char *dest, char *starttag, char *endtag, char *text){
-
 	if(!text){
 		dest[0] = '\0';
 		return;
 	}
-
 	char *p1 = strstr(text, starttag);
 	char *p2 = strstr(text, endtag);
-
 	if(!p1 || !p2 || p1>p2){
 		dest[0] = '\0';
 		return;
 	}
-
 	size_t size = p2 - p1 - strlen(starttag);
-
 	strncpy(dest, p1+strlen(starttag), dest_size);
 	dest[size] = '\0';
-
 }
 
 // utility compare function to be used in qsort
@@ -444,13 +405,11 @@ int compare_pubDates(const void* a, const void* b) {
 
 	memset(&tmA, 0, sizeof(struct tm));
 	memset(&tmB, 0, sizeof(struct tm));
-
 	if(!(itemA -> pubDate)[0]) return 1;
 	if(!(itemB -> pubDate)[0]) return -1;
 
 	strptime(itemA -> pubDate,"%a, %d %b %Y %H:%M:%S %Z", &tmA);
 	strptime(itemB -> pubDate,"%a, %d %b %Y %H:%M:%S %Z", &tmB);
-
 	if(tmA.tm_year > tmB.tm_year) return -1;
 	else if (tmA.tm_year < tmB.tm_year) return 1;
 	else if (tmA.tm_mon > tmB.tm_mon) return -1;
@@ -484,11 +443,9 @@ void cleanRssDateString(char *rssDateString){
 		rssDateString[sz-2] = '0';
 	}
 
-
 	struct tm tmA;
 	memset(&tmA, 0, sizeof(struct tm));
 	strptime(rssDateString,"%a, %d %b %Y %H:%M:%S %Z", &tmA);
-
 	char *p = rssDateString;
 	p += strlen(p)-5;
 	int diff = 7; // MST = UTC -7
@@ -572,9 +529,7 @@ void escapeQuotes(char *title){//add another quote to a quote: ''
 }
 
 void downloadFeeds(int type){
-
 	struct newsAgency *pp = &news_agency;
-
 	do{
 		if (pp ->type==type && fork() == 0 ){
 			FILE *fptr;
@@ -584,7 +539,6 @@ void downloadFeeds(int type){
 				fprintf(logptr, "%s:Could not open file for writing \n", pp ->name);
 				_exit(1);
 			}
-
 			download_feed(fptr, pp ->url);
 			fclose(fptr);
 			_exit(0);
@@ -596,7 +550,4 @@ void downloadFeeds(int type){
 	do {
 		pid = wait(NULL);
 	} while (pid != -1);
-
 }
-
-
