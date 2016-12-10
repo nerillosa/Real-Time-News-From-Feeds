@@ -1,2 +1,2 @@
 #!/bin/bash
-./createNewsCron >> /home3/createNewsCron.log 2>&1
+./createNewsCron news_urls.txt createNewsCron.log

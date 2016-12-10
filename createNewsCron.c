@@ -70,13 +70,40 @@ static int calcDays(int month, int year);
 static void getLatestItems(int type);
 static void downloadFeeds(int type);
 
+FILE *inputptr;
+FILE *logptr;
+
 
 int main(int argc, char *argv[]){
+
+	if(argc<3){
+		fprintf(stdout, "usage: %s inputFile logFile\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+
+	inputptr = fopen(argv[1], "r");
+	if(inputptr == NULL){
+		fprintf(stdout, "Could not open file %s for reading \n", argv[1]);
+		exit(EXIT_FAILURE);
+	}
+
+	logptr = fopen(argv[2], "a");
+	if (logptr == NULL){
+		fprintf(stdout, "Could not open file %s for writing logs\n", argv[2]);
+		exit(EXIT_FAILURE);
+	}
+
+
         int size = getUrls(&news_agency);
-        printf("number urls: %d\n", size);
+	fclose(inputptr);
+
+        fprintf(logptr, "number urls: %d\n", size);
 	int i;
 	for(i=1;i<=7;i++)
 		getLatestItems(i);
+
+	fclose(logptr);
+
 }
 
 static void getLatestItems(int type){
@@ -94,7 +121,7 @@ static void getLatestItems(int type){
 		currentItemsCount += newsItems.size;
 	}while((pp = pp ->next) != NULL);
 
-	printf("currentItemsCount:%d\n",currentItemsCount);
+	fprintf(logptr, "currentItemsCount:%d\n",currentItemsCount);
 
 	for(i=0;i<currentItemsCount;i++){
 		cleanRssDateString(itemArray[i].pubDate); // attempt to normalize all dates to MST time
@@ -102,25 +129,25 @@ static void getLatestItems(int type){
 
 	qsort(itemArray, currentItemsCount, sizeof(struct item), compare_pubDates); //sort by pubDate descending
 
-	printf("%s\n", type==1 ? "Politics" : type==2 ? "Science" : type==3 ? "World" : type==4 ? "Sports" : type==5 ? "Entertainment" : type==6 ? "Health" : "USA");
+	fprintf(logptr, "%s\n", type==1 ? "Politics" : type==2 ? "Science" : type==3 ? "World" : type==4 ? "Sports" : type==5 ? "Entertainment" : type==6 ? "Health" : "USA");
 	for(i=0;i<NUM_TITLES;i++){
-		printf("%s::",itemArray[i].title);
-		printf("%s::",itemArray[i].pubDate);
-		printf("%s\n",itemArray[i].agency);
-//		printf("%s\n",itemArray[i].url);
+		fprintf(logptr, "%s::",itemArray[i].title);
+		fprintf(logptr, "%s::",itemArray[i].pubDate);
+		fprintf(logptr, "%s\n",itemArray[i].agency);
+//		fprintf(logptr, "%s\n",itemArray[i].url);
 	}
-	printf("\n\n");
+	fprintf(logptr, "\n\n");
 
 	char buff[1024];
 
 	MYSQL *con = mysql_init(NULL);
 
 	if (con == NULL){
-		fprintf(stderr, "mysql_init() failed\n");
+		fprintf(logptr, "mysql_init() failed\n");
 		return;
 	}
-	if (mysql_real_connect(con, "localhost", "xxxxx", "xxxx", "xxxx", 0, NULL, 0) == NULL){
-		fprintf(stderr, "%s\n", mysql_error(con));
+	if (mysql_real_connect(con, "localhost", "xxxxx", "xxxxx", "xxxxx", 0, NULL, 0) == NULL){
+		fprintf(logptr, "%s\n", mysql_error(con));
 		mysql_close(con);
 		return;
 	}
@@ -128,7 +155,7 @@ static void getLatestItems(int type){
 		getInsertString(&itemArray[i], buff, type);
 	//	puts(buff);
 		if (mysql_query(con, buff)){
-			fprintf(stderr, "%s\n", mysql_error(con));
+			fprintf(logptr, "%s\n", mysql_error(con));
 		}
 	}
 
@@ -140,35 +167,27 @@ static void getLatestItems(int type){
 	strcat(buff, " order by pubdate desc limit 79,1) and news_type=");
 	strcat(buff, beth);
 	if (mysql_query(con, buff)){
-		fprintf(stderr, "%s\n", mysql_error(con));
+		fprintf(logptr, "%s\n", mysql_error(con));
 	}
 
 	mysql_close(con);
 }
 
 int getUrls(struct newsAgency *news_agency){
-        FILE *fptr;
         char * line = NULL;
         size_t len = 0;
         ssize_t read;
 
         struct newsAgency *pp = news_agency;
 
-        /*  open for reading */
-        fptr = fopen("/home3/news_urls.txt", "r");
-        if (fptr == NULL){
-                printf("Could not open file /home3/news_urls.txt for reading \n");
-                exit(EXIT_FAILURE);
-        }
         int ii = 0;
-        while ((read = getline(&line, &len, fptr)) != -1) {
+        while ((read = getline(&line, &len, inputptr)) != -1) {
                 sscanf( line, "%d,%10[^,],%s", &pp->type, pp->name, pp->url );
                 pp->next = malloc(sizeof(struct newsAgency));
                 pp = pp->next;
                 ii++;
         }
 	pp = NULL; // a little memory leak. program will exit quick anyways
-        fclose(fptr);
         return ii;
 }
 
@@ -192,14 +211,14 @@ int refreshFeed(struct newsAgency newsAgency)
 
 	int fileSize = fsize(newsAgency.name);
 	if (fileSize == -1){
-		printf("%s:Could not stat size of feed file\n", newsAgency.name);
+		fprintf(logptr, "%s:Could not stat size of feed file\n", newsAgency.name);
 		return 1;
 	}
 
 	/*  open for reading */
 	fptr = fopen(newsAgency.name, "r");
 	if (fptr == NULL){
-		printf("Could not open file feed.xml for reading \n");
+		fprintf(logptr, "Could not open file feed.xml for reading \n");
 		return 1;
 	}
 
@@ -237,7 +256,7 @@ int refreshFeed(struct newsAgency newsAgency)
 				if(nlines<MAX_TITLES && countTitleWords(buffer)){
 					strncpy(newsItems.items[nlines], buffer, 512);
 					newsItems.items[nlines++][511] = '\0';
-					//					printf("%s\n\n", buffer);
+					//					fprintf(logptr, "%s\n\n", buffer);
 				}
 			}
 		}
@@ -291,7 +310,7 @@ void cleanItem(char *buffer){
 	}
 
 	strcpy(buffer, temp);
-	//	printf("%d:%s\n",strlen(buffer),buffer);
+	//	fprintf(logptr, "%d:%s\n",strlen(buffer),buffer);
 }
 
 void getTitle(char *line){
@@ -562,7 +581,7 @@ void downloadFeeds(int type){
 
 			fptr = fopen(pp ->name, "w");
 			if (fptr == NULL){
-				printf("%s:Could not open file for writing \n", pp ->name);
+				fprintf(logptr, "%s:Could not open file for writing \n", pp ->name);
 				_exit(1);
 			}
 
