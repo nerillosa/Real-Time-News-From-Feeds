@@ -36,11 +36,6 @@ struct news {
 	int size;
 } newsItems;
 
-struct hcodes{
-	char *hcode;
-	char value;
-} codes[] = {{"&#x2014;",'-'},{"&#8211;",'-'},{"&#8212;",'-'},{"&#x2018;",'\''},{"&#x2019;",'\''},{"&#8216;",'\''},{"&#8217;",'\''},{"&#8220;",'"'},{"&#8221;",'"'},{"&#8230;",'~'},{"&#160;",' '}};
-
 struct newsAgency {
         int type;
         char name[10];
