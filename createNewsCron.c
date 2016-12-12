@@ -48,12 +48,12 @@ struct newsAgency {
 	struct newsAgency *next;
 } news_agency;
 
+//Function Prototypes
 static void download_feed(FILE *dst, const char *src);
 static int countTitleWords(char *str);
 static void getTitle(char *line);
 static int fsize(const char *filename);
 static void cleanItem(char *buffer);
-static void cleanHtml(char * const line);  //line start is const
 static void fillItems(struct item *items);
 static void getContent(int dest_size, char *dest, char *starttag, char *endtag, char *text);
 static int refreshFeed(struct newsAgency newsAgency);
@@ -73,7 +73,6 @@ FILE *inputptr;
 FILE *logptr;
 
 int main(int argc, char *argv[]){
-
 	if(argc<3){
 		fprintf(stdout, "usage: %s inputFile logFile\n", argv[0]);
 		exit(EXIT_FAILURE);
@@ -91,11 +90,10 @@ int main(int argc, char *argv[]){
         int size = getUrls(&news_agency);
 	fclose(inputptr);
 
-        fprintf(logptr, "number urls: %d\n", size);
 	int i;
 	for(i=1;i<=7;i++)
 		getLatestItems(i);
-
+        fprintf(logptr, "\n");
 	fclose(logptr);
 }
 
@@ -106,6 +104,7 @@ static void getLatestItems(int type){
 	downloadFeeds(type);
 
         struct newsAgency *pp = &news_agency;
+
 	do{
 		if(pp -> type != type) continue;
 		refreshFeed(*pp);
@@ -113,40 +112,35 @@ static void getLatestItems(int type){
 		currentItemsCount += newsItems.size;
 	}while((pp = pp ->next) != NULL);
 
-	fprintf(logptr, "currentItemsCount:%d\n",currentItemsCount);
 	for(i=0;i<currentItemsCount;i++){
 		cleanRssDateString(itemArray[i].pubDate); // attempt to normalize all dates to MST time
 	}
 
+	fprintf(logptr, "Items:%d, %s -->",currentItemsCount, itemArray[0].pubDate);
 	qsort(itemArray, currentItemsCount, sizeof(struct item), compare_pubDates); //sort by pubDate descending
 
 	fprintf(logptr, "%s\n", type==1 ? "Politics" : type==2 ? "Science" : type==3 ? "World" : type==4 ? "Sports" : type==5 ? "Entertainment" : type==6 ? "Health" : "USA");
-	for(i=0;i<NUM_TITLES;i++){
-		fprintf(logptr, "%s::",itemArray[i].title);
-		fprintf(logptr, "%s::",itemArray[i].pubDate);
-		fprintf(logptr, "%s\n",itemArray[i].agency);
-//		fprintf(logptr, "%s\n",itemArray[i].url);
-	}
-	fprintf(logptr, "\n\n");
 
 	char buff[1024];
+
 	MYSQL *con = mysql_init(NULL);
+
 	if (con == NULL){
-		fprintf(logptr, "mysql_init() failed\n");
+		fprintf(logptr, "ERROR:mysql_init() failed\n");
 		return;
 	}
 	if (mysql_real_connect(con, "localhost", "xxxxx", "xxxxx", "xxxxx", 0, NULL, 0) == NULL){
-		fprintf(logptr, "%s\n", mysql_error(con));
+		fprintf(logptr, "ERROR:%s\n", mysql_error(con));
 		mysql_close(con);
 		return;
 	}
 	for(i=0;i<NUM_TITLES;i++){
 		getInsertString(&itemArray[i], buff, type);
-	//	puts(buff);
 		if (mysql_query(con, buff)){
-			fprintf(logptr, "%s\n", mysql_error(con));
+			fprintf(logptr, "ERROR:%s\n", mysql_error(con));
 		}
 	}
+
 	//Leave at least 80 records for each category
 	strcpy(buff, "DELETE FROM news WHERE pubdate < (select pubdate from (select * from news)a where news_type=");
         char beth[5];
@@ -155,8 +149,9 @@ static void getLatestItems(int type){
 	strcat(buff, " order by pubdate desc limit 79,1) and news_type=");
 	strcat(buff, beth);
 	if (mysql_query(con, buff)){
-		fprintf(logptr, "%s\n", mysql_error(con));
+		fprintf(logptr, "ERROR:%s\n", mysql_error(con));
 	}
+
 	mysql_close(con);
 }
 
@@ -166,6 +161,7 @@ int getUrls(struct newsAgency *news_agency){
         ssize_t read;
 
         struct newsAgency *pp = news_agency;
+
         int ii = 0;
         while ((read = getline(&line, &len, inputptr)) != -1) {
                 sscanf( line, "%d,%10[^,],%s", &pp->type, pp->name, pp->url );
@@ -197,18 +193,17 @@ int refreshFeed(struct newsAgency newsAgency)
 
 	int fileSize = fsize(newsAgency.name);
 	if (fileSize == -1){
-		fprintf(logptr, "%s:Could not stat size of feed file\n", newsAgency.name);
+		fprintf(logptr, "ERROR:%s:Could not stat size of feed file\n", newsAgency.name);
 		return 1;
 	}
 	/*  open for reading */
 	fptr = fopen(newsAgency.name, "r");
 	if (fptr == NULL){
-		fprintf(logptr, "Could not open file feed.xml for reading \n");
+		fprintf(logptr, "ERROR:Could not open file feed.xml for reading \n");
 		return 1;
 	}
-
-	//char **news = newsItems.items;
 	int nlines = 0;
+
 	int state=OUT,i=0,j=0,pos=0;
 	char a;
 	char buffer[BUFFER_SIZE];
@@ -235,11 +230,9 @@ int refreshFeed(struct newsAgency newsAgency)
 				state=OUT;
 				buffer[pos] = '\0';
 				cleanItem(buffer);
-				cleanHtml(buffer);
 				if(nlines<MAX_TITLES && countTitleWords(buffer)){
 					strncpy(newsItems.items[nlines], buffer, 512);
 					newsItems.items[nlines++][511] = '\0';
-					//					fprintf(logptr, "%s\n\n", buffer);
 				}
 			}
 		}
@@ -264,6 +257,7 @@ int fsize(const char *filename) {
 	struct stat st;
 	if (stat(filename, &st) == 0)
 		return (st.st_size + 0);
+
 	return -1;
 }
 
@@ -273,18 +267,23 @@ void cleanItem(char *buffer){
 
 	char *p = strstr(buffer, "<title>");
 	char *p1 = strstr(buffer, "</title>");
+
 	if(!p || !p1) return;
 	strncpy(temp, p, p1-p + strlen("</title>"));
 
 	p = strstr(buffer, "<link>");
 	p1 = strstr(buffer, "</link>");
+
 	if(!p || !p1) return;
 	strncat(temp, p, p1-p + strlen("</link>"));
+
 	p = strstr(buffer, "<pubDate>");
 	p1 = strstr(buffer, "</pubDate>");
+
 	if(p && p1){
 		strncat(temp, p, p1-p + strlen("</pubDate>"));
 	}
+
 	strcpy(buffer, temp);
 }
 
@@ -302,6 +301,7 @@ void getTitle(char *line){
 	buff[i] = '\0';//terminate string
 
 	char *p1 = &buff[0];
+
 	if(strstr(p1, cdata) == p1){ // starts with cdata
 		p1 += strlen(cdata);
 	}
@@ -314,7 +314,6 @@ void getTitle(char *line){
 	if(strstr(p1, "]]>") == p1+strlen(p1)-3){ // ends with ]]>
 		p1[strlen(p1)-3] = '\0';
 	}
-
 	int size = BUFFER_SIZE - (p1 - buff);
 	cleanTitle(size, p1);
 	escapeQuotes(p1);
@@ -334,8 +333,10 @@ void cleanTitle(int size, char *buff){
 	}
 }
 
+
 void cleanUrl(char *url){
 	static char *cdata = "<![CDATA[";
+
 	if(strstr(url, cdata) != &url[0]) return;
 	int cdataSize = strlen(cdata);
 	int last = strlen(url) - cdataSize - 3;
@@ -357,28 +358,16 @@ int countTitleWords(char *str)
 		// state as OUT
 		if (*str == ' ' || *str == '\n' || *str == '\t')
 			state = OUT;
+
 		else if (state == OUT)
 		{
 			state = IN;
 			++wc;
 		}
+
 		++str;
 	}
 	return wc > 4 ? 1 : 0;
-}
-
-void cleanHtml(char * const line) { // replaces some html codes
-	int i;
-	char *p;
-	static int CODES_LEN = sizeof(codes)/sizeof(codes[0]);
-	if(!strstr(line, "&#")) return;
-	for(i=0;i<CODES_LEN;i++){
-		while((p = strstr(line, codes[i].hcode))){
-			*p = codes[i].value;
-			*(p+1) = '\0';
-			strcat(line, p+strlen(codes[i].hcode));
-		}
-	}
 }
 
 void getContent(int dest_size, char *dest, char *starttag, char *endtag, char *text){
@@ -388,10 +377,12 @@ void getContent(int dest_size, char *dest, char *starttag, char *endtag, char *t
 	}
 	char *p1 = strstr(text, starttag);
 	char *p2 = strstr(text, endtag);
+
 	if(!p1 || !p2 || p1>p2){
 		dest[0] = '\0';
 		return;
 	}
+
 	size_t size = p2 - p1 - strlen(starttag);
 	strncpy(dest, p1+strlen(starttag), dest_size);
 	dest[size] = '\0';
@@ -405,11 +396,13 @@ int compare_pubDates(const void* a, const void* b) {
 
 	memset(&tmA, 0, sizeof(struct tm));
 	memset(&tmB, 0, sizeof(struct tm));
+
 	if(!(itemA -> pubDate)[0]) return 1;
 	if(!(itemB -> pubDate)[0]) return -1;
 
 	strptime(itemA -> pubDate,"%a, %d %b %Y %H:%M:%S %Z", &tmA);
 	strptime(itemB -> pubDate,"%a, %d %b %Y %H:%M:%S %Z", &tmB);
+
 	if(tmA.tm_year > tmB.tm_year) return -1;
 	else if (tmA.tm_year < tmB.tm_year) return 1;
 	else if (tmA.tm_mon > tmB.tm_mon) return -1;
@@ -446,6 +439,7 @@ void cleanRssDateString(char *rssDateString){
 	struct tm tmA;
 	memset(&tmA, 0, sizeof(struct tm));
 	strptime(rssDateString,"%a, %d %b %Y %H:%M:%S %Z", &tmA);
+
 	char *p = rssDateString;
 	p += strlen(p)-5;
 	int diff = 7; // MST = UTC -7
@@ -536,9 +530,10 @@ void downloadFeeds(int type){
 
 			fptr = fopen(pp ->name, "w");
 			if (fptr == NULL){
-				fprintf(logptr, "%s:Could not open file for writing \n", pp ->name);
+				fprintf(logptr, "ERROR:%s:Could not open file for writing \n", pp ->name);
 				_exit(1);
 			}
+
 			download_feed(fptr, pp ->url);
 			fclose(fptr);
 			_exit(0);
