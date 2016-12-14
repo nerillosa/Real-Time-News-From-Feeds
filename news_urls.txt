@@ -40,3 +40,11 @@
 4,US TODAY,http://rssfeeds.usatoday.com/usatodaycomsports-topstories&x=1
 5,US TODAY,http://rssfeeds.usatoday.com/usatoday-lifetopstories&amp;x=1
 7,US TODAY,http://rssfeeds.usatoday.com/usatodaycomnation-topstories&x=1
+8,COMERCIO,http://elcomercio.pe/feed/opinion.xml
+9,COMERCIO,http://elcomercio.pe/feed/deporte-total.xml
+10,COMERCIO,http://elcomercio.pe/feed/politica/gobierno.xml
+11,COMERCIO,http://elcomercio.pe/feed/luces.xml
+8,PERU21,http://peru21.pe/feed/actualidad
+9,PERU21,http://peru21.pe/feed/deportes
+10,PERU21,http://peru21.pe/feed/economia
+11,PERU21,http://peru21.pe/feed/espectaculos
