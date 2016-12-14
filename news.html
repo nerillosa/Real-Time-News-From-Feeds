@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <title>Real Time News</title>
@@ -16,7 +16,7 @@
   <tr>
      <td style="text-align:center;"><a style="color:#008c8d;font-size:1.2em;text-decoration: underline;" href="${url}" title="${title}"> ${title}</a></td>
      <td class="user-photo"><img class="user-tumb" src="images/${logo}"/></td>
-     <td style="font-size:1.1em;">${getDate(pubdate)}</td>
+     <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate)}</td>
   </tr>
 </script>
 
@@ -48,7 +48,7 @@
   	    if (rvalue < 60 && rvalue > 0)
   	        return "&nbsp;&nbsp;" + rvalue + (rvalue === 1 ? " minute" : " minutes") + " ago";
   	    else {
-  	        return "&nbsp;&nbsp;" + jdt.toLocaleString();
+  	        return jdt.toLocaleString();
   	    }
     }
 
