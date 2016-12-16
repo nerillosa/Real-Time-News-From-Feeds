@@ -86,7 +86,7 @@ int main(int argc, char *argv[]){
 	fclose(inputptr);
 
 	int i;
-	for(i=1;i<=7;i++)
+	for(i=1;i<=11;i++)
 		getLatestItems(i);
         fprintf(logptr, "\n");
 	fclose(logptr);
@@ -114,8 +114,7 @@ static void getLatestItems(int type){
 	fprintf(logptr, "Items:%d, %s -->",currentItemsCount, itemArray[0].pubDate);
 	qsort(itemArray, currentItemsCount, sizeof(struct item), compare_pubDates); //sort by pubDate descending
 
-        fprintf(logptr, "%s\n", type==1 ? "Politics" : type==2 ? "Science" : type==3 ? "World" : type==4 ? "Sports" : type==5 ? "Entertainment" : type==6 ? "Health" : type==7 ? "USA" : type==8 ? "Actualidad" : type==9 ? "Deporte" : type==10 ? "Economia" : "Entretenimiento");
-
+	fprintf(logptr, "%s\n", type==1 ? "Politics" : type==2 ? "Science" : type==3 ? "World" : type==4 ? "Sports" : type==5 ? "Entertainment" : type==6 ? "Health" : type==7 ? "USA" : type==8 ? "Actualidad" : type==9 ? "Deporte" : type==10 ? "Economia" : "Entretenimiento");
 
 	char buff[1024];
 
@@ -438,7 +437,7 @@ void cleanRssDateString(char *rssDateString){
 
 	char *p = rssDateString;
 	p += strlen(p)-5;
-	int diff = 0;//sending UTC  7; // MST = UTC -7
+	int diff = 0;//7; // MST = UTC -7
 	int delta= 0;
 	if(*p == '-' || *p == '+'){
 		delta = atoi(p)/100;
