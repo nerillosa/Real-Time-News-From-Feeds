@@ -11,12 +11,14 @@ CREATE TABLE `news_type` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
-CREATE TABLE `news` (
+ CREATE TABLE `news` (
   `agency` varchar(25) NOT NULL,
-  `url` varchar(255) NOT NULL DEFAULT '',
+  `url` varchar(512) DEFAULT NULL,
   `title` varchar(512) NOT NULL,
   `pubdate` datetime NOT NULL,
   `news_type` int(11) NOT NULL,
+  `html` text,
+  `img` varchar(512) DEFAULT NULL,
   PRIMARY KEY (`agency`,`title`),
   KEY `news_ibfk_1` (`news_type`),
   CONSTRAINT `news_ibfk_1` FOREIGN KEY (`news_type`) REFERENCES `news_type` (`id`),
