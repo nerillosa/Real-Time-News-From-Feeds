@@ -2,54 +2,134 @@
 <html>
 <head>
 <title>Real Time News</title>
-
 <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
 <meta name="keywords" content="news, world news, usa news, sports news, politics" />
 <link rel="stylesheet" href="tabs.css" type="text/css" media="screen" />
 <link rel="stylesheet" href="jtempl.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
 <link rel="icon" type="image/png" href="images/favicon.png">
+<style>
+img.lavida{
+  width: 14em;
+  height: 10em;
+  text-align: center;
+  display: table-cell;
+}
+div#dialog{
+    overflow-y:auto; 
+    overflow-x:hidden
+}
+.ui-dialog .ui-dialog-buttonpane { 
+    text-align: center;
+    float: none !important;
+}
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { 
+    float: none;
+}
+.ui-button-text-only .ui-button-text {
+     padding: .2em .5em; 
+}
+
+::-webkit-scrollbar {
+width: 16px;
+height: 16px; 
+}
+
+</style>
+
 <link href='http://fonts.googleapis.com/css?family=Vollkorn:400,700' rel='stylesheet' type='text/css'>
 
-<script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script src="http://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
 <script type="text/javascript" src="js/jquery.tmpl.min.js"></script>
 <script id="newsTemplate" type="text/x-jquery-tmpl"> 
   <tr>
-     <td style="text-align:center;"><a style="color:#008c8d;font-size:1.2em;text-decoration: underline;" href="${url}" title="${title}"> ${title}</a></td>
+     <td width="75%"><div style="display:table-cell; vertical-align:middle;text-align:center;">{{if img != ''}}<img style="margin-bottom:10px;" 
+     class="lavida" 
+     src="${img}"/>{{/if}}<a style="color:#008c8d;font-size:1.5em;text-decoration: underline;" href="javascript:void(0)" 
+     onclick="hrefClick(event, this);" title="${title}"> ${title}</a></div></td>
      <td class="user-photo"><img class="user-tumb" src="images/${logo}"/></td>
      <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate)}</td>
   </tr>
 </script>
 
 <script type="text/javascript">
+    var noticias;	
     $(document).ready(function() {
     	var tumia = $("#saveid").val();
     	if(tumia)
 		$(".tablinks").eq(parseInt(tumia)-1).click();// in case coming back from clicking on a news link
     	else
 		$(".tablinks").eq(6).click(); //default USA news
+
+        $("#dialog").dialog({
+                autoOpen: false,
+                show: {
+                        effect: "blind",
+                        duration: 500
+                },
+                hide: {
+                        effect: "explode",
+                        duration: 500
+                },
+                resizable: false,
+                modal: true,
+                closeOnEscape: true,
+                height: 500,
+                width: 600,
+                buttons:{
+                    "close":function(){
+                        $(this).dialog("close");
+                     }
+                },
+                beforeClose:function(){
+                    $(this).empty();
+                }
+        });
+	$("a.ui-dialog-titlebar-close").hide();
     });
+
+    function escapeRegExp(str) {
+	return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+    }
+    function replaceAll(str, find, replace) {
+	return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+    }
     function openNews(evt, newsType, newsName) {
         $(".tablinks").removeClass("active");
         document.getElementById("title").innerHTML = newsName + " News";
         $.getJSON("getNews.php?type=" + newsType, function (news) {
+            noticias = news;
             $("#newsList").empty();
             $("#newsTemplate").tmpl(news).appendTo("#newsList");
         });
-        //evt.target.className += " active";
         $(evt.target).addClass("active");
 	$("#saveid").val(newsType);
     }
-
     function getDate(jsonDate) { //2016-12-13 19:21:45 mysql DateTime
         var tokens = jsonDate.split(" ");
         jsonDate = tokens[0] + "T" + tokens[1] + "Z"; //2016-12-13T19:21:45Z UTC time
 	    var jdt = new Date(jsonDate);
   	    var rvalue = Math.ceil((Date.now() - jdt.getTime())/60000);
   	    if (rvalue < 60 && rvalue > 0)
-  	        return "&nbsp;&nbsp;" + rvalue + (rvalue === 1 ? " minute" : " minutes") + " ago";
+  	        return "" + rvalue + (rvalue === 1 ? " minute" : " minutes") + " ago";
   	    else {
   	        return jdt.toLocaleString();
   	    }
+    }
+    function hrefClick(event){
+	event.preventDefault();
+	var title = $(event.target).attr("title");
+	noticias.forEach(function(arrayItem){
+		var tumia = arrayItem.title;
+//		tumia = tumia.replace("&#39;", "'");
+		tumia = replaceAll(tumia, "&#39;", "'");
+		if(title == tumia){
+			$("#dialog").html(arrayItem.html);
+		}
+	});
+	$("#dialog").dialog({title: title});
+	$("#dialog").dialog("open");	
     }
 
 </script>
@@ -75,9 +155,8 @@
 <thead><tr>
  <th id="title"></th>
  <th>News <br />Agency</th>
- <th>Date<br />MST</th>
+ <th>Date</th>
 </tr></thead>
-
 
 <tbody id="newsList"></tbody>
 </table>
@@ -86,5 +165,6 @@
 <form name="save" id="save" style="display:none;">
   <input type="hidden" id="saveid" />
 </form>
+<div id="dialog"></div>
 </body>
 </html> 

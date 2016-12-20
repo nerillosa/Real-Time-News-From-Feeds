@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <curl/curl.h>
 #include <sys/stat.h>
@@ -20,6 +21,7 @@
 #define IN  1
 #define MAX_TITLES 100
 #define BUFFER_SIZE 8192
+#define BUF_LEN 32768
 #define ITEM_SIZE 400
 #define NUM_TITLES 20
 
@@ -43,6 +45,16 @@ struct newsAgency {
 	struct newsAgency *next;
 } news_agency;
 
+struct MemoryStruct {
+  char *memory;
+  size_t size;
+};
+
+struct extra {
+  char imgurl[512];
+  char html[BUF_LEN];
+};
+
 //Function Prototypes
 static void download_feed(FILE *dst, const char *src);
 static int countTitleWords(char *str);
@@ -63,6 +75,10 @@ static void cleanTitle(int size, char *buff);
 static int calcDays(int month, int year);
 static void getLatestItems(int type);
 static void downloadFeeds(int type);
+static void getparticulars(char *url, struct extra *extra);
+static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp);
+static void fillStruct(char *url, struct extra *beth);
+static void cleanHtml(char *code, char value, char * const line);
 
 FILE *inputptr;
 FILE *logptr;
@@ -116,7 +132,7 @@ static void getLatestItems(int type){
 
 	fprintf(logptr, "%s\n", type==1 ? "Politics" : type==2 ? "Science" : type==3 ? "World" : type==4 ? "Sports" : type==5 ? "Entertainment" : type==6 ? "Health" : type==7 ? "USA" : type==8 ? "Actualidad" : type==9 ? "Deporte" : type==10 ? "Economia" : "Entretenimiento");
 
-	char buff[1024];
+	char buff[BUF_LEN];
 
 	MYSQL *con = mysql_init(NULL);
 
@@ -480,18 +496,36 @@ void getInsertString(struct item *item, char *json, int type){
 	char rssdate[50];
 	strcpy(rssdate, item ->pubDate);
 	cleanDateString(rssdate);
+	struct extra extra;
+	memset(&extra, 0, sizeof(struct extra));
+//	fprintf(logptr, "url:%s\n", item ->url); fflush(logptr);
+
+	fillStruct(item ->url, &extra); // uses newspaper python module to scrape html and top image from url
+
+//	fprintf(logptr, "html:%s, img:%s\n", extra.html, extra.imgurl); fflush(logptr);
+
 	sprintf(beth, "%d", type);
-	strcpy(json, "REPLACE INTO news (news_type,title,url,pubdate,agency) values (");
+
+	if(strstr(extra.imgurl, "You must") != NULL) extra.imgurl[0]='\0';
+	strcpy(json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency) values ('");
+	strcat(json, item ->url);
+	strcat(json, "','");
+
+	//strcat(json, rhonda);
+	strcat(json, extra.html);
+	strcat(json, "','");
+        strcat(json, extra.imgurl);
+        //strcat(json, "extra.imgurl");
+	strcat(json, "',");
 	strcat(json, beth);
 	strcat(json, ",'");
 	strcat(json, item ->title);
-	strcat(json, "','");
-	strcat(json, item ->url);
 	strcat(json, "',STR_TO_DATE('");
 	strcat(json, rssdate);
 	strcat(json, "','%Y-%m-%d %H:%i:%S'),'");
 	strcat(json, item ->agency);
 	strcat(json, "')");
+//	fprintf(logptr, "insertString:%s\n\n", json); fflush(logptr);
 }
 
 void cleanDateString(char *rssDateString){
@@ -540,4 +574,134 @@ void downloadFeeds(int type){
 	do {
 		pid = wait(NULL);
 	} while (pid != -1);
+}
+
+void getparticulars(char *url, struct extra *extra)
+{
+  CURL *curl_handle;
+  CURLcode res;
+  char *heroku = "http://newspaper-demo.herokuapp.com/articles/show?url_to_clean=";
+  struct MemoryStruct chunk;
+  char cartera[512];
+  strcpy(cartera, heroku);
+  strcat(cartera, url);
+
+
+  chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */
+  chunk.size = 0;    /* no data at this point */
+
+  curl_global_init(CURL_GLOBAL_ALL);
+
+  /* init the curl session */
+  curl_handle = curl_easy_init();
+
+  /* specify URL to get */
+  curl_easy_setopt(curl_handle, CURLOPT_URL, cartera);
+
+  /* send all data to this function  */
+  curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+
+  /* we pass our 'chunk' struct to the callback function */
+  curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
+
+  /* some servers don't like requests that are made without a user-agent
+     field, so we provide one */
+  curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+
+  /* get it! */
+  res = curl_easy_perform(curl_handle);
+
+  /* check for errors */
+  if(res != CURLE_OK) {
+    fprintf(stderr, "curl_easy_perform() failed: %s\n",
+            curl_easy_strerror(res));
+  }
+  else {
+    //    printf("%lu bytes retrieved\n", (long)chunk.size);
+    char *marker = "<img src=\"";
+    char *pstart = strstr(chunk.memory, marker);
+
+    if(pstart){
+      char *pend = strstr(pstart, "\"/>");
+      if(pend){
+	char buffer[256];
+	pstart += strlen(marker);
+	size_t size = pend - pstart;
+	strncpy(buffer, pstart, size);
+	buffer[size] = '\0';
+	//	puts(buffer);
+	strcpy(extra -> imgurl, buffer);
+      }
+    }
+
+    puts(chunk.memory);
+  }
+
+  /* cleanup curl stuff */
+  curl_easy_cleanup(curl_handle);
+
+  //  free(chunk.memory);
+
+  /* we're done with libcurl, so clean it up */
+  curl_global_cleanup();
+
+
+}
+
+size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
+{
+  size_t realsize = size * nmemb;
+  struct MemoryStruct *mem = (struct MemoryStruct *)userp;
+
+  mem->memory = realloc(mem->memory, mem->size + realsize + 1);
+  if(mem->memory == NULL) {
+    /* out of memory! */
+    printf("not enough memory (realloc returned NULL)\n");
+    return 0;
+  }
+
+  memcpy(&(mem->memory[mem->size]), contents, realsize);
+  mem->size += realsize;
+  mem->memory[mem->size] = 0;
+
+  return realsize;
+}
+
+void fillStruct(char *url, struct extra *beth){
+        char tumia[512];
+	char *cc;
+        strcpy(tumia, "./neri.py '");
+        strcat(tumia, url);
+        strcat(tumia, "'");
+        char gigi[16384];
+	memset(gigi, 0, 16384);
+        FILE *pp = popen(tumia, "r");
+
+        if (pp != NULL) {
+		int i = 0;
+  		if(fgets(tumia, sizeof(tumia), pp) != NULL) {
+			strcpy(beth->imgurl, tumia);
+			if((cc = strstr(beth->imgurl, "\n")))
+				*cc = '\0';
+  		}
+
+  		if(fgets(gigi, sizeof(gigi), pp) != NULL) {
+			strcpy(beth->html, gigi);
+		}
+  		if(fgets(gigi, sizeof(gigi), pp) != NULL) {//twice just in case
+			strcat(beth->html, gigi);
+		}
+
+		size_t sz = strlen(beth->html);
+		if(beth->html[sz-1] == '\n'){
+			beth->html[sz-1] = '\0';
+			fprintf(stdout, "html_len:%d, url:%s\n", sz, url);fflush(stdout);
+		}
+
+                pclose(pp);
+        }
+	else
+                puts("could not open pipe");
+
+
 }
