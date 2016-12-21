@@ -98,13 +98,25 @@ int main(int argc, char *argv[]){
 		fprintf(stdout, "Could not open file %s for writing logs\n", argv[2]);
 		exit(EXIT_FAILURE);
 	}
+	time_t t = time(NULL);
+        struct tm *tm = localtime(&t);
+        char s[64];
+        strftime(s, sizeof(s), "%c", tm);
+        fprintf(logptr, "start: %s\n", s);
+
+
         int size = getUrls(&news_agency);
 	fclose(inputptr);
 
 	int i;
 	for(i=1;i<=11;i++)
 		getLatestItems(i);
-        fprintf(logptr, "\n");
+
+    	t = time(NULL);
+    	tm = localtime(&t);
+	strftime(s, sizeof(s), "%c", tm);
+    	fprintf(logptr, "end: %s\n\n", s);
+
 	fclose(logptr);
 }
 
@@ -127,10 +139,12 @@ static void getLatestItems(int type){
 		cleanRssDateString(itemArray[i].pubDate); // attempt to normalize all dates to MST time
 	}
 
-	fprintf(logptr, "Items:%d, %s -->",currentItemsCount, itemArray[0].pubDate);
+	//fprintf(logptr, "Items:%d, %s -->",currentItemsCount, itemArray[0].pubDate);
 	qsort(itemArray, currentItemsCount, sizeof(struct item), compare_pubDates); //sort by pubDate descending
 
-	fprintf(logptr, "%s\n", type==1 ? "Politics" : type==2 ? "Science" : type==3 ? "World" : type==4 ? "Sports" : type==5 ? "Entertainment" : type==6 ? "Health" : type==7 ? "USA" : type==8 ? "Actualidad" : type==9 ? "Deporte" : type==10 ? "Economia" : "Entretenimiento");
+	//fprintf(logptr, "%s\n", type==1 ? "Politics" : type==2 ? "Science" : type==3 ? "World" : type==4 ? "Sports" : type==5 ? 
+	//"Entertainment" : type==6 ? "Health" : type==7 ? "USA" : type==8 ? "Actualidad" : type==9 ? "Deporte" : type==10 ? "Economia" : 
+	//"Entretenimiento");
 
 	char buff[BUF_LEN];
 
@@ -140,7 +154,7 @@ static void getLatestItems(int type){
 		fprintf(logptr, "ERROR:mysql_init() failed\n");
 		return;
 	}
-	if (mysql_real_connect(con, "localhost", "xxxxx", "xxxxx", "xxxxx", 0, NULL, 0) == NULL){
+	if (mysql_real_connect(con, "localhost", "nerillos_neri", "carpa1", "nerillos_neri", 0, NULL, 0) == NULL){
 		fprintf(logptr, "ERROR:%s\n", mysql_error(con));
 		mysql_close(con);
 		return;

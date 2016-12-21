@@ -10,29 +10,22 @@
 <link rel="icon" type="image/png" href="images/favicon.png">
 <style>
 img.lavida{
-  width: 14em;
   height: 10em;
   text-align: center;
   display: table-cell;
+  float:left;
+  margin: 5px 5px;
 }
-div#dialog{
-    overflow-y:auto; 
-    overflow-x:hidden
+div.htext
+{
+    height: 10em;
+    overflow-y: hidden;
 }
-.ui-dialog .ui-dialog-buttonpane { 
-    text-align: center;
-    float: none !important;
-}
-.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { 
-    float: none;
-}
-.ui-button-text-only .ui-button-text {
-     padding: .2em .5em; 
-}
-
-::-webkit-scrollbar {
-width: 16px;
-height: 16px; 
+div.links{
+    clear: left;
+    margin-top: 10px;
+    font-size: 1.4em;
+    color :#008c8d;
 }
 
 </style>
@@ -44,17 +37,20 @@ height: 16px;
 <script type="text/javascript" src="js/jquery.tmpl.min.js"></script>
 <script id="newsTemplate" type="text/x-jquery-tmpl"> 
   <tr>
-     <td width="75%"><div style="display:table-cell; vertical-align:middle;text-align:center;">{{if img != ''}}<img style="margin-bottom:10px;" 
-     class="lavida" 
-     src="${img}"/>{{/if}}<a style="color:#008c8d;font-size:1.5em;text-decoration: underline;" href="javascript:void(0)" 
-     onclick="hrefClick(event, this);" title="${title}"> ${title}</a></div></td>
+  <td>
+  {{if img != ''}}<img class="lavida" src="${img}" />{{/if}}
+  <div class="htext" style="font-size: 1.2em;">${html}</div>
+  <div class="links">${title}&nbsp;&nbsp;&nbsp;<a id="${getIndex()}" href="#" onclick="hrefClick(event)" 
+  title="${title}">more...</a></div>
+  </td>
      <td class="user-photo"><img class="user-tumb" src="images/${logo}"/></td>
      <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate)}</td>
   </tr>
 </script>
 
 <script type="text/javascript">
-    var noticias;	
+    var noticias;
+    var index;	
     $(document).ready(function() {
     	var tumia = $("#saveid").val();
     	if(tumia)
@@ -62,47 +58,35 @@ height: 16px;
     	else
 		$(".tablinks").eq(6).click(); //default USA news
 
-        $("#dialog").dialog({
-                autoOpen: false,
-                show: {
-                        effect: "blind",
-                        duration: 500
-                },
-                hide: {
-                        effect: "explode",
-                        duration: 500
-                },
-                resizable: false,
-                modal: true,
-                closeOnEscape: true,
-                height: 500,
-                width: 600,
-                buttons:{
-                    "close":function(){
-                        $(this).dialog("close");
-                     }
-                },
-                beforeClose:function(){
-                    $(this).empty();
-                }
-        });
-	$("a.ui-dialog-titlebar-close").hide();
     });
 
-    function escapeRegExp(str) {
-	return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+$.fn.OverFlowed = function() {
+    var _elm = $(this)[0];
+    var _hasScrollBar = false; 
+    if ((_elm.clientHeight < _elm.scrollHeight) || (_elm.clientWidth < _elm.scrollWidth)) {
+        _hasScrollBar = true;
     }
-    function replaceAll(str, find, replace) {
-	return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
-    }
+    return _hasScrollBar;
+}
+
     function openNews(evt, newsType, newsName) {
+	index = 0;
         $(".tablinks").removeClass("active");
         document.getElementById("title").innerHTML = newsName + " News";
         $.getJSON("getNews.php?type=" + newsType, function (news) {
             noticias = news;
             $("#newsList").empty();
             $("#newsTemplate").tmpl(news).appendTo("#newsList");
+ 
+            $(".htext").each(function(){
+		if(!$(this).OverFlowed()){
+		   $(this).next().children("a").remove(); // Remove the ...more link
+		   //alert($(this).parent()[0].tagName)
+		}
+            });
+
         });
+
         $(evt.target).addClass("active");
 	$("#saveid").val(newsType);
     }
@@ -117,19 +101,20 @@ height: 16px;
   	        return jdt.toLocaleString();
   	    }
     }
+
+    function getIndex(){
+    	return index++;
+    }
+
     function hrefClick(event){
 	event.preventDefault();
-	var title = $(event.target).attr("title");
-	noticias.forEach(function(arrayItem){
-		var tumia = arrayItem.title;
-//		tumia = tumia.replace("&#39;", "'");
-		tumia = replaceAll(tumia, "&#39;", "'");
-		if(title == tumia){
-			$("#dialog").html(arrayItem.html);
-		}
-	});
-	$("#dialog").dialog({title: title});
-	$("#dialog").dialog("open");	
+	if($(event.target).text() == "more..."){
+		$(event.target).parent().prev().removeClass("htext");
+        	$(event.target).text("less...");
+        }else{
+		$(event.target).parent().prev().addClass("htext");
+        	$(event.target).text("more...");
+        }
     }
 
 </script>
@@ -165,6 +150,5 @@ height: 16px;
 <form name="save" id="save" style="display:none;">
   <input type="hidden" id="saveid" />
 </form>
-<div id="dialog"></div>
 </body>
 </html> 
