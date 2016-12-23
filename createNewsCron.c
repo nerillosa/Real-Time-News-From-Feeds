@@ -74,6 +74,7 @@ static void getFeedItems(char *agency, int type, char *buff);
 static void initCurl();
 static void initMysql();
 static void cleanCurl();
+static void deleteExtraRecords(int type);
 
 MYSQL *con ;
 FILE *inputptr;
@@ -131,33 +132,26 @@ static void getLatestItems(){
       		exit(EXIT_FAILURE);
   	}
 
-	char *agencies[] = {"FOX NEWS", "NY TIMES", "CNN", "WSH POST", "CNBC", "ABC NEWS", "REUTERS", "US TODAY"};
-	int agency_sz = sizeof(agencies)/sizeof(agencies[0]);
-	int i;
-
-	for(i=0;i<agency_sz;i++){
-		pid_t pid = fork();
-		if(pid == -1){
-	                fprintf(logptr, "Error on forking a child for feed download:%s\n", strerror(errno));
-	                fprintf(stdout, "Error on forking a child for feed download:%s\n", strerror(errno));
-	                fflush(stdout); fflush(logptr);
-	                exit(EXIT_FAILURE);
-		}
-	        if(pid == 0){ //Child code. One child per news agency.
-        	        close(pfd[0]);  // Child closes it's read end.
-		        struct newsAgency *pp = &news_agency;
-			do{
-		        	if(strcmp(pp -> name, agencies[i])) continue;
-	                	chunk.memory = malloc(1);
-	        	        chunk.size = 0;
-        	        	loadFeed(pp ->url); // Loads feed into memory.
-	        	        getFeedItems(pp ->name, pp ->type, chunk.memory);
-        	        	free(chunk.memory);
-			}while((pp = pp ->next) != NULL);
-                	close(pfd[1]); // Child is done and closes write end. When all children close this, parent will receive EOF.
-	                _exit(0);
-        	}
-	 }
+	pid_t pid = fork();
+	if(pid == -1){
+                fprintf(logptr, "Error on forking a child for feed download:%s\n", strerror(errno));
+                fflush(logptr);
+                exit(EXIT_FAILURE);
+	}
+        if(pid == 0){ //Child code.
+       	        close(pfd[0]);  // Child closes it's read end.
+	        struct newsAgency *pp = &news_agency;
+		do{
+	        	if(strlen(pp->name)==0) continue;
+                	chunk.memory = malloc(1);
+        	        chunk.size = 0;
+       	        	loadFeed(pp ->url); // Loads feed into memory.
+        	        getFeedItems(pp ->name, pp ->type, chunk.memory);
+       	        	free(chunk.memory);
+		}while((pp = pp ->next) != NULL);
+               	close(pfd[1]); // Child is done and closes write end. Parent will receive EOF.
+                _exit(0);
+       	}
 
 	close(pfd[1]); // parent closes write end of pipe
 
@@ -168,6 +162,7 @@ static void getLatestItems(){
 
 	close(pfd[0]); // parent closes read end of pipe
 
+	int i;
 	for(i=0;i<currentItemsCount;i++){
 		cleanRssDateString(itemArray[i].pubDate); // attempt to normalize all dates to MST time
 	}
@@ -177,7 +172,7 @@ static void getLatestItems(){
 
 	char buff[BUF_LEN];
 	int j,k;
-	for(j=1;j<=7;j++)
+	for(j=1;j<=7;j++){
 		for(i=0,k=0;i<currentItemsCount;i++){
 			if(k==NUM_TITLES) break;
 	     		if(j==itemArray[i].type) {
@@ -188,18 +183,22 @@ static void getLatestItems(){
 				}
 			}
 		}
+		deleteExtraRecords(j);
+	}
+}
 
-	//Leave at least 80 records for each category
-	for(j=1;j<=7;j++){
-		strcpy(buff, "DELETE FROM news WHERE pubdate < (select pubdate from (select * from news)a where news_type=");
-	        char beth[5];
-        	sprintf(beth, "%d", j);
-		strcat(buff, beth);
-		strcat(buff, " order by pubdate desc limit 79,1) and news_type=");
-		strcat(buff, beth);
-		if (mysql_query(con, buff)){
-			fprintf(logptr, "ERROR:%s\n", mysql_error(con));
-		}
+//Leave at least 80 records for each category
+void deleteExtraRecords(int type){
+	char buff[512];
+	strcpy(buff, "DELETE FROM news WHERE pubdate < (select pubdate from (select * from news)a where news_type=");
+        char beth[5];
+       	sprintf(beth, "%d", type);
+	strcat(buff, beth);
+	strcat(buff, " order by pubdate desc limit 79,1) and news_type=");
+	strcat(buff, beth);
+	//fprintf(logptr, "deletestring:%s\n",buff);
+	if (mysql_query(con, buff)){
+		fprintf(logptr, "ERROR:%s\n", mysql_error(con));
 	}
 }
 
@@ -610,6 +609,7 @@ void cleanCurl(){
 
 void loadFeed(char *url)
 {
+//  fprintf(stdout, "!!%s\n", url);
   CURLcode res;
   /* specify URL to get */
   curl_easy_setopt(curl_handle, CURLOPT_URL, url);
