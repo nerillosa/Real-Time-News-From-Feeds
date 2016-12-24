@@ -24,7 +24,8 @@
 #define BUFFER_SIZE 8192
 #define BUF_LEN 32768
 #define NUM_ITEMS 3000
-#define NUM_TITLES 20
+#define NUM_REFRESH 5
+#define NUM_AGENCIES 11
 
 struct item{
 	int type;
@@ -107,7 +108,7 @@ int main(int argc, char *argv[]){
         char s[64];
         strftime(s, sizeof(s), "%c", tm);
         fprintf(logptr, "start: %s\n", s);
-
+	fflush(logptr);
 	memset(&news_agency, 0, sizeof(struct newsAgency));
         getUrls(&news_agency);
 	fclose(inputptr);
@@ -117,7 +118,7 @@ int main(int argc, char *argv[]){
     	t = time(NULL);
     	tm = localtime(&t);
 	strftime(s, sizeof(s), "%c", tm);
-    	fprintf(logptr, "end: %s\n\n", s);
+    	fprintf(logptr, "end: %s\n\n", s);fflush(logptr);
 	fclose(logptr);
 	mysql_close(con);
 	cleanCurl();
@@ -167,19 +168,19 @@ static void getLatestItems(){
 		cleanRssDateString(itemArray[i].pubDate); // attempt to normalize all dates to MST time
 	}
 
-	fprintf(logptr, "Item count:%d\n",currentItemsCount);
+	fprintf(logptr, "Item count:%d\n",currentItemsCount);fflush(logptr);
 	qsort(itemArray, currentItemsCount, sizeof(struct item), compare_pubDates); //sort by pubDate descending
 
-	char buff[BUF_LEN];
+	char buff[BUF_LEN*2];
 	int j,k;
-	for(j=1;j<=7;j++){
+	for(j=1;j<=NUM_AGENCIES;j++){
 		for(i=0,k=0;i<currentItemsCount;i++){
-			if(k==NUM_TITLES) break;
+			if(k==NUM_REFRESH) break; //no more than NUM_REFRESH every 5 minutes
 	     		if(j==itemArray[i].type) {
 	     			k++;
 				getInsertString(&itemArray[i], buff, itemArray[i].type);
 				if (mysql_query(con, buff)){
-					fprintf(logptr, "ERROR:%s\n", mysql_error(con));
+					fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
 				}
 			}
 		}
@@ -198,7 +199,7 @@ void deleteExtraRecords(int type){
 	strcat(buff, beth);
 	//fprintf(logptr, "deletestring:%s\n",buff);
 	if (mysql_query(con, buff)){
-		fprintf(logptr, "ERROR:%s\n", mysql_error(con));
+		fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
 	}
 }
 
@@ -479,11 +480,10 @@ void getInsertString(struct item *item, char *json, int type){
 	cleanDateString(rssdate);
 	struct extra extra;
 	memset(&extra, 0, sizeof(struct extra));
-//	fprintf(logptr, "url:%s\n", item ->url); fflush(logptr);
+	//fprintf(logptr, "url:%s\n", item ->url); fflush(logptr);
 
 	fillStruct(item ->url, &extra); // uses newspaper python module to scrape html and top image from url
-
-//	fprintf(logptr, "html:%s, img:%s\n", extra.html, extra.imgurl); fflush(logptr);
+	//fprintf(logptr, "img:%s\n", extra.imgurl); fflush(logptr);
 
 	sprintf(beth, "%d", type);
 
@@ -541,22 +541,24 @@ void fillStruct(char *url, struct extra *beth){
 
         if (pp != NULL) {
   		if(fgets(tumia, sizeof(tumia), pp) != NULL) {
+			tumia[511] = '\0';
 			strcpy(beth->imgurl, tumia);
 			if((cc = strstr(beth->imgurl, "\n")))
 				*cc = '\0';
   		}
 
   		if(fgets(gigi, sizeof(gigi), pp) != NULL) {
+			gigi[BUF_LEN-1] = '\0';
 			strcpy(beth->html, gigi);
 		}
-  		if(fgets(gigi, sizeof(gigi), pp) != NULL) {//twice max
-			strcat(beth->html, gigi);
+  		while(fgets(gigi, sizeof(gigi), pp) != NULL) {//twice max
+//			gigi[BUF_LEN-1] = '\0';
+//			strcat(beth->html, gigi);
 		}
 
 		size_t sz = strlen(beth->html);
 		if(beth->html[sz-1] == '\n'){
 			beth->html[sz-1] = '\0';
-			//fprintf(stdout, "html_len:%zu, url:%s\n", sz, url);fflush(stdout);
 		}
 
                 pclose(pp);
@@ -625,11 +627,11 @@ void loadFeed(char *url)
 void initMysql(){
         con = mysql_init(NULL);
         if (con == NULL){
-                fprintf(logptr, "ERROR:mysql_init() failed\n");
+                fprintf(logptr, "ERROR:mysql_init() failed\n");fflush(logptr);
                 exit(EXIT_FAILURE);
         }
         if (mysql_real_connect(con, "localhost", "nerillos_neri", "carpa1", "nerillos_neri", 0, NULL, 0) == NULL){
-                fprintf(logptr, "ERROR:%s\n", mysql_error(con));
+                fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
                 mysql_close(con);
                 exit(EXIT_FAILURE);
         }
