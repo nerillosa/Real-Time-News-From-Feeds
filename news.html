@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" href="images/favicon.png">
 <style>
 img.lavida{
-  height: 10em;
+  height: 11em;
   text-align: center;
   display: table-cell;
   float:left;
@@ -18,16 +18,19 @@ img.lavida{
 }
 div.htext
 {
-    height: 10em;
+    height: 11em;
     overflow-y: hidden;
 }
 div.links{
     clear: left;
-    margin-top: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
     font-size: 1.4em;
     color :#008c8d;
 }
-
+pre{
+    white-space: pre-wrap;
+}
 </style>
 
 <link href='http://fonts.googleapis.com/css?family=Vollkorn:400,700' rel='stylesheet' type='text/css'>
@@ -38,10 +41,9 @@ div.links{
 <script id="newsTemplate" type="text/x-jquery-tmpl"> 
   <tr>
   <td>
+  <div class="links">${title}&nbsp;&nbsp;&nbsp;<a id="${getIndex()}" href="#" onclick="hrefClick(event)" title="${title}">more...</a></div>
   {{if img != ''}}<img class="lavida" src="${img}" />{{/if}}
-  <div class="htext" style="font-size: 1.2em;">${html}</div>
-  <div class="links">${title}&nbsp;&nbsp;&nbsp;<a id="${getIndex()}" href="#" onclick="hrefClick(event)" 
-  title="${title}">more...</a></div>
+  <div class="htext" style="font-size: 1.2em;"><pre>${getHtml(html)}</pre></div>
   </td>
      <td class="user-photo"><img class="user-tumb" src="images/${logo}"/></td>
      <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate)}</td>
@@ -56,7 +58,7 @@ div.links{
     	if(tumia)
 		$(".tablinks").eq(parseInt(tumia)-1).click();// in case coming back from clicking on a news link
     	else
-		$(".tablinks").eq(6).click(); //default USA news
+		$(".tablinks").eq(0).click(); //default POLITICS
 
     });
 
@@ -68,6 +70,22 @@ $.fn.OverFlowed = function() {
     }
     return _hasScrollBar;
 }
+    function escapeRegExp(str) {
+        return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+    }
+    function replaceAll(str, find, replace) {
+        return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+    }
+
+//    function getHtml(html){
+//       var tt = replaceAll(html, "\n", "&#10;");
+//       return replaceAll(tt, "\t", "");
+//    }
+
+    function getHtml(html) {
+        var tt = html.replace(/Advertisement\nContinue reading the main story/g, "&#10;");
+    	return tt.replace(/\s{2,}/g, "&#10;");
+    }
 
     function openNews(evt, newsType, newsName) {
 	index = 0;
@@ -80,7 +98,7 @@ $.fn.OverFlowed = function() {
  
             $(".htext").each(function(){
 		if(!$(this).OverFlowed()){
-		   $(this).next().children("a").remove(); // Remove the ...more link
+		   $(this).parent().find("a").remove(); // Remove the ...more link
 		   //alert($(this).parent()[0].tagName)
 		}
             });
@@ -108,11 +126,14 @@ $.fn.OverFlowed = function() {
 
     function hrefClick(event){
 	event.preventDefault();
+	var elem = $(event.target).parent().next();
+	if(elem.is( "img" )) elem = elem.next();
+
 	if($(event.target).text() == "more..."){
-		$(event.target).parent().prev().removeClass("htext");
+		elem.removeClass("htext");
         	$(event.target).text("less...");
         }else{
-		$(event.target).parent().prev().addClass("htext");
+		elem.addClass("htext");
         	$(event.target).text("more...");
         }
     }
