@@ -53,6 +53,8 @@ pre{
 <script type="text/javascript">
     var noticias;
     var index;	
+    var savetds = [];
+    
     $(document).ready(function() {
     	var tumia = $("#saveid").val();
     	if(tumia)
@@ -76,11 +78,6 @@ $.fn.OverFlowed = function() {
     function replaceAll(str, find, replace) {
         return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
     }
-
-//    function getHtml(html){
-//       var tt = replaceAll(html, "\n", "&#10;");
-//       return replaceAll(tt, "\t", "");
-//    }
 
     function getHtml(html) {
         var tt = html.replace(/Advertisement\nContinue reading the main story/g, "&#10;");
@@ -126,13 +123,32 @@ $.fn.OverFlowed = function() {
 
     function hrefClick(event){
 	event.preventDefault();
+
 	var elem = $(event.target).parent().next();
 	if(elem.is( "img" )) elem = elem.next();
 
 	if($(event.target).text() == "more..."){
+		if(savetds.length >0){
+			var tdd = $(event.target).parent().parent().parent().parent().find("td[colspan='3']");
+		        tdd.parent().append(savetds[0]);
+		        tdd.parent().append(savetds[1]);
+		        savetds = [];
+			tdd.removeAttr("colspan");
+			$(":last-child", tdd).addClass("htext");		
+			tdd.find("a").text("more...");
+		}
+		savetds.push($(event.target).parent().parent().next().clone()); //remove the img and date
+		$(event.target).parent().parent().next().remove();
+		savetds.push($(event.target).parent().parent().next().clone());
+		$(event.target).parent().parent().next().remove();
+		$(event.target).parent().parent().attr("colspan", "3"); //have td ocuppy all 3 columns
 		elem.removeClass("htext");
         	$(event.target).text("less...");
         }else{
+		$(event.target).parent().parent().parent().append(savetds[0]);
+		$(event.target).parent().parent().parent().append(savetds[1]);
+		savetds = [];
+		$(event.target).parent().parent().removeAttr("colspan");
 		elem.addClass("htext");
         	$(event.target).text("more...");
         }
