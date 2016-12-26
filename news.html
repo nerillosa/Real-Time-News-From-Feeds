@@ -64,19 +64,13 @@ pre{
 
     });
 
-$.fn.OverFlowed = function() {
-    var _elm = $(this)[0];
-    var _hasScrollBar = false; 
-    if ((_elm.clientHeight < _elm.scrollHeight) || (_elm.clientWidth < _elm.scrollWidth)) {
-        _hasScrollBar = true;
-    }
-    return _hasScrollBar;
-}
-    function escapeRegExp(str) {
-        return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-    }
-    function replaceAll(str, find, replace) {
-        return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+    $.fn.OverFlowed = function() {
+    	var _elm = $(this)[0];
+    	var _hasScrollBar = false; 
+    	if ((_elm.clientHeight < _elm.scrollHeight) || (_elm.clientWidth < _elm.scrollWidth)) {
+        	_hasScrollBar = true;
+    	}
+    	return _hasScrollBar;
     }
 
     function getHtml(html) {
@@ -129,7 +123,7 @@ $.fn.OverFlowed = function() {
 
 	if($(event.target).text() == "more..."){
 		if(savetds.length >0){
-			var tdd = $(event.target).parent().parent().parent().parent().find("td[colspan='3']");
+			var tdd = $("table tbody").find("td[colspan='3']");
 		        tdd.parent().append(savetds[0]);
 		        tdd.parent().append(savetds[1]);
 		        savetds = [];
