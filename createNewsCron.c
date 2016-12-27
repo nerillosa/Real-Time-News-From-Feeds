@@ -51,7 +51,7 @@ struct MemoryStruct {
 
 struct extra {
   char imgurl[512];
-  char html[BUF_LEN];
+  char *html;
 };
 
 //Function Prototypes
@@ -62,7 +62,7 @@ static void getContent(int dest_size, char *dest, char *starttag, char *endtag, 
 static int compare_pubDates(const void* a, const void* b);
 static void cleanRssDateString(char *rssDateString);
 static int getUrls(struct newsAgency *news_agency);
-static void getInsertString(struct item *item, char *json, int type);
+static void getInsertString(struct item *item, char **json, int type);
 static void cleanDateString(char *rssDateString);
 static void escapeQuotes(char *title);
 static void cleanUrl(char *url);
@@ -171,21 +171,22 @@ static void getLatestItems(){
 	fprintf(logptr, "Item count:%d\n",currentItemsCount);fflush(logptr);
 	qsort(itemArray, currentItemsCount, sizeof(struct item), compare_pubDates); //sort by pubDate descending
 
-	char buff[BUF_LEN*2];
+	char *buff;
 	int j,k;
 	for(j=1;j<=NUM_AGENCIES;j++){
 		for(i=0,k=0;i<currentItemsCount;i++){
 			if(k==NUM_REFRESH) break; //no more than NUM_REFRESH every 5 minutes
 	     		if(j==itemArray[i].type) {
 	     			k++;
-				getInsertString(&itemArray[i], buff, itemArray[i].type);
-				if (mysql_query(con, buff)){
+				getInsertString(&itemArray[i], &buff, itemArray[i].type);
+				if (buff[0] && mysql_query(con, buff)){
 					fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
 				}
 			}
 		}
 		deleteExtraRecords(j);
 	}
+	free(buff);
 }
 
 //Leave at least 80 records for each category
@@ -243,7 +244,6 @@ void getFeedItems(char *agency, int type, char *buff)
                                         strcpy(item.agency, agency);
 					item.type = type;
                                         write(pfd[1], &item, ITEM_SIZE);
-	                                //fprintf(stdout, "url:%s,agency:%s,pubDate:%s,title:%s\n",item.url,item.agency,item.pubDate,item.title);
                                 }
                         }
                 }
@@ -297,7 +297,6 @@ void cleanItem(char *buffer){
 }
 
 void getTitle(char *line){
-//	static char *suffix = "</TITLE>";
 	static char *cdata = "<![CDATA[";
 	static char *watch = "WATCH:";
 	static char buff[BUFFER_SIZE];
@@ -320,21 +319,31 @@ void getTitle(char *line){
 	int k=0;
 	while(isspace(p1[k])) k++; //get rid of leading whitespace
 	p1 += k;
+
 	if(strstr(p1, "]]>") == p1+strlen(p1)-3){ // ends with ]]>
 		p1[strlen(p1)-3] = '\0';
 	}
+
 	escapeQuotes(p1);
 	strcpy(line, p1);
+
 }
 
 void cleanUrl(char *url){
 	static char *cdata = "<![CDATA[";
-
 	if(strstr(url, cdata) != &url[0]) return;
 	int cdataSize = strlen(cdata);
 	int last = strlen(url) - cdataSize - 3;
 	memmove(url, &url[cdataSize], strlen(url) - cdataSize);
 	url[last] = '\0';
+	char *p;
+	char *toReplace = "&#39;";
+	size_t sz = strlen(toReplace);
+        if((p=strstr(url, "&#39;")) != NULL){
+           *p = '\'';
+           long tumia = p - url;
+           memmove(p+1, p+sz, strlen(url) - tumia - sz + 1);
+        }
 }
 
 // returns true if number of words in title > 4
@@ -473,37 +482,61 @@ int calcDays(int month, int year)// calculates number of days in a given month
 	return Days;
 }
 
-void getInsertString(struct item *item, char *json, int type){
+void getInsertString(struct item *item, char **json, int type){
+	static int json_size = 0;
 	char beth[5];
 	char rssdate[50];
 	strcpy(rssdate, item ->pubDate);
 	cleanDateString(rssdate);
 	struct extra extra;
 	memset(&extra, 0, sizeof(struct extra));
+	extra.html = malloc(1);
+
 	//fprintf(logptr, "url:%s\n", item ->url); fflush(logptr);
+
+	if(strstr(item ->url, "http:") != &(item->url[0])){
+                //fprintf(logptr, "BAD URL, url:%s\n", item ->url);fflush(logptr);
+                *json[0] = '\0';
+                return;
+	}
 
 	fillStruct(item ->url, &extra); // uses newspaper python module to scrape html and top image from url
 	//fprintf(logptr, "img:%s\n", extra.imgurl); fflush(logptr);
 
-	sprintf(beth, "%d", type);
+	if(strlen(extra.html) == 0){
+		//fprintf(logptr, "NO HTML, imgurl:%s, url:%s, char[0]:%c\n", extra.imgurl, item ->url, item ->url[0]); fflush(logptr);
+		*json[0] = '\0';
+		return;
+	}
 
-	if(strstr(extra.imgurl, "You must") != NULL) extra.imgurl[0]='\0';
-	strcpy(json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency) values ('");
-	strcat(json, item ->url);
-	strcat(json, "','");
-	strcat(json, extra.html);
-	strcat(json, "','");
-        strcat(json, extra.imgurl);
-	strcat(json, "',");
-	strcat(json, beth);
-	strcat(json, ",'");
-	strcat(json, item ->title);
-	strcat(json, "',STR_TO_DATE('");
-	strcat(json, rssdate);
-	strcat(json, "','%Y-%m-%d %H:%i:%S'),'");
-	strcat(json, item ->agency);
-	strcat(json, "')");
-//	fprintf(logptr, "insertString:%s\n\n", json); fflush(logptr);
+	if(strlen(extra.html) > json_size){
+		json_size = (strlen(extra.html)/BUF_LEN + 1)*BUF_LEN;
+		*json = calloc(json_size, 1);
+		//fprintf(logptr, "imgurl:%s, json_size:%d\n", extra.imgurl, json_size); fflush(logptr);
+	}
+
+	sprintf(beth, "%d", type);
+//	fprintf(logptr, "StrDone:%s", item->agency); fflush(logptr);
+
+	strcpy(*json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency) values ('");
+	strcat(*json, item ->url);
+	strcat(*json, "','");
+	strcat(*json, extra.html);
+	strcat(*json, "','");
+        strcat(*json, extra.imgurl);
+	strcat(*json, "',");
+	strcat(*json, beth);
+	strcat(*json, ",'");
+	strcat(*json, item ->title);
+	strcat(*json, "',STR_TO_DATE('");
+	strcat(*json, rssdate);
+	strcat(*json, "','%Y-%m-%d %H:%i:%S'),'");
+	strcat(*json, item ->agency);
+	strcat(*json, "')");
+
+//	fprintf(logptr, "StrDone:%s\n", item->agency); fflush(logptr);
+
+	free(extra.html);
 }
 
 void cleanDateString(char *rssDateString){
@@ -547,18 +580,25 @@ void fillStruct(char *url, struct extra *beth){
 				*cc = '\0';
   		}
 
-  		if(fgets(gigi, sizeof(gigi), pp) != NULL) {
-			gigi[BUF_LEN-1] = '\0';
-			strcpy(beth->html, gigi);
+		int ii = 1;
+  		while(fgets(gigi, sizeof(gigi), pp) != NULL) {
+			if(ii>1) {
+				 fprintf(logptr, "Realloc!!!!!!!!, %s\n", url);fflush(logptr);
+			}
+			beth->html = realloc(beth->html, ii*BUF_LEN);
+			if(beth->html == NULL){
+		                fprintf(logptr, "Could not Realloc html: %s\n", strerror(errno));
+                		fflush(logptr);
+                		exit(EXIT_FAILURE);
+			}
+			memcpy(beth->html + (ii-1)*(BUF_LEN-1), gigi, sizeof(gigi));
+			ii++;
 		}
-  		while(fgets(gigi, sizeof(gigi), pp) != NULL) {//twice max
-//			gigi[BUF_LEN-1] = '\0';
-//			strcat(beth->html, gigi);
-		}
-
-		size_t sz = strlen(beth->html);
-		if(beth->html[sz-1] == '\n'){
-			beth->html[sz-1] = '\0';
+		char *p;
+		if((p=strstr(beth->html, "\n"))){
+			*p = '\0';
+		}else{
+			beth->html[BUF_LEN*(ii-1)-1] = '\0';
 		}
 
                 pclose(pp);
@@ -630,7 +670,7 @@ void initMysql(){
                 fprintf(logptr, "ERROR:mysql_init() failed\n");fflush(logptr);
                 exit(EXIT_FAILURE);
         }
-        if (mysql_real_connect(con, "localhost", "XXXXX", "XXXXX", "XXXXX", 0, NULL, 0) == NULL){
+        if (mysql_real_connect(con, "localhost", "xxxxx", "xxxxx", "xxxxx", 0, NULL, 0) == NULL){
                 fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
                 mysql_close(con);
                 exit(EXIT_FAILURE);
