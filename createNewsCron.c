@@ -26,13 +26,14 @@
 #define NUM_ITEMS 3000
 #define NUM_REFRESH 5
 #define NUM_AGENCIES 11
+#define URL_TITLE_LEN 512
 
 struct item{
 	int type;
-	char title[512];
+	char title[URL_TITLE_LEN];
 	char agency[10];
 	char pubDate[50];
-	char url[256];
+	char url[URL_TITLE_LEN];
 } itemArray[NUM_ITEMS];
 
 #define ITEM_SIZE sizeof(struct item)
@@ -40,7 +41,7 @@ struct item{
 struct newsAgency {
         int type;
         char name[10];
-        char url[100];
+        char url[URL_TITLE_LEN];
 	struct newsAgency *next;
 } news_agency;
 
@@ -50,7 +51,7 @@ struct MemoryStruct {
 };
 
 struct extra {
-  char imgurl[512];
+  char imgurl[URL_TITLE_LEN];
   char *html;
 };
 
@@ -178,6 +179,13 @@ static void getLatestItems(){
 			if(k==NUM_REFRESH) break; //no more than NUM_REFRESH every 5 minutes
 	     		if(j==itemArray[i].type) {
 	     			k++;
+		        	char *p;
+		        	//sanity check
+		        	if((p=strstr(itemArray[i].url, "http:")) != &(itemArray[i].url[0]) && p){
+			        	long diff = p - itemArray[i].url;
+			        	memmove(itemArray[i].url, p, URL_TITLE_LEN-diff );
+		        	        //fprintf(logptr, "BAD URL FIXED, url:%s\n", itemArray[i].url);fflush(logptr);
+	        	        }
 				getInsertString(&itemArray[i], &buff, itemArray[i].type);
 				if (buff[0] && mysql_query(con, buff)){
 					fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
@@ -191,7 +199,7 @@ static void getLatestItems(){
 
 //Leave at least 80 records for each category
 void deleteExtraRecords(int type){
-	char buff[512];
+	char buff[URL_TITLE_LEN];
 	strcpy(buff, "DELETE FROM news WHERE pubdate < (select pubdate from (select * from news)a where news_type=");
         char beth[5];
        	sprintf(beth, "%d", type);
@@ -237,8 +245,8 @@ void getFeedItems(char *agency, int type, char *buff)
                                         struct item item;
 					memset(&item, 0, sizeof(struct item));
                                         getContent(50, item.pubDate, "<pubDate>", "</pubDate>", buffer);
-                                        getContent(512, item.title, "<title>", "</title>", buffer);
-                                        getContent(256, item.url, "<link>", "</link>", buffer);
+                                        getContent(URL_TITLE_LEN, item.title, "<title>", "</title>", buffer);
+                                        getContent(URL_TITLE_LEN, item.url, "<link>", "</link>", buffer);
                                         cleanUrl(item.url);
                                         getTitle(item.title);
                                         strcpy(item.agency, agency);
@@ -324,6 +332,15 @@ void getTitle(char *line){
 		p1[strlen(p1)-3] = '\0';
 	}
 
+	if(strstr(p1, "[Video]") == p1+strlen(p1)-7){ // ends with Video
+		p1[strlen(p1)-7] = '\0';
+	}
+
+	if(strstr(p1, "[VIDEO]") == p1+strlen(p1)-7){ // ends with VIDEO
+		p1[strlen(p1)-7] = '\0';
+	}
+
+
 	escapeQuotes(p1);
 	strcpy(line, p1);
 
@@ -339,10 +356,12 @@ void cleanUrl(char *url){
 	char *p;
 	char *toReplace = "&#39;";
 	size_t sz = strlen(toReplace);
-        if((p=strstr(url, "&#39;")) != NULL){
+        if((p=strstr(url, toReplace)) != NULL){
            *p = '\'';
            long tumia = p - url;
            memmove(p+1, p+sz, strlen(url) - tumia - sz + 1);
+
+	  fprintf(logptr, "$$$$$$$$$$$$$$$$$$%s\n", url);fflush(logptr);
         }
 }
 
@@ -492,20 +511,12 @@ void getInsertString(struct item *item, char **json, int type){
 	memset(&extra, 0, sizeof(struct extra));
 	extra.html = malloc(1);
 
-	//fprintf(logptr, "url:%s\n", item ->url); fflush(logptr);
-
-	if(strstr(item ->url, "http:") != &(item->url[0])){
-                //fprintf(logptr, "BAD URL, url:%s\n", item ->url);fflush(logptr);
-                *json[0] = '\0';
-                return;
-	}
-
 	fillStruct(item ->url, &extra); // uses newspaper python module to scrape html and top image from url
-	//fprintf(logptr, "img:%s\n", extra.imgurl); fflush(logptr);
 
 	if(strlen(extra.html) == 0){
 		//fprintf(logptr, "NO HTML, imgurl:%s, url:%s, char[0]:%c\n", extra.imgurl, item ->url, item ->url[0]); fflush(logptr);
 		*json[0] = '\0';
+		free(extra.html);
 		return;
 	}
 
@@ -516,7 +527,6 @@ void getInsertString(struct item *item, char **json, int type){
 	}
 
 	sprintf(beth, "%d", type);
-//	fprintf(logptr, "StrDone:%s", item->agency); fflush(logptr);
 
 	strcpy(*json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency) values ('");
 	strcat(*json, item ->url);
@@ -533,8 +543,6 @@ void getInsertString(struct item *item, char **json, int type){
 	strcat(*json, "','%Y-%m-%d %H:%i:%S'),'");
 	strcat(*json, item ->agency);
 	strcat(*json, "')");
-
-//	fprintf(logptr, "StrDone:%s\n", item->agency); fflush(logptr);
 
 	free(extra.html);
 }
@@ -563,7 +571,7 @@ void escapeQuotes(char *title){//add another quote to a quote: ''
 }
 
 void fillStruct(char *url, struct extra *beth){
-        char tumia[512];
+        char tumia[URL_TITLE_LEN];
 	char *cc;
         strcpy(tumia, "./neri.py '");
         strcat(tumia, url);
@@ -581,9 +589,9 @@ void fillStruct(char *url, struct extra *beth){
   		}
 
 		int ii = 1;
-  		while(fgets(gigi, sizeof(gigi), pp) != NULL) {
+  		while(fgets(gigi, sizeof(gigi), pp) != NULL && ii<4) {
 			if(ii>1) {
-				 fprintf(logptr, "Realloc!!!!!!!!, %s\n", url);fflush(logptr);
+				 fprintf(logptr, "Realloc!!!!!%d, %s\n", ii, url);fflush(logptr);
 			}
 			beth->html = realloc(beth->html, ii*BUF_LEN);
 			if(beth->html == NULL){
@@ -595,7 +603,10 @@ void fillStruct(char *url, struct extra *beth){
 			ii++;
 		}
 		char *p;
-		if((p=strstr(beth->html, "\n"))){
+		if(ii==4){// max reached, bail out
+			beth->html[0] = '\0';
+		}
+		else if((p=strstr(beth->html, "\n"))){
 			*p = '\0';
 		}else{
 			beth->html[BUF_LEN*(ii-1)-1] = '\0';
