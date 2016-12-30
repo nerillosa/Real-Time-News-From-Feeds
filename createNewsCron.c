@@ -77,6 +77,8 @@ static void initCurl();
 static void initMysql();
 static void cleanCurl();
 static void deleteExtraRecords(int type);
+static void deleteFutureRecords();
+static void getInHouseHtml(char *buff);
 
 MYSQL *con ;
 FILE *inputptr;
@@ -194,21 +196,35 @@ static void getLatestItems(){
 		}
 		deleteExtraRecords(j);
 	}
-	free(buff);
+	deleteFutureRecords();
+	free(buff); // being proper here
 }
 
-//Leave at least 80 records for each category
+// Delete dates in the future (FOX news has the ability to predict news)
+void deleteFutureRecords(){
+	char *buff = "DELETE FROM news WHERE pubdate > now()+ INTERVAL 7 hour";
+	if (mysql_query(con, buff)){
+		fprintf(logptr, "ERROR del future dates:%s\n", mysql_error(con));fflush(logptr);
+	}
+}
+
+//Leave at least 50 records for each category
 void deleteExtraRecords(int type){
 	char buff[URL_TITLE_LEN];
 	strcpy(buff, "DELETE FROM news WHERE pubdate < (select pubdate from (select * from news)a where news_type=");
         char beth[5];
        	sprintf(beth, "%d", type);
 	strcat(buff, beth);
-	strcat(buff, " order by pubdate desc limit 79,1) and news_type=");
+	strcat(buff, " order by pubdate desc limit 49,1) and news_type=");
 	strcat(buff, beth);
 	//fprintf(logptr, "deletestring:%s\n",buff);
 	if (mysql_query(con, buff)){
 		fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
+	}
+	// Delete dates in the future (FOX news has the ability to predict news)
+	strcpy(buff, "DELETE FROM news WHERE pubdate > now()+ INTERVAL 7 hour");
+	if (mysql_query(con, buff)){
+		fprintf(logptr, "ERROR del future dates:%s\n", mysql_error(con));fflush(logptr);
 	}
 }
 
@@ -353,16 +369,6 @@ void cleanUrl(char *url){
 	int last = strlen(url) - cdataSize - 3;
 	memmove(url, &url[cdataSize], strlen(url) - cdataSize);
 	url[last] = '\0';
-	char *p;
-	char *toReplace = "&#39;";
-	size_t sz = strlen(toReplace);
-        if((p=strstr(url, toReplace)) != NULL){
-           *p = '\'';
-           long tumia = p - url;
-           memmove(p+1, p+sz, strlen(url) - tumia - sz + 1);
-
-	  fprintf(logptr, "$$$$$$$$$$$$$$$$$$%s\n", url);fflush(logptr);
-        }
 }
 
 // returns true if number of words in title > 4
@@ -526,6 +532,19 @@ void getInsertString(struct item *item, char **json, int type){
 		//fprintf(logptr, "imgurl:%s, json_size:%d\n", extra.imgurl, json_size); fflush(logptr);
 	}
 
+	// Python newspaper returns "unacceptable" html for these agencies. Use in-house variation.
+	if(!strcmp(item->agency,"COMERCIO") || !strcmp(item->agency,"RPP")){
+		chunk.memory = malloc(1);
+                chunk.size = 0;
+	        loadFeed(item->url); // Loads feed into memory.
+		char buff[BUF_LEN];
+        	getInHouseHtml(buff);
+		strncpy(extra.html, buff, BUF_LEN );
+		extra.html[BUF_LEN-1] = '\0'; //terminate
+                free(chunk.memory);
+	}
+
+
 	sprintf(beth, "%d", type);
 
 	strcpy(*json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency) values ('");
@@ -545,6 +564,28 @@ void getInsertString(struct item *item, char **json, int type){
 	strcat(*json, "')");
 
 	free(extra.html);
+}
+
+//Basically gets all the <p>...</p> code in the url.
+//Skips paragraphs with inner text not starting with an alpha-numeric char
+void getInHouseHtml(char *buff)
+{
+        char *p = chunk.memory;
+        buff[0] = '\0';
+        do{
+           char *beg = strstr(p, "<p>");
+
+           if(!beg || (beg - chunk.memory)>= chunk.size - 40) break;
+           if(isalnum(*(beg+3))){
+                char *end = strstr(beg, "</p>");
+                if(end){
+                        strncat(buff, beg+3, end-beg-3);
+                        strcat(buff, "\n\n");
+                }
+           }
+           p = beg + 4;
+        } while(1);
+        escapeQuotes(buff);
 }
 
 void cleanDateString(char *rssDateString){
@@ -681,7 +722,7 @@ void initMysql(){
                 fprintf(logptr, "ERROR:mysql_init() failed\n");fflush(logptr);
                 exit(EXIT_FAILURE);
         }
-        if (mysql_real_connect(con, "localhost", "xxxxx", "xxxxx", "xxxxx", 0, NULL, 0) == NULL){
+	if (mysql_real_connect(con, "localhost", "xxxxx", "xxxxx", "xxxxx", 0, NULL, 0) == NULL){
                 fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
                 mysql_close(con);
                 exit(EXIT_FAILURE);
