@@ -102,7 +102,6 @@ int main(int argc, char *argv[]){
 		fprintf(stdout, "Could not open file %s for writing logs\n", argv[2]);
 		exit(EXIT_FAILURE);
 	}
-
 	setbuf(stdout, NULL);
 	initMysql();
 	initCurl();
@@ -220,11 +219,6 @@ void deleteExtraRecords(int type){
 	//fprintf(logptr, "deletestring:%s\n",buff);
 	if (mysql_query(con, buff)){
 		fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
-	}
-	// Delete dates in the future (FOX news has the ability to predict news)
-	strcpy(buff, "DELETE FROM news WHERE pubdate > now()+ INTERVAL 7 hour");
-	if (mysql_query(con, buff)){
-		fprintf(logptr, "ERROR del future dates:%s\n", mysql_error(con));fflush(logptr);
 	}
 }
 
@@ -519,8 +513,8 @@ void getInsertString(struct item *item, char **json, int type){
 
 	fillStruct(item ->url, &extra); // uses newspaper python module to scrape html and top image from url
 
-	if(strlen(extra.html) == 0){
-		//fprintf(logptr, "NO HTML, imgurl:%s, url:%s, char[0]:%c\n", extra.imgurl, item ->url, item ->url[0]); fflush(logptr);
+	if(strlen(extra.html) < 10 || strlen(extra.imgurl)<10 || strstr(extra.imgurl, "You must")){
+//		fprintf(logptr, "NO HTML or IMG, url:%s\n", item ->url); fflush(logptr);
 		*json[0] = '\0';
 		free(extra.html);
 		return;
@@ -539,15 +533,17 @@ void getInsertString(struct item *item, char **json, int type){
 	        loadFeed(item->url); // Loads feed into memory.
 		char buff[BUF_LEN];
         	getInHouseHtml(buff);
-		strncpy(extra.html, buff, BUF_LEN );
-		extra.html[BUF_LEN-1] = '\0'; //terminate
+		if(strlen(buff)>10){
+			strncpy(extra.html, buff, BUF_LEN );
+			extra.html[BUF_LEN-1] = '\0'; //terminate
+                }
                 free(chunk.memory);
 	}
 
 
 	sprintf(beth, "%d", type);
 
-	strcpy(*json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency) values ('");
+	strcpy(*json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency,create_date) values ('");
 	strcat(*json, item ->url);
 	strcat(*json, "','");
 	strcat(*json, extra.html);
@@ -561,7 +557,10 @@ void getInsertString(struct item *item, char **json, int type){
 	strcat(*json, rssdate);
 	strcat(*json, "','%Y-%m-%d %H:%i:%S'),'");
 	strcat(*json, item ->agency);
-	strcat(*json, "')");
+
+	strcat(*json, "',now())");
+
+//	strcat(*json, "')");
 
 	free(extra.html);
 }
@@ -580,7 +579,8 @@ void getInHouseHtml(char *buff)
                 char *end = strstr(beg, "</p>");
                 if(end){
                         strncat(buff, beg+3, end-beg-3);
-                        strcat(buff, "\n\n");
+//                        strcat(buff, "\n\n");
+                        strcat(buff, "&#10;&#10;");
                 }
            }
            p = beg + 4;
@@ -722,7 +722,7 @@ void initMysql(){
                 fprintf(logptr, "ERROR:mysql_init() failed\n");fflush(logptr);
                 exit(EXIT_FAILURE);
         }
-	if (mysql_real_connect(con, "localhost", "xxxxx", "xxxxx", "xxxxx", 0, NULL, 0) == NULL){
+        if (mysql_real_connect(con, "localhost", "xxxxx", "xxxxx", "xxxxx", 0, NULL, 0) == NULL){
                 fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
                 mysql_close(con);
                 exit(EXIT_FAILURE);

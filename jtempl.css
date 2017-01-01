@@ -191,6 +191,36 @@ body{
   animation: table_loader 10s infinite ease;
 }
 
+img.lavida{
+  height: 11em;
+  text-align: center;
+  display: table-cell;
+  float:left;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+div.htext
+{
+    height: 11em;
+    overflow: hidden;
+}
+div.links{
+    clear: left;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size: 1.4em;
+    color :#008c8d;
+}
+pre{
+    white-space: pre-wrap;
+    margin-top: 0px;
+}
+/*This is to fix the skinny Chrome dialog vertical scrollbars*/
+::-webkit-scrollbar {
+width: 16px;
+height: 16px;
+}
+
 @-webkit-keyframes fadeEffect {
     from {opacity: 0;}
     to {opacity: 1;}

@@ -48,3 +48,15 @@
 9,PERU21,http://peru21.pe/feed/deportes
 10,PERU21,http://peru21.pe/feed/economia
 11,PERU21,http://peru21.pe/feed/espectaculos
+8,PERU,http://peru.com/feed/actualidad
+9,PERU,http://peru.com/feed/deportes
+10,PERU,http://peru.com/feed/actualidad/politicas
+11,PERU,http://peru.com/feed/entretenimiento
+8,RPP,http://rpp.pe/feed/actualidad
+9,RPP,http://rpp.pe/feed/deportes
+10,RPP,http://rpp.pe/feed/politica
+11,RPP,http://rpp.pe/feed/entretenimiento
+10,GESTION,http://gestion.pe/feed/politica
+8,GESTION,http://gestion.pe/feed/economia
+3,BBC,http://feeds.bbci.co.uk/news/world/rss.xml
+2,BBC,http://feeds.bbci.co.uk/news/science_and_environment/rss.xml
