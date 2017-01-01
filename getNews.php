@@ -6,7 +6,7 @@
 
 	if (filter_var($type, FILTER_VALIDATE_INT) === false) {
     		echo("type variable is not an integer");
-		$output = shell_exec("/home1/neri/log_error.sh $type");
+		$output = shell_exec("/home1/public_html/log_error.sh $type");
     		return;	
 	}
 
@@ -18,7 +18,7 @@
 
 	if($type > $maxType || $type < 1) {
 		echo("Non valid type");
-		$output = shell_exec("/home1/neri/log_error.sh $type");
+		$output = shell_exec("/home1/public_html/log_error.sh $type");
 		return;
 	}
 
@@ -30,12 +30,19 @@
       		//default news data
       		$pubdate = $row['pubdate'];
 		$url = filter_var($row['url'], FILTER_SANITIZE_URL);
+      		//$title = $row['title'];
       		$title = filter_var($row['title'], FILTER_SANITIZE_STRING);
       		$agency = filter_var($row['agency'], FILTER_SANITIZE_STRING);
       		$logo = filter_var($row['logo'], FILTER_SANITIZE_STRING);
+      		//$img = $row['img'];
       		$img = filter_var($row['img'], FILTER_SANITIZE_URL);
-		$html = base64_decode($row['html']);
-		if($html === FALSE) $html='';
+
+		if($agency === 'COMERCIO' || $agency === 'RPP'){
+			$html = $row['html'];
+		}else{
+			$html = base64_decode($row['html']);
+			if($html === FALSE) $html='';
+		}
 		$html = filter_var($html, FILTER_SANITIZE_STRING);
 		if($img === 'http://www.foxnews.com/content/dam/fox-news/logo/og-fn-foxnews.jpg') $img = '';
 		$news_r[] = array('html' => $html, 'pubdate' => $pubdate, 'url' => $url, 'title' => $title, 'agency' => 

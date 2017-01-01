@@ -19,6 +19,7 @@ CREATE TABLE `news_type` (
   `news_type` int(11) NOT NULL,
   `html` text,
   `img` varchar(512) DEFAULT NULL,
+  `create_date` datetime DEFAULT NULL,
   PRIMARY KEY (`agency`,`title`),
   KEY `news_ibfk_1` (`news_type`),
   CONSTRAINT `news_ibfk_1` FOREIGN KEY (`news_type`) REFERENCES `news_type` (`id`),
