@@ -113,6 +113,7 @@ int main(int argc, char *argv[]){
 	fflush(logptr);
 	memset(&news_agency, 0, sizeof(struct newsAgency));
         getUrls(&news_agency);
+	//fprintf(logptr, "0");fflush(logptr);
 	fclose(inputptr);
 
 	getLatestItems();
@@ -160,7 +161,6 @@ static void getLatestItems(){
 
  	while(read(pfd[0], itemArray + currentItemsCount, ITEM_SIZE) != 0){ //fills itemArray till it receives EOF
         	if(currentItemsCount < NUM_ITEMS-1) currentItemsCount++;
-	        //fprintf(stdout, "url:%s,agency:%s,pubDate:%s,title:%s\n",item.url,item.agency,item.pubDate,item.title);
 	}
 
 	close(pfd[0]); // parent closes read end of pipe
@@ -173,7 +173,7 @@ static void getLatestItems(){
 	fprintf(logptr, "Item count:%d\n",currentItemsCount);fflush(logptr);
 	qsort(itemArray, currentItemsCount, sizeof(struct item), compare_pubDates); //sort by pubDate descending
 
-	char *buff;
+	char *buff = malloc(1);
 	int j,k;
 	for(j=1;j<=NUM_AGENCIES;j++){
 		for(i=0,k=0;i<currentItemsCount;i++){
@@ -182,6 +182,14 @@ static void getLatestItems(){
 	     			k++;
 		        	char *p;
 		        	//sanity check
+		        	if(itemArray[i].url == NULL) {
+		        		fprintf(logptr, "NULL url:%d\n", j);fflush(logptr);
+		        		continue;
+		        	}
+		        	if(itemArray[i].pubDate == NULL) {
+		        		fprintf(logptr, "NULL pubdate:%d\n", j);fflush(logptr);
+		        		continue;
+		        	}
 		        	if((p=strstr(itemArray[i].url, "http:")) != &(itemArray[i].url[0]) && p){
 			        	long diff = p - itemArray[i].url;
 			        	memmove(itemArray[i].url, p, URL_TITLE_LEN-diff );
@@ -505,16 +513,22 @@ void getInsertString(struct item *item, char **json, int type){
 	static int json_size = 0;
 	char beth[5];
 	char rssdate[50];
-	strcpy(rssdate, item ->pubDate);
+	strncpy(rssdate, item ->pubDate, 50);
+	rssdate[49] = '\0';
 	cleanDateString(rssdate);
 	struct extra extra;
 	memset(&extra, 0, sizeof(struct extra));
+
 	extra.html = malloc(1);
+        if(extra.html == NULL){
+		fprintf(logptr, "Could not malloc extra.html: %s\n", strerror(errno));
+		fflush(logptr);
+		exit(EXIT_FAILURE);
+	}
 
 	fillStruct(item ->url, &extra); // uses newspaper python module to scrape html and top image from url
 
 	if(strlen(extra.html) < 10 || strlen(extra.imgurl)<10 || strstr(extra.imgurl, "You must")){
-//		fprintf(logptr, "NO HTML or IMG, url:%s\n", item ->url); fflush(logptr);
 		*json[0] = '\0';
 		free(extra.html);
 		return;
@@ -522,12 +536,13 @@ void getInsertString(struct item *item, char **json, int type){
 
 	if(strlen(extra.html) > json_size){
 		json_size = (strlen(extra.html)/BUF_LEN + 1)*BUF_LEN;
-		*json = calloc(json_size, 1);
-		//fprintf(logptr, "imgurl:%s, json_size:%d\n", extra.imgurl, json_size); fflush(logptr);
+		free(*json);
+		*json = calloc(json_size, 1); // resize
 	}
 
 	// Python newspaper returns "unacceptable" html for these agencies. Use in-house variation.
 	if(!strcmp(item->agency,"COMERCIO") || !strcmp(item->agency,"RPP")){
+
 		chunk.memory = malloc(1);
                 chunk.size = 0;
 	        loadFeed(item->url); // Loads feed into memory.
@@ -539,6 +554,7 @@ void getInsertString(struct item *item, char **json, int type){
                 }
                 free(chunk.memory);
 	}
+	fprintf(logptr, "g");fflush(logptr);
 
 
 	sprintf(beth, "%d", type);
@@ -559,8 +575,7 @@ void getInsertString(struct item *item, char **json, int type){
 	strcat(*json, item ->agency);
 
 	strcat(*json, "',now())");
-
-//	strcat(*json, "')");
+	fprintf(logptr, "h\n");fflush(logptr);
 
 	free(extra.html);
 }
@@ -579,7 +594,6 @@ void getInHouseHtml(char *buff)
                 char *end = strstr(beg, "</p>");
                 if(end){
                         strncat(buff, beg+3, end-beg-3);
-//                        strcat(buff, "\n\n");
                         strcat(buff, "&#10;&#10;");
                 }
            }
@@ -623,7 +637,7 @@ void fillStruct(char *url, struct extra *beth){
 
         if (pp != NULL) {
   		if(fgets(tumia, sizeof(tumia), pp) != NULL) {
-			tumia[511] = '\0';
+			tumia[URL_TITLE_LEN - 1] = '\0';
 			strcpy(beth->imgurl, tumia);
 			if((cc = strstr(beth->imgurl, "\n")))
 				*cc = '\0';
@@ -631,9 +645,6 @@ void fillStruct(char *url, struct extra *beth){
 
 		int ii = 1;
   		while(fgets(gigi, sizeof(gigi), pp) != NULL && ii<4) {
-			if(ii>1) {
-				 fprintf(logptr, "Realloc!!!!!%d, %s\n", ii, url);fflush(logptr);
-			}
 			beth->html = realloc(beth->html, ii*BUF_LEN);
 			if(beth->html == NULL){
 		                fprintf(logptr, "Could not Realloc html: %s\n", strerror(errno));
@@ -703,7 +714,6 @@ void cleanCurl(){
 
 void loadFeed(char *url)
 {
-//  fprintf(stdout, "!!%s\n", url);
   CURLcode res;
   /* specify URL to get */
   curl_easy_setopt(curl_handle, CURLOPT_URL, url);
