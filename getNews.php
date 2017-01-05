@@ -2,12 +2,12 @@
 
 	include('tracker.php');
 
-	$type = (!empty($_GET['type'])) ? $_GET['type'] : 'bad'; 
+	$type = (!empty($_GET['type'])) ? $_GET['type'] : 'bad';
 
 	if (filter_var($type, FILTER_VALIDATE_INT) === false) {
     		echo("type variable is not an integer");
-		$output = shell_exec("/home1/public_html/log_error.sh $type");
-    		return;	
+		$output = shell_exec("/home/public_html/log_error.sh $type");
+    		return;
 	}
 
 	$db = new MySqli('localhost', 'xxxxx', 'xxxxx', 'xxxxx');
@@ -18,12 +18,15 @@
 
 	if($type > $maxType || $type < 1) {
 		echo("Non valid type");
-		$output = shell_exec("/home1/public_html/log_error.sh $type");
+		$output = shell_exec("/home/public_html/log_error.sh $type");
 		return;
 	}
 
+	//This query is a bit long but it gets rid of duplicate images for same news/changed titles
+	$news = $db->query("SELECT a.*,b.logo from news a join agency b on a.agency=b.shortname join (select max(pubdate)" .
+	" as pubdate, max(title) as title,img from news group by img)c on a.pubdate=c.pubdate and a.img=c.img and a.title=c.title" .
+	" where a.news_type=" . $type .	" order by a.pubdate desc LIMIT 20");
 
-	$news = $db->query("SELECT a.*,b.logo from news a join agency b on a.agency=b.shortname where a.news_type=" . $type . " order by pubdate desc LIMIT 20");
 	$news_r = array();
 
 	while($row = $news->fetch_array()){
@@ -45,7 +48,7 @@
 		}
 		$html = filter_var($html, FILTER_SANITIZE_STRING);
 		if($img === 'http://www.foxnews.com/content/dam/fox-news/logo/og-fn-foxnews.jpg') $img = '';
-		$news_r[] = array('html' => $html, 'pubdate' => $pubdate, 'url' => $url, 'title' => $title, 'agency' => 
+		$news_r[] = array('html' => $html, 'pubdate' => $pubdate, 'url' => $url, 'title' => $title, 'agency' =>
 		$agency,'logo' => $logo,'img'=>$img );
 	}
 

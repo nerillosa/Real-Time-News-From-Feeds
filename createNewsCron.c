@@ -20,7 +20,6 @@
 
 #define OUT 0
 #define IN  1
-#define MAX_TITLES 100
 #define BUFFER_SIZE 8192
 #define BUF_LEN 32768
 #define NUM_ITEMS 3000
@@ -113,7 +112,6 @@ int main(int argc, char *argv[]){
 	fflush(logptr);
 	memset(&news_agency, 0, sizeof(struct newsAgency));
         getUrls(&news_agency);
-	//fprintf(logptr, "0");fflush(logptr);
 	fclose(inputptr);
 
 	getLatestItems();
@@ -173,7 +171,7 @@ static void getLatestItems(){
 	fprintf(logptr, "Item count:%d\n",currentItemsCount);fflush(logptr);
 	qsort(itemArray, currentItemsCount, sizeof(struct item), compare_pubDates); //sort by pubDate descending
 
-	char *buff = malloc(1);
+	char *buff = malloc(1); //allows buff[0]
 	int j,k;
 	for(j=1;j<=NUM_AGENCIES;j++){
 		for(i=0,k=0;i<currentItemsCount;i++){
@@ -224,7 +222,6 @@ void deleteExtraRecords(int type){
 	strcat(buff, beth);
 	strcat(buff, " order by pubdate desc limit 49,1) and news_type=");
 	strcat(buff, beth);
-	//fprintf(logptr, "deletestring:%s\n",buff);
 	if (mysql_query(con, buff)){
 		fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
 	}
@@ -520,11 +517,6 @@ void getInsertString(struct item *item, char **json, int type){
 	memset(&extra, 0, sizeof(struct extra));
 
 	extra.html = malloc(1);
-        if(extra.html == NULL){
-		fprintf(logptr, "Could not malloc extra.html: %s\n", strerror(errno));
-		fflush(logptr);
-		exit(EXIT_FAILURE);
-	}
 
 	fillStruct(item ->url, &extra); // uses newspaper python module to scrape html and top image from url
 
@@ -536,26 +528,31 @@ void getInsertString(struct item *item, char **json, int type){
 
 	if(strlen(extra.html) > json_size){
 		json_size = (strlen(extra.html)/BUF_LEN + 1)*BUF_LEN;
-		free(*json);
-		*json = calloc(json_size, 1); // resize
+		*json = realloc(*json, json_size); // resize
+		if(*json == NULL){
+	                fprintf(logptr, "Could not Realloc *json: %s\n", strerror(errno));
+               		fflush(logptr);
+               		exit(EXIT_FAILURE);
+		}
 	}
 
 	// Python newspaper returns "unacceptable" html for these agencies. Use in-house variation.
 	if(!strcmp(item->agency,"COMERCIO") || !strcmp(item->agency,"RPP")){
-
 		chunk.memory = malloc(1);
                 chunk.size = 0;
 	        loadFeed(item->url); // Loads feed into memory.
 		char buff[BUF_LEN];
         	getInHouseHtml(buff);
+                free(chunk.memory);
 		if(strlen(buff)>10){
 			strncpy(extra.html, buff, BUF_LEN );
 			extra.html[BUF_LEN-1] = '\0'; //terminate
+                }else{
+			*json[0] = '\0';
+			free(extra.html);
+			return;
                 }
-                free(chunk.memory);
 	}
-	fprintf(logptr, "g");fflush(logptr);
-
 
 	sprintf(beth, "%d", type);
 
@@ -573,9 +570,7 @@ void getInsertString(struct item *item, char **json, int type){
 	strcat(*json, rssdate);
 	strcat(*json, "','%Y-%m-%d %H:%i:%S'),'");
 	strcat(*json, item ->agency);
-
 	strcat(*json, "',now())");
-	fprintf(logptr, "h\n");fflush(logptr);
 
 	free(extra.html);
 }
