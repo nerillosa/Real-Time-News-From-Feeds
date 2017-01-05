@@ -74,10 +74,11 @@ static void loadFeed(char *url);
 static void getFeedItems(char *agency, int type, char *buff);
 static void initCurl();
 static void initMysql();
-static void cleanCurl();
+static void curl_close();
 static void deleteExtraRecords(int type);
 static void deleteFutureRecords();
 static void getInHouseHtml(char *buff);
+static void printTime(char *msg);
 
 MYSQL *con ;
 FILE *inputptr;
@@ -101,28 +102,21 @@ int main(int argc, char *argv[]){
 		fprintf(stdout, "Could not open file %s for writing logs\n", argv[2]);
 		exit(EXIT_FAILURE);
 	}
-	setbuf(stdout, NULL);
+
+	printTime("\nstart");
 	initMysql();
 	initCurl();
-	time_t t = time(NULL);
-        struct tm *tm = localtime(&t);
-        char s[64];
-        strftime(s, sizeof(s), "%c", tm);
-        fprintf(logptr, "start: %s\n", s);
-	fflush(logptr);
-	memset(&news_agency, 0, sizeof(struct newsAgency));
-        getUrls(&news_agency);
-	fclose(inputptr);
 
+        getUrls(&news_agency);
 	getLatestItems();
 
-    	t = time(NULL);
-    	tm = localtime(&t);
-	strftime(s, sizeof(s), "%c", tm);
-    	fprintf(logptr, "end: %s\n\n", s);fflush(logptr);
-	fclose(logptr);
+	fclose(inputptr);
 	mysql_close(con);
-	cleanCurl();
+	curl_close();
+
+	printTime("end");
+	fclose(logptr);
+
 	return 0;
 }
 
@@ -171,7 +165,7 @@ static void getLatestItems(){
 	fprintf(logptr, "Item count:%d\n",currentItemsCount);fflush(logptr);
 	qsort(itemArray, currentItemsCount, sizeof(struct item), compare_pubDates); //sort by pubDate descending
 
-	char *buff = malloc(1); //allows buff[0]
+	char *buff = malloc(1);
 	int j,k;
 	for(j=1;j<=NUM_AGENCIES;j++){
 		for(i=0,k=0;i<currentItemsCount;i++){
@@ -213,6 +207,18 @@ void deleteFutureRecords(){
 	}
 }
 
+void printTime(char *msg){
+	time_t t = time(NULL);
+        struct tm *tm = localtime(&t);
+        char s[URL_TITLE_LEN];
+        strcpy(s, msg);
+        strcat(s, ": ");
+        strftime(s+strlen(msg)+2, URL_TITLE_LEN-strlen(msg)-2, "%c", tm);
+        fprintf(logptr, "%s\n", s);
+	fflush(logptr);
+}
+
+
 //Leave at least 50 records for each category
 void deleteExtraRecords(int type){
 	char buff[URL_TITLE_LEN];
@@ -222,6 +228,7 @@ void deleteExtraRecords(int type){
 	strcat(buff, beth);
 	strcat(buff, " order by pubdate desc limit 49,1) and news_type=");
 	strcat(buff, beth);
+	//fprintf(logptr, "deletestring:%s\n",buff);
 	if (mysql_query(con, buff)){
 		fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
 	}
@@ -278,6 +285,7 @@ int getUrls(struct newsAgency *news_agency){
         char * line = NULL;
         size_t len = 0;
         ssize_t read;
+	memset(news_agency, 0, sizeof(struct newsAgency));
 
         struct newsAgency *pp = news_agency;
        	read = getline(&line, &len, inputptr);
@@ -700,7 +708,7 @@ void initCurl(){
   curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 }
 
-void cleanCurl(){
+void curl_close(){
   /* cleanup curl stuff */
   curl_easy_cleanup(curl_handle);
   /* we're done with libcurl, so clean it up */
