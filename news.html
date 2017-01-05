@@ -53,7 +53,8 @@
 
     function getHtml(html) {
         var tt = html.replace(/Advertisement\nContinue reading the main story/g, "&#10;");
-    	return tt.replace(/Image copyright/g,"").replace(/Image caption/g,"").replace(/\s{2,}/g, "&#10;");
+    	tt = tt.replace(/Image copyright/g,"").replace(/Image caption/g,"").replace(/\s{2,}/g, "&#10;");
+    	return tt.replace(/\.([A-Z])/g, ". $1");
     }
 
     function openNews(evt, newsType, newsName) {
