@@ -2,7 +2,7 @@
 * C program that gets the latest rss feeds from various news agencies and categories and saves them to a database
 * Uses libcurl open source library to download feed.xml
 * The program accounts that the rss feeds downloaded are not neccesarily "proper"
-* Compile with : gcc createNewsCron.c -o createNewsCron -lcurl `mysql_config --cflags --libs`
+* Compile with : gcc createNewsCron.c lex.yy.c -o createNews -lcurl `mysql_config --cflags --libs`
 */
 
 #include <stdio.h>
@@ -26,6 +26,9 @@
 #define NUM_REFRESH 5
 #define NUM_AGENCIES 11
 #define URL_TITLE_LEN 512
+
+#define YY_HEADER_EXPORT_START_CONDITIONS
+#include "flex.h"
 
 struct item{
 	int type;
@@ -74,19 +77,22 @@ static void loadFeed(char *url);
 static void getFeedItems(char *agency, int type, char *buff);
 static void initCurl();
 static void initMysql();
-static void curl_close();
+static void cleanCurl();
 static void deleteExtraRecords(int type);
 static void deleteFutureRecords();
 static void getInHouseHtml(char *buff);
 static void printTime(char *msg);
+static size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState);
+static char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length);
 
 MYSQL *con ;
 FILE *inputptr;
 FILE *logptr;
+CURL *curl_handle;
 int pfd[2]; // pipe file descriptor array
 struct MemoryStruct chunk;
-CURL *curl_handle;
-
+char *yybuf;
+int agencyState;
 int main(int argc, char *argv[]){
 	if(argc<3){
 		fprintf(stdout, "usage: %s inputFile logFile\n", argv[0]);
@@ -102,21 +108,20 @@ int main(int argc, char *argv[]){
 		fprintf(stdout, "Could not open file %s for writing logs\n", argv[2]);
 		exit(EXIT_FAILURE);
 	}
-
-	printTime("\nstart");
+	setbuf(stdout, NULL);
 	initMysql();
 	initCurl();
-
-        getUrls(&news_agency);
-	getLatestItems();
-
+	printTime("\nstart");
+	memset(&news_agency, 0, sizeof(struct newsAgency));
+	getUrls(&news_agency);
 	fclose(inputptr);
-	mysql_close(con);
-	curl_close();
+
+	getLatestItems();
 
 	printTime("end");
 	fclose(logptr);
-
+	mysql_close(con);
+	cleanCurl();
 	return 0;
 }
 
@@ -182,7 +187,9 @@ static void getLatestItems(){
 		        		fprintf(logptr, "NULL pubdate:%d\n", j);fflush(logptr);
 		        		continue;
 		        	}
+		        	fprintf(logptr, "z");fflush(logptr);
 		        	if((p=strstr(itemArray[i].url, "http:")) != &(itemArray[i].url[0]) && p){
+		        		fprintf(logptr, "x");fflush(logptr);
 			        	long diff = p - itemArray[i].url;
 			        	memmove(itemArray[i].url, p, URL_TITLE_LEN-diff );
 		        	        //fprintf(logptr, "BAD URL FIXED, url:%s\n", itemArray[i].url);fflush(logptr);
@@ -191,6 +198,7 @@ static void getLatestItems(){
 				if (buff[0] && mysql_query(con, buff)){
 					fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
 				}
+				fprintf(logptr, "i\n");fflush(logptr);
 			}
 		}
 		deleteExtraRecords(j);
@@ -217,7 +225,6 @@ void printTime(char *msg){
         fprintf(logptr, "%s\n", s);
 	fflush(logptr);
 }
-
 
 //Leave at least 50 records for each category
 void deleteExtraRecords(int type){
@@ -285,7 +292,6 @@ int getUrls(struct newsAgency *news_agency){
         char * line = NULL;
         size_t len = 0;
         ssize_t read;
-	memset(news_agency, 0, sizeof(struct newsAgency));
 
         struct newsAgency *pp = news_agency;
        	read = getline(&line, &len, inputptr);
@@ -523,10 +529,19 @@ void getInsertString(struct item *item, char **json, int type){
 	cleanDateString(rssdate);
 	struct extra extra;
 	memset(&extra, 0, sizeof(struct extra));
+	fprintf(logptr, "a");fflush(logptr);
 
 	extra.html = malloc(1);
+	if(extra.html == NULL){
+		fprintf(logptr, "Could not malloc extra.html: %s\n", strerror(errno));
+		fflush(logptr);
+		exit(EXIT_FAILURE);
+	}
+
+	fprintf(logptr, "b");fflush(logptr);
 
 	fillStruct(item ->url, &extra); // uses newspaper python module to scrape html and top image from url
+	fprintf(logptr, "e");fflush(logptr);
 
 	if(strlen(extra.html) < 10 || strlen(extra.imgurl)<10 || strstr(extra.imgurl, "You must")){
 		*json[0] = '\0';
@@ -544,23 +559,52 @@ void getInsertString(struct item *item, char **json, int type){
 		}
 	}
 
+	fprintf(logptr, "f");fflush(logptr);
+
 	// Python newspaper returns "unacceptable" html for these agencies. Use in-house variation.
 	if(!strcmp(item->agency,"COMERCIO") || !strcmp(item->agency,"RPP")){
+
 		chunk.memory = malloc(1);
                 chunk.size = 0;
 	        loadFeed(item->url); // Loads feed into memory.
 		char buff[BUF_LEN];
-        	getInHouseHtml(buff);
-                free(chunk.memory);
+        getInHouseHtml(buff);
+		free(chunk.memory);
 		if(strlen(buff)>10){
 			strncpy(extra.html, buff, BUF_LEN );
 			extra.html[BUF_LEN-1] = '\0'; //terminate
-                }else{
+		}else{
 			*json[0] = '\0';
 			free(extra.html);
 			return;
-                }
+		}
 	}
+
+	if(!strcmp(item->agency,"WSH POST")){
+		char *encoded = NULL;
+		size_t out_len = parseUrlWithFlex(item->url, &encoded, WSH); //WSH is defined in flex.h
+		if(encoded && out_len>10 && out_len<BUF_LEN){
+			strncpy(extra.html, encoded, out_len );
+			extra.html[out_len] = '\0'; //terminate
+                }else{
+                	fprintf(logptr, "bad WSH flex parse!!!!\n");fflush(logptr);
+                }
+		free(encoded);
+	}
+	if(!strcmp(item->agency,"REUTERS")){
+		char *encoded = NULL;
+		size_t out_len = parseUrlWithFlex(item->url, &encoded, REUTERS); //REUTERS is defined in flex.h
+		if(encoded && out_len>10 && out_len<BUF_LEN){
+			strncpy(extra.html, encoded, out_len );
+			extra.html[out_len] = '\0'; //terminate
+                }else{
+                	fprintf(logptr, "bad REUTERS flex parse!!!!\n");fflush(logptr);
+                }
+		free(encoded);
+	}
+
+	fprintf(logptr, "g");fflush(logptr);
+
 
 	sprintf(beth, "%d", type);
 
@@ -578,7 +622,9 @@ void getInsertString(struct item *item, char **json, int type){
 	strcat(*json, rssdate);
 	strcat(*json, "','%Y-%m-%d %H:%i:%S'),'");
 	strcat(*json, item ->agency);
+
 	strcat(*json, "',now())");
+	fprintf(logptr, "h");fflush(logptr);
 
 	free(extra.html);
 }
@@ -588,7 +634,10 @@ void getInsertString(struct item *item, char **json, int type){
 void getInHouseHtml(char *buff)
 {
         char *p = chunk.memory;
+//	size_t sz = chunk.size >= BUF_LEN ? BUF_LEN-1 : chunk.size;
+//        chunk.memory[sz] = '\0';
         buff[0] = '\0';
+        buff[BUF_LEN-1] = '\0';
         do{
            char *beg = strstr(p, "<p>");
 
@@ -639,6 +688,8 @@ void fillStruct(char *url, struct extra *beth){
         FILE *pp = popen(tumia, "r");
 
         if (pp != NULL) {
+ 	fprintf(logptr, "c");fflush(logptr);
+
   		if(fgets(tumia, sizeof(tumia), pp) != NULL) {
 			tumia[URL_TITLE_LEN - 1] = '\0';
 			strcpy(beth->imgurl, tumia);
@@ -648,6 +699,9 @@ void fillStruct(char *url, struct extra *beth){
 
 		int ii = 1;
   		while(fgets(gigi, sizeof(gigi), pp) != NULL && ii<4) {
+			//if(ii>1) {
+			//	 fprintf(logptr, "Realloc!!!!!%d, %s\n", ii, url);fflush(logptr);
+			//}
 			beth->html = realloc(beth->html, ii*BUF_LEN);
 			if(beth->html == NULL){
 		                fprintf(logptr, "Could not Realloc html: %s\n", strerror(errno));
@@ -657,6 +711,8 @@ void fillStruct(char *url, struct extra *beth){
 			memcpy(beth->html + (ii-1)*(BUF_LEN-1), gigi, sizeof(gigi));
 			ii++;
 		}
+	fprintf(logptr, "d");fflush(logptr);
+
 		char *p;
 		if(ii==4){// max reached, bail out
 			beth->html[0] = '\0';
@@ -708,7 +764,7 @@ void initCurl(){
   curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 }
 
-void curl_close(){
+void cleanCurl(){
   /* cleanup curl stuff */
   curl_easy_cleanup(curl_handle);
   /* we're done with libcurl, so clean it up */
@@ -720,6 +776,10 @@ void loadFeed(char *url)
   CURLcode res;
   /* specify URL to get */
   curl_easy_setopt(curl_handle, CURLOPT_URL, url);
+
+  /* example.com is redirected, so we tell libcurl to follow redirection */
+  curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
+
   /* get it! */
   res = curl_easy_perform(curl_handle);
   /* check for errors */
@@ -735,9 +795,73 @@ void initMysql(){
                 fprintf(logptr, "ERROR:mysql_init() failed\n");fflush(logptr);
                 exit(EXIT_FAILURE);
         }
-        if (mysql_real_connect(con, "localhost", "xxxxx", "xxxxx", "xxxxx", 0, NULL, 0) == NULL){
+        if (mysql_real_connect(con, "localhost", "XXXXX", "XXXXX", "XXXXX", 0, NULL, 0) == NULL){
                 fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
                 mysql_close(con);
                 exit(EXIT_FAILURE);
         }
 }
+
+size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
+        chunk.memory = malloc(1);
+        chunk.size = 0;
+	char tumia[BUF_LEN];
+        tumia[0]= '\0';
+        tumia[BUF_LEN-1]= '\0';
+        loadFeed(url);
+        if(chunk.size)
+        	chunk.memory[chunk.size-2] = chunk.memory[chunk.size-1] = '\0';
+        else{
+        	free(chunk.memory);
+        	return;
+        }
+        agencyState = flexStartState; //global variable that flex uses to define start state
+        yybuf = &tumia[0]; //flex writes to yybuf
+        YY_BUFFER_STATE bs = yy_scan_buffer(chunk.memory, chunk.size);
+        yy_switch_to_buffer(bs);
+        yylex();
+        yy_delete_buffer(bs);
+        free(chunk.memory);
+	size_t out_len;
+        *encoded = base64_encode(tumia, strlen(tumia), &out_len);
+	return out_len;
+}
+
+// Encodes data to base64. Returned pointer must be freed after use.
+char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length) {
+	static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                                'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+                                'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+                                'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+                                'w', 'x', 'y', 'z', '0', '1', '2', '3',
+                                '4', '5', '6', '7', '8', '9', '+', '/'};
+
+	static int mod_table[] = {0, 2, 1};
+
+	*output_length = 4 * ((input_length + 2) / 3);
+
+	char *encoded_data = malloc(*output_length);
+	if (encoded_data == NULL) return NULL;
+  	int i,j;
+  	for (i = 0, j = 0; i < input_length;) {
+
+    		uint32_t octet_a = i < input_length ? (unsigned char)data[i++] : 0;
+  	  	uint32_t octet_b = i < input_length ? (unsigned char)data[i++] : 0;
+    		uint32_t octet_c = i < input_length ? (unsigned char)data[i++] : 0;
+
+	    	uint32_t triple = (octet_a << 0x10) + (octet_b << 0x08) + octet_c;
+
+    		encoded_data[j++] = encoding_table[(triple >> 3 * 6) & 0x3F];
+	    	encoded_data[j++] = encoding_table[(triple >> 2 * 6) & 0x3F];
+    		encoded_data[j++] = encoding_table[(triple >> 1 * 6) & 0x3F];
+	    	encoded_data[j++] = encoding_table[(triple >> 0 * 6) & 0x3F];
+  	}
+
+  	for (i = 0; i < mod_table[input_length % 3]; i++)
+    		encoded_data[*output_length - 1 - i] = '=';
+
+  	return encoded_data;
+}
+
