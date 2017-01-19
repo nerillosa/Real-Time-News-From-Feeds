@@ -18,10 +18,12 @@
   <td>
   <div class="links">${title}&nbsp;&nbsp;&nbsp;<a href="#" onclick="hrefClick(event)" 
   title="${title}">more...</a></div>
-  {{if img != ''}}<img class="lavida" src="${img}" />{{/if}}
-  <div class="htext" style="font-size: 1.2em;"><pre>${getHtml(html)}</pre></div>
+  <img class="lavida" src="${img}" />
+  <div class="htext" style="font-size: 1.2em;font-weight:bold;"><pre>${getHtml(html)}</pre></div>
   </td>
-     <td class="user-photo"><img class="user-tumb" src="images/${logo}"/></td>
+     <td class="user-photo"><img style="cursor:pointer;" class="user-tumb" src="images/${logo}" onclick="tumia(event)"/><a 
+     style="font-weight:bold;padding-left:12px;text-decoration:none;" href="${url}" 
+     target="_blank">view post</a></td>
      <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate)}</td>
   </tr>
 </script>
@@ -52,9 +54,18 @@
     };
 
     function getHtml(html) {
-        var tt = html.replace(/Advertisement\nContinue reading the main story/g, "&#10;");
-    	tt = tt.replace(/Image copyright/g,"").replace(/Image caption/g,"").replace(/\s{2,}/g, "&#10;");
-    	return tt.replace(/\.([A-Z])/g, ". $1");
+        return html.replace(/Advertisement\nContinue reading the main story/g, "&#10;").
+    	replace(/Image copyright/g,"").
+    	replace(/Image caption/g,"").
+    	replace(/Story highlights/g,"").
+    	replace(/\s{2,}/g, "&#10;").
+    	replace(/\.([A-Z])/g, ". $1").
+    	replace(/\.&#8220;/g, '. &#8220;').
+    	replace(/&#8221;([^\s])/g, '&#8221; $1');
+    }
+
+    function tumia(evt){
+	window.open(evt.target.nextSibling, '_blank');
     }
 
     function openNews(evt, newsType, newsName) {
@@ -90,8 +101,8 @@
     function hrefClick(event){
 	event.preventDefault();
 
-	var elem = $(event.target).parent().next();
-	if(elem.is( "img" )) elem = elem.next();
+	var elem = $(event.target).parent().next().next();
+//	if(elem.is( "img" )) elem = elem.next();
 
 	if($(event.target).text() == "more..."){
 		if(savetds.length >0){
