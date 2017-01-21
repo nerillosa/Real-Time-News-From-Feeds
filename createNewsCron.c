@@ -20,6 +20,7 @@
 
 #define OUT 0
 #define IN  1
+#define MAX_TITLES 100
 #define BUFFER_SIZE 8192
 #define BUF_LEN 32768
 #define NUM_ITEMS 3000
@@ -81,7 +82,6 @@ static void cleanCurl();
 static void deleteExtraRecords(int type);
 static void deleteFutureRecords();
 static void getInHouseHtml(char *buff);
-static void printTime(char *msg);
 static size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState);
 static char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length);
 
@@ -111,14 +111,23 @@ int main(int argc, char *argv[]){
 	setbuf(stdout, NULL);
 	initMysql();
 	initCurl();
-	printTime("\nstart");
+	time_t t = time(NULL);
+        struct tm *tm = localtime(&t);
+        char s[64];
+        strftime(s, sizeof(s), "%c", tm);
+        fprintf(logptr, "start: %s\n", s);
+	fflush(logptr);
 	memset(&news_agency, 0, sizeof(struct newsAgency));
-	getUrls(&news_agency);
+        getUrls(&news_agency);
+	//fprintf(logptr, "0");fflush(logptr);
 	fclose(inputptr);
 
 	getLatestItems();
 
-	printTime("end");
+    	t = time(NULL);
+    	tm = localtime(&t);
+	strftime(s, sizeof(s), "%c", tm);
+    	fprintf(logptr, "end: %s\n\n", s);fflush(logptr);
 	fclose(logptr);
 	mysql_close(con);
 	cleanCurl();
@@ -142,15 +151,20 @@ static void getLatestItems(){
         if(pid == 0){ //Child code.
        	        close(pfd[0]);  // Child closes it's read end.
 	        struct newsAgency *pp = &news_agency;
+		//int ii = 1;
 		do{
 	        	if(strlen(pp->name)==0) continue;
                 	chunk.memory = malloc(1);
         	        chunk.size = 0;
        	        	loadFeed(pp ->url); // Loads feed into memory.
+			//fprintf(logptr, "%d", ii);fflush(logptr);
         	        getFeedItems(pp ->name, pp ->type, chunk.memory);
+			//fprintf(logptr, "%d", ii);fflush(logptr);
        	        	free(chunk.memory);
+       	        	//ii++;
 		}while((pp = pp ->next) != NULL);
                	close(pfd[1]); // Child is done and closes write end. Parent will receive EOF.
+		//fprintf(logptr, "%d\n", ii);fflush(logptr);
                 _exit(0);
        	}
 
@@ -158,6 +172,7 @@ static void getLatestItems(){
 
  	while(read(pfd[0], itemArray + currentItemsCount, ITEM_SIZE) != 0){ //fills itemArray till it receives EOF
         	if(currentItemsCount < NUM_ITEMS-1) currentItemsCount++;
+	        //fprintf(stdout, "url:%s,agency:%s,pubDate:%s,title:%s\n",item.url,item.agency,item.pubDate,item.title);
 	}
 
 	close(pfd[0]); // parent closes read end of pipe
@@ -213,17 +228,6 @@ void deleteFutureRecords(){
 	if (mysql_query(con, buff)){
 		fprintf(logptr, "ERROR del future dates:%s\n", mysql_error(con));fflush(logptr);
 	}
-}
-
-void printTime(char *msg){
-	time_t t = time(NULL);
-        struct tm *tm = localtime(&t);
-        char s[URL_TITLE_LEN];
-        strcpy(s, msg);
-        strcat(s, ": ");
-        strftime(s+strlen(msg)+2, URL_TITLE_LEN-strlen(msg)-2, "%c", tm);
-        fprintf(logptr, "%s\n", s);
-	fflush(logptr);
 }
 
 //Leave at least 50 records for each category
@@ -532,7 +536,7 @@ void getInsertString(struct item *item, char **json, int type){
 	fprintf(logptr, "a");fflush(logptr);
 
 	extra.html = malloc(1);
-	if(extra.html == NULL){
+        if(extra.html == NULL){
 		fprintf(logptr, "Could not malloc extra.html: %s\n", strerror(errno));
 		fflush(logptr);
 		exit(EXIT_FAILURE);
@@ -551,12 +555,13 @@ void getInsertString(struct item *item, char **json, int type){
 
 	if(strlen(extra.html) > json_size){
 		json_size = (strlen(extra.html)/BUF_LEN + 1)*BUF_LEN;
-		*json = realloc(*json, json_size); // resize
-		if(*json == NULL){
-	                fprintf(logptr, "Could not Realloc *json: %s\n", strerror(errno));
-               		fflush(logptr);
-               		exit(EXIT_FAILURE);
-		}
+		free(*json);
+		*json = calloc(json_size, 1); // resize
+	        if(*json == NULL){
+        	        fprintf(logptr, "Could not calloc json_size:%d, %s\n", json_size, strerror(errno));
+                	fflush(logptr);
+                	exit(EXIT_FAILURE);
+        	}
 	}
 
 	fprintf(logptr, "f");fflush(logptr);
@@ -568,18 +573,36 @@ void getInsertString(struct item *item, char **json, int type){
                 chunk.size = 0;
 	        loadFeed(item->url); // Loads feed into memory.
 		char buff[BUF_LEN];
-        getInHouseHtml(buff);
-		free(chunk.memory);
+        	getInHouseHtml(buff);
 		if(strlen(buff)>10){
 			strncpy(extra.html, buff, BUF_LEN );
 			extra.html[BUF_LEN-1] = '\0'; //terminate
-		}else{
-			*json[0] = '\0';
-			free(extra.html);
-			return;
-		}
+                }
+                free(chunk.memory);
 	}
 
+	if(!strcmp(item->agency,"ABC NEWS")){
+		char *encoded = NULL;
+		size_t out_len = parseUrlWithFlex(item->url, &encoded, ABC); //ABC is defined in flex.h
+		if(encoded && out_len>10 && out_len<BUF_LEN){
+			strncpy(extra.html, encoded, out_len );
+			extra.html[out_len] = '\0'; //terminate
+                }else{
+                	fprintf(logptr, "bad ABCNEWS:%s\n", item->url);fflush(logptr);
+                }
+		free(encoded);
+	}
+	if(!strcmp(item->agency,"NY TIMES")){
+		char *encoded = NULL;
+		size_t out_len = parseUrlWithFlex(item->url, &encoded, NYT); //NYT is defined in flex.h
+		if(encoded && out_len>10 && out_len<BUF_LEN){
+			strncpy(extra.html, encoded, out_len );
+			extra.html[out_len] = '\0'; //terminate
+                }else{
+                	fprintf(logptr, "bad NYTIMES:%s\n", item->url);fflush(logptr);
+                }
+		free(encoded);
+	}
 	if(!strcmp(item->agency,"WSH POST")){
 		char *encoded = NULL;
 		size_t out_len = parseUrlWithFlex(item->url, &encoded, WSH); //WSH is defined in flex.h
@@ -778,7 +801,7 @@ void loadFeed(char *url)
   curl_easy_setopt(curl_handle, CURLOPT_URL, url);
 
   /* example.com is redirected, so we tell libcurl to follow redirection */
-  curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
+ // curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
 
   /* get it! */
   res = curl_easy_perform(curl_handle);
@@ -803,31 +826,33 @@ void initMysql(){
 }
 
 size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
-        chunk.memory = malloc(1);
-        chunk.size = 0;
-	char tumia[BUF_LEN];
+        char beth[256];
+        strcpy(beth, "wget -S -O - ");
+        strcat(beth, url);
+
+        FILE *pp = popen(beth, "r");
+
+        if (pp == NULL) {
+                fprintf(stdout, "Error could not open pipe for parseUrl: %s\n", strerror(errno));
+                exit(EXIT_FAILURE);
+	}
+        yyin = pp;
+        char tumia[YY_BUF_SIZE];
         tumia[0]= '\0';
-        tumia[BUF_LEN-1]= '\0';
-        loadFeed(url);
-        if(chunk.size)
-        	chunk.memory[chunk.size-2] = chunk.memory[chunk.size-1] = '\0';
-        else{
-        	free(chunk.memory);
-        	return;
-        }
+        tumia[YY_BUF_SIZE-1]= '\0';
         agencyState = flexStartState; //global variable that flex uses to define start state
-        yybuf = &tumia[0]; //flex writes to yybuf
-        YY_BUFFER_STATE bs = yy_scan_buffer(chunk.memory, chunk.size);
-        yy_switch_to_buffer(bs);
+        yybuf = &tumia[0]; //flex will write to yybuf
+        YY_BUFFER_STATE bp = yy_create_buffer(yyin, YY_BUF_SIZE);
+        yy_switch_to_buffer(bp);
         yylex();
-        yy_delete_buffer(bs);
-        free(chunk.memory);
 	size_t out_len;
         *encoded = base64_encode(tumia, strlen(tumia), &out_len);
+        pclose(pp);
+        yy_delete_buffer(bp);
 	return out_len;
 }
 
-// Encodes data to base64. Returned pointer must be freed after use.
+// Endodes string to base64. Returned pointer must be freed after use.
 char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length) {
 	static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
                                 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
