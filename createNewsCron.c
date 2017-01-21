@@ -41,6 +41,13 @@ struct item{
 
 #define ITEM_SIZE sizeof(struct item)
 
+struct agencyParse{
+	char* agency;
+	int parseType;
+} agencyParseArray[] = {{"NY TIMES",NYT},{"ABC NEWS", ABC}, {"REUTERS", REUTERS}, {"WSH POST",WSH}, {"COMERCIO", SIMPLE},{"RPP", SIMPLE}} ;
+
+static int AGENCY_PARSE_SIZE = sizeof(agencyParseArray)/sizeof(agencyParseArray[0]);
+
 struct newsAgency {
         int type;
         char name[10];
@@ -81,9 +88,9 @@ static void initMysql();
 static void cleanCurl();
 static void deleteExtraRecords(int type);
 static void deleteFutureRecords();
-static void getInHouseHtml(char *buff);
 static size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState);
 static char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length);
+static void setOwnEncodedHtml(struct item *item, struct extra *beth);
 
 MYSQL *con ;
 FILE *inputptr;
@@ -164,7 +171,6 @@ static void getLatestItems(){
        	        	//ii++;
 		}while((pp = pp ->next) != NULL);
                	close(pfd[1]); // Child is done and closes write end. Parent will receive EOF.
-		//fprintf(logptr, "%d\n", ii);fflush(logptr);
                 _exit(0);
        	}
 
@@ -566,68 +572,9 @@ void getInsertString(struct item *item, char **json, int type){
 
 	fprintf(logptr, "f");fflush(logptr);
 
-	// Python newspaper returns "unacceptable" html for these agencies. Use in-house variation.
-	if(!strcmp(item->agency,"COMERCIO") || !strcmp(item->agency,"RPP")){
-
-		chunk.memory = malloc(1);
-                chunk.size = 0;
-	        loadFeed(item->url); // Loads feed into memory.
-		char buff[BUF_LEN];
-        	getInHouseHtml(buff);
-		if(strlen(buff)>10){
-			strncpy(extra.html, buff, BUF_LEN );
-			extra.html[BUF_LEN-1] = '\0'; //terminate
-                }
-                free(chunk.memory);
-	}
-
-	if(!strcmp(item->agency,"ABC NEWS")){
-		char *encoded = NULL;
-		size_t out_len = parseUrlWithFlex(item->url, &encoded, ABC); //ABC is defined in flex.h
-		if(encoded && out_len>10 && out_len<BUF_LEN){
-			strncpy(extra.html, encoded, out_len );
-			extra.html[out_len] = '\0'; //terminate
-                }else{
-                	fprintf(logptr, "bad ABCNEWS:%s\n", item->url);fflush(logptr);
-                }
-		free(encoded);
-	}
-	if(!strcmp(item->agency,"NY TIMES")){
-		char *encoded = NULL;
-		size_t out_len = parseUrlWithFlex(item->url, &encoded, NYT); //NYT is defined in flex.h
-		if(encoded && out_len>10 && out_len<BUF_LEN){
-			strncpy(extra.html, encoded, out_len );
-			extra.html[out_len] = '\0'; //terminate
-                }else{
-                	fprintf(logptr, "bad NYTIMES:%s\n", item->url);fflush(logptr);
-                }
-		free(encoded);
-	}
-	if(!strcmp(item->agency,"WSH POST")){
-		char *encoded = NULL;
-		size_t out_len = parseUrlWithFlex(item->url, &encoded, WSH); //WSH is defined in flex.h
-		if(encoded && out_len>10 && out_len<BUF_LEN){
-			strncpy(extra.html, encoded, out_len );
-			extra.html[out_len] = '\0'; //terminate
-                }else{
-                	fprintf(logptr, "bad WSH flex parse!!!!\n");fflush(logptr);
-                }
-		free(encoded);
-	}
-	if(!strcmp(item->agency,"REUTERS")){
-		char *encoded = NULL;
-		size_t out_len = parseUrlWithFlex(item->url, &encoded, REUTERS); //REUTERS is defined in flex.h
-		if(encoded && out_len>10 && out_len<BUF_LEN){
-			strncpy(extra.html, encoded, out_len );
-			extra.html[out_len] = '\0'; //terminate
-                }else{
-                	fprintf(logptr, "bad REUTERS flex parse!!!!\n");fflush(logptr);
-                }
-		free(encoded);
-	}
+	setOwnEncodedHtml(item, &extra);
 
 	fprintf(logptr, "g");fflush(logptr);
-
 
 	sprintf(beth, "%d", type);
 
@@ -645,37 +592,33 @@ void getInsertString(struct item *item, char **json, int type){
 	strcat(*json, rssdate);
 	strcat(*json, "','%Y-%m-%d %H:%i:%S'),'");
 	strcat(*json, item ->agency);
-
 	strcat(*json, "',now())");
 	fprintf(logptr, "h");fflush(logptr);
 
 	free(extra.html);
 }
 
-//Basically gets all the <p>...</p> code in the url.
-//Skips paragraphs with inner text not starting with an alpha-numeric char
-void getInHouseHtml(char *buff)
-{
-        char *p = chunk.memory;
-//	size_t sz = chunk.size >= BUF_LEN ? BUF_LEN-1 : chunk.size;
-//        chunk.memory[sz] = '\0';
-        buff[0] = '\0';
-        buff[BUF_LEN-1] = '\0';
-        do{
-           char *beg = strstr(p, "<p>");
-
-           if(!beg || (beg - chunk.memory)>= chunk.size - 40) break;
-           if(isalnum(*(beg+3))){
-                char *end = strstr(beg, "</p>");
-                if(end){
-                        strncat(buff, beg+3, end-beg-3);
-                        strcat(buff, "&#10;&#10;");
-                }
-           }
-           p = beg + 4;
-        } while(1);
-        escapeQuotes(buff);
+void setOwnEncodedHtml(struct item *item, struct extra *extra){
+	int i;
+	for(i=0;i<AGENCY_PARSE_SIZE;i++){
+		struct agencyParse agencyParse = agencyParseArray[i];
+		if(!strcmp(item->agency, agencyParse.agency)){
+			char *encoded = NULL;
+			size_t out_len = parseUrlWithFlex(item->url, &encoded, agencyParse.parseType);
+			if(encoded && out_len>10 && out_len<BUF_LEN){
+				strncpy(extra->html, encoded, out_len );
+				extra->html[out_len] = '\0'; //terminate
+        	        }else{
+                		fprintf(logptr, "bad agencyParse:%s\n", item->url);fflush(logptr);
+	                }
+			free(encoded);
+			break;
+		}
+	}
 }
+
+
+
 
 void cleanDateString(char *rssDateString){
         struct tm tmA;
@@ -826,10 +769,9 @@ void initMysql(){
 }
 
 size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
-        char beth[256];
-        strcpy(beth, "wget -S -O - ");
+        char beth[512];
+        strcpy(beth, "wget --timeout=180 -S -O - "); // timeout after 3 minutes
         strcat(beth, url);
-
         FILE *pp = popen(beth, "r");
 
         if (pp == NULL) {
