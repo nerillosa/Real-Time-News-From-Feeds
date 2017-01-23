@@ -44,7 +44,7 @@ struct item{
 struct agencyParse{
 	char* agency;
 	int parseType;
-} agencyParseArray[] = {{"NY TIMES",NYT},{"ABC NEWS", ABC}, {"REUTERS", REUTERS}, {"WSH POST",WSH}, {"COMERCIO", SIMPLE},{"RPP", SIMPLE}} ;
+} agencyParseArray[] = {{"CNN", CNN}, {"NY TIMES", NYT},{"ABC NEWS", ABC}, {"REUTERS", REUTERS}, {"US TODAY", USTODAY}, {"WSH POST", WSH}} ;
 
 static int AGENCY_PARSE_SIZE = sizeof(agencyParseArray)/sizeof(agencyParseArray[0]);
 
@@ -62,7 +62,7 @@ struct MemoryStruct {
 
 struct extra {
   char imgurl[URL_TITLE_LEN];
-  char *html;
+  char html[BUF_LEN * 4];
 };
 
 //Function Prototypes
@@ -73,13 +73,13 @@ static void getContent(int dest_size, char *dest, char *starttag, char *endtag, 
 static int compare_pubDates(const void* a, const void* b);
 static void cleanRssDateString(char *rssDateString);
 static int getUrls(struct newsAgency *news_agency);
-static void getInsertString(struct item *item, char **json, int type);
+static void getInsertString(struct item *item, char *json, int type);
 static void cleanDateString(char *rssDateString);
 static void escapeQuotes(char *title);
 static void cleanUrl(char *url);
 static int calcDays(int month, int year);
 static void getLatestItems();
-static void fillStruct(char *url, struct extra *beth);
+static void fillStruct(struct item *item, struct extra *beth);
 static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp);
 static void loadFeed(char *url);
 static void getFeedItems(char *agency, int type, char *buff);
@@ -90,7 +90,7 @@ static void deleteExtraRecords(int type);
 static void deleteFutureRecords();
 static size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState);
 static char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length);
-static void setOwnEncodedHtml(struct item *item, struct extra *beth);
+static void setOwnEncodedHtml(struct item *item, struct extra *extra);
 
 MYSQL *con ;
 FILE *inputptr;
@@ -191,7 +191,7 @@ static void getLatestItems(){
 	fprintf(logptr, "Item count:%d\n",currentItemsCount);fflush(logptr);
 	qsort(itemArray, currentItemsCount, sizeof(struct item), compare_pubDates); //sort by pubDate descending
 
-	char *buff = malloc(1);
+	char buff[BUF_LEN*8];
 	int j,k;
 	for(j=1;j<=NUM_AGENCIES;j++){
 		for(i=0,k=0;i<currentItemsCount;i++){
@@ -215,7 +215,8 @@ static void getLatestItems(){
 			        	memmove(itemArray[i].url, p, URL_TITLE_LEN-diff );
 		        	        //fprintf(logptr, "BAD URL FIXED, url:%s\n", itemArray[i].url);fflush(logptr);
 	        	        }
-				getInsertString(&itemArray[i], &buff, itemArray[i].type);
+	        	        buff[0] = '\0';
+				getInsertString(&itemArray[i], buff, itemArray[i].type);
 				if (buff[0] && mysql_query(con, buff)){
 					fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
 				}
@@ -225,7 +226,6 @@ static void getLatestItems(){
 		deleteExtraRecords(j);
 	}
 	deleteFutureRecords();
-	free(buff); // being proper here
 }
 
 // Delete dates in the future (FOX news has the ability to predict news)
@@ -530,8 +530,7 @@ int calcDays(int month, int year)// calculates number of days in a given month
 	return Days;
 }
 
-void getInsertString(struct item *item, char **json, int type){
-	static int json_size = 0;
+void getInsertString(struct item *item, char *json, int type){
 	char beth[5];
 	char rssdate[50];
 	strncpy(rssdate, item ->pubDate, 50);
@@ -539,63 +538,32 @@ void getInsertString(struct item *item, char **json, int type){
 	cleanDateString(rssdate);
 	struct extra extra;
 	memset(&extra, 0, sizeof(struct extra));
-	fprintf(logptr, "a");fflush(logptr);
+	fprintf(logptr, "ab");fflush(logptr);
 
-	extra.html = malloc(1);
-        if(extra.html == NULL){
-		fprintf(logptr, "Could not malloc extra.html: %s\n", strerror(errno));
-		fflush(logptr);
-		exit(EXIT_FAILURE);
-	}
-
-	fprintf(logptr, "b");fflush(logptr);
-
-	fillStruct(item ->url, &extra); // uses newspaper python module to scrape html and top image from url
-	fprintf(logptr, "e");fflush(logptr);
-
-	if(strlen(extra.html) < 10 || strlen(extra.imgurl)<10 || strstr(extra.imgurl, "You must")){
-		*json[0] = '\0';
-		free(extra.html);
-		return;
-	}
-
-	if(strlen(extra.html) > json_size){
-		json_size = (strlen(extra.html)/BUF_LEN + 1)*BUF_LEN;
-		free(*json);
-		*json = calloc(json_size, 1); // resize
-	        if(*json == NULL){
-        	        fprintf(logptr, "Could not calloc json_size:%d, %s\n", json_size, strerror(errno));
-                	fflush(logptr);
-                	exit(EXIT_FAILURE);
-        	}
-	}
-
-	fprintf(logptr, "f");fflush(logptr);
-
-	setOwnEncodedHtml(item, &extra);
+	fillStruct(item, &extra); // uses newspaper python module to scrape top image from url
 
 	fprintf(logptr, "g");fflush(logptr);
 
 	sprintf(beth, "%d", type);
-
-	strcpy(*json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency,create_date) values ('");
-	strcat(*json, item ->url);
-	strcat(*json, "','");
-	strcat(*json, extra.html);
-	strcat(*json, "','");
-        strcat(*json, extra.imgurl);
-	strcat(*json, "',");
-	strcat(*json, beth);
-	strcat(*json, ",'");
-	strcat(*json, item ->title);
-	strcat(*json, "',STR_TO_DATE('");
-	strcat(*json, rssdate);
-	strcat(*json, "','%Y-%m-%d %H:%i:%S'),'");
-	strcat(*json, item ->agency);
-	strcat(*json, "',now())");
+	if(extra.imgurl[0] && extra.html[0]){ // non blank img and html
+		strcpy(json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency,create_date) values ('");
+		strcat(json, item ->url);
+		strcat(json, "','");
+		strcat(json, extra.html);
+		strcat(json, "','");
+        	strcat(json, extra.imgurl);
+		strcat(json, "',");
+		strcat(json, beth);
+		strcat(json, ",'");
+		strcat(json, item ->title);
+		strcat(json, "',STR_TO_DATE('");
+		strcat(json, rssdate);
+		strcat(json, "','%Y-%m-%d %H:%i:%S'),'");
+		strcat(json, item ->agency);
+		strcat(json, "',now())");
+	}
 	fprintf(logptr, "h");fflush(logptr);
 
-	free(extra.html);
 }
 
 void setOwnEncodedHtml(struct item *item, struct extra *extra){
@@ -605,18 +573,27 @@ void setOwnEncodedHtml(struct item *item, struct extra *extra){
 		if(!strcmp(item->agency, agencyParse.agency)){
 			char *encoded = NULL;
 			size_t out_len = parseUrlWithFlex(item->url, &encoded, agencyParse.parseType);
-			if(encoded && out_len>10 && out_len<BUF_LEN){
+			if(encoded && out_len>10 && out_len<BUF_LEN*4){
 				strncpy(extra->html, encoded, out_len );
 				extra->html[out_len] = '\0'; //terminate
         	        }else{
                 		fprintf(logptr, "bad agencyParse:%s\n", item->url);fflush(logptr);
 	                }
 			free(encoded);
-			break;
+			return;
 		}
 	}
-}
 
+	char *encoded = NULL;
+	size_t out_len = parseUrlWithFlex(item->url, &encoded, SIMPLE);
+	if(encoded && out_len>10 && out_len<BUF_LEN*4){
+		strncpy(extra->html, encoded, out_len );
+		extra->html[out_len] = '\0'; //terminate
+	}else{
+        	fprintf(logptr, "bad agencyParse:%s\n", item->url);fflush(logptr);
+	}
+	free(encoded);
+}
 
 
 
@@ -643,52 +620,22 @@ void escapeQuotes(char *title){//add another quote to a quote: ''
         }
 }
 
-void fillStruct(char *url, struct extra *beth){
+void fillStruct(struct item *item, struct extra *extra){
         char tumia[URL_TITLE_LEN];
 	char *cc;
         strcpy(tumia, "./neri.py '");
-        strcat(tumia, url);
+        strcat(tumia, item ->url);
         strcat(tumia, "'");
-        char gigi[BUF_LEN];
-	memset(gigi, 0, BUF_LEN);
         FILE *pp = popen(tumia, "r");
 
         if (pp != NULL) {
- 	fprintf(logptr, "c");fflush(logptr);
-
+	 	fprintf(logptr, "c");fflush(logptr);
   		if(fgets(tumia, sizeof(tumia), pp) != NULL) {
 			tumia[URL_TITLE_LEN - 1] = '\0';
-			strcpy(beth->imgurl, tumia);
-			if((cc = strstr(beth->imgurl, "\n")))
+			strcpy(extra->imgurl, tumia);
+			if((cc = strstr(extra->imgurl, "\n")))
 				*cc = '\0';
   		}
-
-		int ii = 1;
-  		while(fgets(gigi, sizeof(gigi), pp) != NULL && ii<4) {
-			//if(ii>1) {
-			//	 fprintf(logptr, "Realloc!!!!!%d, %s\n", ii, url);fflush(logptr);
-			//}
-			beth->html = realloc(beth->html, ii*BUF_LEN);
-			if(beth->html == NULL){
-		                fprintf(logptr, "Could not Realloc html: %s\n", strerror(errno));
-                		fflush(logptr);
-                		exit(EXIT_FAILURE);
-			}
-			memcpy(beth->html + (ii-1)*(BUF_LEN-1), gigi, sizeof(gigi));
-			ii++;
-		}
-	fprintf(logptr, "d");fflush(logptr);
-
-		char *p;
-		if(ii==4){// max reached, bail out
-			beth->html[0] = '\0';
-		}
-		else if((p=strstr(beth->html, "\n"))){
-			*p = '\0';
-		}else{
-			beth->html[BUF_LEN*(ii-1)-1] = '\0';
-		}
-
                 pclose(pp);
         }
 	else{
@@ -696,6 +643,7 @@ void fillStruct(char *url, struct extra *beth){
 		fflush(logptr);
 		exit(EXIT_FAILURE);
 	}
+	setOwnEncodedHtml(item, extra);
 }
 
 size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
@@ -728,6 +676,8 @@ void initCurl(){
   /* some servers don't like requests that are made without a user-agent
      field, so we provide one */
   curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+  /* complete within 180 seconds */
+  curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, 180L);
 }
 
 void cleanCurl(){
@@ -769,7 +719,7 @@ void initMysql(){
 }
 
 size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
-        char beth[512];
+        char beth[1024];
         strcpy(beth, "wget --timeout=180 -S -O - "); // timeout after 3 minutes
         strcat(beth, url);
         FILE *pp = popen(beth, "r");
@@ -778,19 +728,30 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
                 fprintf(stdout, "Error could not open pipe for parseUrl: %s\n", strerror(errno));
                 exit(EXIT_FAILURE);
 	}
+	fprintf(logptr, "j");fflush(logptr);
         yyin = pp;
         char tumia[YY_BUF_SIZE];
         tumia[0]= '\0';
-        tumia[YY_BUF_SIZE-1]= '\0';
         agencyState = flexStartState; //global variable that flex uses to define start state
         yybuf = &tumia[0]; //flex will write to yybuf
+       	fprintf(logptr, "k");fflush(logptr);
+
         YY_BUFFER_STATE bp = yy_create_buffer(yyin, YY_BUF_SIZE);
         yy_switch_to_buffer(bp);
+	fprintf(logptr, "L");fflush(logptr);
+
         yylex();
+	fprintf(logptr, "m");fflush(logptr);
+        tumia[YY_BUF_SIZE-1]= '\0';
+
 	size_t out_len;
         *encoded = base64_encode(tumia, strlen(tumia), &out_len);
+	fprintf(logptr, "n");fflush(logptr);
+
         pclose(pp);
         yy_delete_buffer(bp);
+	fprintf(logptr, "o");fflush(logptr);
+
 	return out_len;
 }
 

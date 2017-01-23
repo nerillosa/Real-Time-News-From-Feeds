@@ -214,10 +214,16 @@ extern char *yytext;
 #define REUTERS 3
 #define NYT 4
 #define ABC 5
-#define WUMIA 6
-#define REUTSTORY 7
-#define NYTSTORY 8
-#define ABCSTORY 9
+#define USTODAY 6
+#define SIMPLE 7
+#define CNN 8
+#define WUMIA 9
+#define REUTSTORY 10
+#define NYTSTORY 11
+#define ABCSTORY 12
+#define SIMPLESTORY 13
+#define USTODAYSTORY 14
+#define CNNSTORY 15
 
 #endif
 
@@ -321,9 +327,9 @@ extern int yylex (void);
 #undef YY_DECL
 #endif
 
-#line 44 "multiple.lex"
+#line 66 "multiple.lex"
 
 
-#line 328 "flex.h"
+#line 334 "flex.h"
 #undef yyIN_HEADER
 #endif /* yyHEADER_H */
