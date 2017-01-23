@@ -37,41 +37,30 @@
       		//default news data
       		$pubdate = $row['pubdate'];
 		$url = filter_var($row['url'], FILTER_SANITIZE_URL);
-      		//$title = $row['title'];
       		$title = filter_var($row['title'], FILTER_SANITIZE_STRING);
       		$agency = filter_var($row['agency'], FILTER_SANITIZE_STRING);
       		$logo = filter_var($row['logo'], FILTER_SANITIZE_STRING);
-      		//$img = $row['img'];
       		$img = filter_var($row['img'], FILTER_SANITIZE_URL);
 
-//		if($agency === 'COMERCIO' || $agency === 'RPP' || $agency === 'WSH POST' || $agency ===	'REUTERS'){
-		if($agency === 'COMERCIO' || $agency === 'RPP'){
-			$html = $row['html'];
-		}else{
-			$html = base64_decode($row['html']);
-			if($html === FALSE) $html='';
+		$html = base64_decode($row['html']);
+		if($html === FALSE) $html='';
 
-			$pattern = '/^(.*?)Read More.*$/is';
-			$html = preg_replace($pattern, '${1}', $html);
+/*
+	        $pattern = '/<h3>/s';
+        	$html = preg_replace($pattern, 'sssss', $html);
 
-			$pattern = '/^(.*)Copyright 201.*$/';
-			$html = preg_replace($pattern, '${1}', $html);
+	        $pattern = '/<\/h3>/s';
+        	$html = preg_replace($pattern, 'ttttt', $html);
 
-			$pattern = '/^(.*?)MUST WATCH.*$/s';
-			$html = preg_replace($pattern, '${1}', $html);
+	        $html = filter_var($html, FILTER_SANITIZE_STRING);
 
-			if($agency === 'US TODAY'){ //removes junk at the beginning of USA TODAY news
-				$pattern = '/^.*?&#8212;(.*)$/s';
-				$html = preg_replace($pattern, '${1}', $html);
-			}
+        	$html = preg_replace('/ttttt/s', '</h3>', $html);
+	        $html = preg_replace('/sssss/s', '<h3>', $html);
+*/
 
-			if($agency === 'CNN'){ //removes junk before (CNN)
-				$pattern = '/^.*?\(CNN\)(.*)$/s';
-				$html = preg_replace($pattern, '${1}', $html);
-			}
-		}
-		$html = filter_var($html, FILTER_SANITIZE_STRING);
-		if($img === 'http://www.foxnews.com/content/dam/fox-news/logo/og-fn-foxnews.jpg') $img = '';
+	        $html = filter_var($html, FILTER_SANITIZE_STRING);
+
+
 		$news_r[] = array('html' => $html, 'pubdate' => $pubdate, 'url' => $url, 'title' => $title, 'agency' =>
 		$agency,'logo' => $logo,'img'=>$img );
 	}

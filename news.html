@@ -54,8 +54,7 @@
     };
 
     function getHtml(html) {
-        return html.replace(/Advertisement\nContinue reading the main story/g, "&#10;").
-    	replace(/Image copyright/g,"").
+    	return html.replace(/Image copyright/g,"").
     	replace(/Image caption/g,"").
     	replace(/Story highlights/g,"").
     	replace(/\s{2,}/g, "&#10;").
