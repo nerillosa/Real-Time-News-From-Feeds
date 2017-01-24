@@ -6,4 +6,5 @@ This text file (news_urls.txt) contains lines with the following comma separated
 There are currently seven news types (defined in the news_type table): Politics, Science, World, Sports, Entertainment, Health, and USA. The default type which comes up when you initially visit the web site is USA news.
 The standalone C program, reads each line of news_urls.txt by type. Once it gets all the feeds for the url type, it sorts them all by descending date and gets the 20 most recent and saves them to the mysql news table.
 The program also takes care of only keeping the 80 most recent news for each category, so any given time the news table will hold at the most 560 records (7 news types * 80 records).
-
+<br>
+<b> Demo:  http://nllosa.com/news.html </b>
