@@ -6,8 +6,8 @@ extern int agencyState;
 extern char *yybuf;
 void writeText();
 %}
-%s WSH WSHSTORY REUTERS NYT ABC USTODAY SIMPLE CNN
-%x WUMIA REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY
+%s WSH WSHSTORY REUTERS NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21
+%x WUMIA REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY
 %option noyywrap
 %%
 	BEGIN(agencyState);
@@ -22,12 +22,20 @@ void writeText();
 <ABCSTORY>"</p>"  {yyless(yyleng-4);if(yyleng>10){writeText(); strcat(yybuf, "&#10;");} BEGIN(ABC);}
 <ABCSTORY>"</h3>" {writeText();BEGIN(ABC);}
 
+<CNBC>"<p>"[^a-zA-Z0-9" ]  ;
+<CNBC>"<p>"   {BEGIN(CNBCSTORY);}
+<CNBCSTORY>[^<]+  {writeText();}
+<CNBCSTORY>"<"    {writeText();}
+<CNBCSTORY>"</p>" {strcat(yybuf, "&#10;&#10;"); BEGIN(CNBC);}
+
 <CNN>"<"p.class=\"zn-body..paragraph\"">"    {BEGIN(CNNSTORY);}
 <CNN>"<"div.class=\"zn-body..paragraph\"">"  {BEGIN(CNNSTORY);}
 <CNNSTORY>[^<]+    {writeText();}
 <CNNSTORY>"<"      {writeText();}
 <CNNSTORY>"</p>"   {strcat(yybuf, "&#10;&#10;"); BEGIN(CNN);}
 <CNNSTORY>"</div>" {strcat(yybuf, "&#10;&#10;"); BEGIN(CNN);}
+
+<FOX>"<"div.class=.article-text.">" {BEGIN(SIMPLE);}
 
 <NYT>"<"p.class=\"story.body.text[^>]+">"    {BEGIN(NYTSTORY);}
 <NYTSTORY>[^<]+             {writeText();}
@@ -62,6 +70,12 @@ void writeText();
 <SIMPLESTORY>[^<]+  {writeText();}
 <SIMPLESTORY>"<"    {writeText();}
 <SIMPLESTORY>"</p>" {strcat(yybuf, "&#10;&#10;"); BEGIN(SIMPLE);}
+
+<PERU21>"<p>"[^a-zA-Z0-9]  ;
+<PERU21>"<p>"       {BEGIN(PERU21STORY);}
+<PERU21STORY>[^<]+  {yymore();}
+<PERU21STORY>"<"    {yymore();}
+<PERU21STORY>"</p>" {yyless(yyleng-4);if(yyleng>75){writeText(); strcat(yybuf, "&#10;&#10;");} BEGIN(PERU21);}
 
 %%
 

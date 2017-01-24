@@ -44,7 +44,8 @@ struct item{
 struct agencyParse{
 	char* agency;
 	int parseType;
-} agencyParseArray[] = {{"CNN", CNN}, {"NY TIMES", NYT},{"ABC NEWS", ABC}, {"REUTERS", REUTERS}, {"US TODAY", USTODAY}, {"WSH POST", WSH}} ;
+} agencyParseArray[] = {{"CNN", CNN}, {"FOX NEWS", FOX}, {"NY TIMES", NYT},{"ABC NEWS", ABC},
+	{"PERU21", PERU21}, {"CNBC", CNBC}, {"REUTERS", REUTERS}, {"US TODAY", USTODAY}, {"WSH POST", WSH}} ;
 
 static int AGENCY_PARSE_SIZE = sizeof(agencyParseArray)/sizeof(agencyParseArray[0]);
 
