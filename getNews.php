@@ -45,18 +45,12 @@
 		$html = base64_decode($row['html']);
 		if($html === FALSE) $html='';
 
-/*
+
 	        $pattern = '/<h3>/s';
-        	$html = preg_replace($pattern, 'sssss', $html);
+        	$html = preg_replace($pattern, '&lt;b&gt;', $html);
 
 	        $pattern = '/<\/h3>/s';
-        	$html = preg_replace($pattern, 'ttttt', $html);
-
-	        $html = filter_var($html, FILTER_SANITIZE_STRING);
-
-        	$html = preg_replace('/ttttt/s', '</h3>', $html);
-	        $html = preg_replace('/sssss/s', '<h3>', $html);
-*/
+        	$html = preg_replace($pattern, '&lt;/b&gt;', $html);
 
 	        $html = filter_var($html, FILTER_SANITIZE_STRING);
 

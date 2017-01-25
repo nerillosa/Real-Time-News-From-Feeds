@@ -19,7 +19,7 @@
   <div class="links">${title}&nbsp;&nbsp;&nbsp;<a href="#" onclick="hrefClick(event)" 
   title="${title}">more...</a></div>
   <img class="lavida" src="${img}" />
-  <div class="htext" style="font-size: 1.2em;font-weight:bold;"><pre>${getHtml(html)}</pre></div>
+  <div class="htext" style="font-size: 1.2em;font-weight:bold;">${getHtml(html)}</div>
   </td>
      <td class="user-photo"><img style="cursor:pointer;" class="user-tumb" src="images/${logo}" onclick="tumia(event)"/><a 
      style="font-weight:bold;padding-left:12px;text-decoration:none;" href="${url}" 
@@ -35,6 +35,7 @@
     $(document).ready(function() {
 	$(".tablinks").eq(0).click(); //default POLITICS
     });
+
 
     $.fn.OverFlowed = function() {
     	var _elm = $(this)[0];
@@ -54,13 +55,9 @@
     };
 
     function getHtml(html) {
-    	return html.replace(/Image copyright/g,"").
-    	replace(/Image caption/g,"").
-    	replace(/Story highlights/g,"").
-    	replace(/\s{2,}/g, "&#10;").
-    	replace(/\.([A-Z])/g, ". $1").
-    	replace(/\.&#8220;/g, '. &#8220;').
-    	replace(/&#8221;([^\s])/g, '&#8221; $1');
+    	return html.replace(/\.([A-Z])/g, ". $1").
+	replace(/^[^A-Z]+(.*)/g, "$1").
+	replace(/[\n]&#10;[\n]/g, "\n\n");
     }
 
     function tumia(evt){
@@ -75,10 +72,13 @@
             $("#newsList").empty();
             $("#newsTemplate").tmpl(news).appendTo("#newsList");
  
-            $(".htext").each(function(){
+            $(".htext").each(function(){  
+		var dina = $(this).html().replace(/&lt;\/b&gt;/g,'</b>').replace(/&lt;b&gt;/g,'<br><b>');
+		$(this).html('');
+		var pre = $("<pre> " + dina + " </pre>");
+		$(this).append(pre);
 		if(!$(this).OverFlowed()){
 		   $(this).parent().find("a").remove(); // Remove the ...more link
-		   //alert($(this).parent()[0].tagName)
 		}
             });
         });
@@ -133,11 +133,10 @@
     }
 
 </script>
-
 </head>
 <body>
 
-<h2 style="text-align:center;margin-bottom:0;">Real Time News<br />updated every 5 minutes</h2>
+<h2 style="text-align:center;margin-bottom:0;">Real Time News<br />updated every 10 minutes</h2>
 <div class="box-table" >
 <ul class="tab">
   <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 1, 'Politics')">Politics</a></li>

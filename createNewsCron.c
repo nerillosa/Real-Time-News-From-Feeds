@@ -546,7 +546,8 @@ void getInsertString(struct item *item, char *json, int type){
 	fprintf(logptr, "g");fflush(logptr);
 
 	sprintf(beth, "%d", type);
-	if(extra.imgurl[0] && extra.html[0]){ // non blank img and html
+
+	if(extra.imgurl[0] && !strstr(extra.imgurl, "You must") && extra.html[0]){ // non blank img and html
 		strcpy(json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency,create_date) values ('");
 		strcat(json, item ->url);
 		strcat(json, "','");
@@ -568,25 +569,18 @@ void getInsertString(struct item *item, char *json, int type){
 }
 
 void setOwnEncodedHtml(struct item *item, struct extra *extra){
-	int i;
+	int i, parseType = SIMPLE;
+	char *encoded = NULL;
+
 	for(i=0;i<AGENCY_PARSE_SIZE;i++){
 		struct agencyParse agencyParse = agencyParseArray[i];
 		if(!strcmp(item->agency, agencyParse.agency)){
-			char *encoded = NULL;
-			size_t out_len = parseUrlWithFlex(item->url, &encoded, agencyParse.parseType);
-			if(encoded && out_len>10 && out_len<BUF_LEN*4){
-				strncpy(extra->html, encoded, out_len );
-				extra->html[out_len] = '\0'; //terminate
-        	        }else{
-                		fprintf(logptr, "bad agencyParse:%s\n", item->url);fflush(logptr);
-	                }
-			free(encoded);
-			return;
+			parseType = agencyParse.parseType;
+			break;
 		}
 	}
 
-	char *encoded = NULL;
-	size_t out_len = parseUrlWithFlex(item->url, &encoded, SIMPLE);
+	size_t out_len = parseUrlWithFlex(item->url, &encoded, parseType);
 	if(encoded && out_len>10 && out_len<BUF_LEN*4){
 		strncpy(extra->html, encoded, out_len );
 		extra->html[out_len] = '\0'; //terminate
