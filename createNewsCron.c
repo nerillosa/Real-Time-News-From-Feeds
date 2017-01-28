@@ -24,7 +24,7 @@
 #define BUFFER_SIZE 8192
 #define BUF_LEN 32768
 #define NUM_ITEMS 3000
-#define NUM_REFRESH 5
+#define NUM_REFRESH 25
 #define NUM_AGENCIES 11
 #define URL_TITLE_LEN 512
 
@@ -541,7 +541,7 @@ void getInsertString(struct item *item, char *json, int type){
 	memset(&extra, 0, sizeof(struct extra));
 	fprintf(logptr, "ab");fflush(logptr);
 
-	fillStruct(item, &extra); // uses newspaper python module to scrape top image from url
+	fillStruct(item, &extra); // uses flex to scrape top image and html from url
 
 	fprintf(logptr, "g");fflush(logptr);
 
@@ -618,9 +618,18 @@ void escapeQuotes(char *title){//add another quote to a quote: ''
 void fillStruct(struct item *item, struct extra *extra){
         char tumia[URL_TITLE_LEN];
 	char *cc;
-        strcpy(tumia, "./neri.py '");
-        strcat(tumia, item ->url);
-        strcat(tumia, "'");
+
+//	if(!strcmp("CNN", item ->agency) || !strcmp("US TODAY", item ->agency) || !strcmp("ABC NEWS", item ->agency)
+//        	|| !strcmp("NY TIMES", item ->agency) || !strcmp("FOX NEWS", item ->agency) || !strcmp("WSH POST", item ->agency)
+//           	|| !strcmp("CNBC", item ->agency)){
+     		strcpy(tumia, "bash img.sh ");
+         	strcat(tumia, item ->url);
+//	} else{
+//		strcpy(tumia, "./neri.py '");
+//        	strcat(tumia, item ->url);
+//        	strcat(tumia, "'");
+//   	}
+
         FILE *pp = popen(tumia, "r");
 
         if (pp != NULL) {
@@ -630,6 +639,9 @@ void fillStruct(struct item *item, struct extra *extra){
 			strcpy(extra->imgurl, tumia);
 			if((cc = strstr(extra->imgurl, "\n")))
 				*cc = '\0';
+			if(strlen(extra->imgurl)<10){
+                     		fprintf(logptr, "!!!!BAD imgurl %s: %s\n", item ->url, extra->imgurl);fflush(logptr);
+                     	}
   		}
                 pclose(pp);
         }
