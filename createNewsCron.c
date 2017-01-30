@@ -1,7 +1,10 @@
 /*
 * C program that gets the latest rss feeds from various news agencies and categories and saves them to a database
 * Uses libcurl open source library to download feed.xml
-* The program accounts that the rss feeds downloaded are not neccesarily "proper"
+* The program the flex lexical analyzer to parse html and top image from the harvested urls.
+* The program files flex.h and lex.yy.c are created with the following command: flex --header-file=flex.h multiple.lex
+* where multiple.lex contains the rules for extracting the html data.
+* To extract the top images, the program makes use of the script img.sh which also uses Flex.
 * Compile with : gcc createNewsCron.c lex.yy.c -o createNews -lcurl `mysql_config --cflags --libs`
 */
 
@@ -24,9 +27,10 @@
 #define BUFFER_SIZE 8192
 #define BUF_LEN 32768
 #define NUM_ITEMS 3000
-#define NUM_REFRESH 25
+#define NUM_REFRESH 15
 #define NUM_AGENCIES 11
 #define URL_TITLE_LEN 512
+#define DOWNLOAD_FILE  ((const unsigned char *)"DOWNLOAD")
 
 #define YY_HEADER_EXPORT_START_CONDITIONS
 #include "flex.h"
@@ -89,8 +93,8 @@ static void initMysql();
 static void cleanCurl();
 static void deleteExtraRecords(int type);
 static void deleteFutureRecords();
-static size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState);
-static char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length);
+static uint32_t parseUrlWithFlex(char *url, char **encoded, int flexStartState);
+static char *base64_encode(const unsigned char *data, uint32_t input_length,  uint32_t *output_length);
 static void setOwnEncodedHtml(struct item *item, struct extra *extra);
 
 MYSQL *con ;
@@ -127,7 +131,6 @@ int main(int argc, char *argv[]){
 	fflush(logptr);
 	memset(&news_agency, 0, sizeof(struct newsAgency));
         getUrls(&news_agency);
-	//fprintf(logptr, "0");fflush(logptr);
 	fclose(inputptr);
 
 	getLatestItems();
@@ -165,11 +168,8 @@ static void getLatestItems(){
                 	chunk.memory = malloc(1);
         	        chunk.size = 0;
        	        	loadFeed(pp ->url); // Loads feed into memory.
-			//fprintf(logptr, "%d", ii);fflush(logptr);
         	        getFeedItems(pp ->name, pp ->type, chunk.memory);
-			//fprintf(logptr, "%d", ii);fflush(logptr);
        	        	free(chunk.memory);
-       	        	//ii++;
 		}while((pp = pp ->next) != NULL);
                	close(pfd[1]); // Child is done and closes write end. Parent will receive EOF.
                 _exit(0);
@@ -179,7 +179,6 @@ static void getLatestItems(){
 
  	while(read(pfd[0], itemArray + currentItemsCount, ITEM_SIZE) != 0){ //fills itemArray till it receives EOF
         	if(currentItemsCount < NUM_ITEMS-1) currentItemsCount++;
-	        //fprintf(stdout, "url:%s,agency:%s,pubDate:%s,title:%s\n",item.url,item.agency,item.pubDate,item.title);
 	}
 
 	close(pfd[0]); // parent closes read end of pipe
@@ -214,7 +213,6 @@ static void getLatestItems(){
 		        		fprintf(logptr, "x");fflush(logptr);
 			        	long diff = p - itemArray[i].url;
 			        	memmove(itemArray[i].url, p, URL_TITLE_LEN-diff );
-		        	        //fprintf(logptr, "BAD URL FIXED, url:%s\n", itemArray[i].url);fflush(logptr);
 	        	        }
 	        	        buff[0] = '\0';
 				getInsertString(&itemArray[i], buff, itemArray[i].type);
@@ -580,8 +578,15 @@ void setOwnEncodedHtml(struct item *item, struct extra *extra){
 		}
 	}
 
-	size_t out_len = parseUrlWithFlex(item->url, &encoded, parseType);
-	if(encoded && out_len>10 && out_len<BUF_LEN*4){
+	uint32_t out_len = parseUrlWithFlex(item->url, &encoded, parseType);
+
+	if(encoded == NULL) {
+		fprintf(logptr, "encoded NULL!!!!\n");fflush(logptr);
+		exit(EXIT_FAILURE);
+	}
+	fprintf(logptr, "out_len:%u\n", out_len);fflush(logptr);
+	fprintf(logptr, "encoded:%p\n", (void *) encoded);fflush(logptr);
+	if(out_len>10 && out_len<BUF_LEN*4){
 		strncpy(extra->html, encoded, out_len );
 		extra->html[out_len] = '\0'; //terminate
 	}else{
@@ -619,16 +624,8 @@ void fillStruct(struct item *item, struct extra *extra){
         char tumia[URL_TITLE_LEN];
 	char *cc;
 
-//	if(!strcmp("CNN", item ->agency) || !strcmp("US TODAY", item ->agency) || !strcmp("ABC NEWS", item ->agency)
-//        	|| !strcmp("NY TIMES", item ->agency) || !strcmp("FOX NEWS", item ->agency) || !strcmp("WSH POST", item ->agency)
-//           	|| !strcmp("CNBC", item ->agency)){
-     		strcpy(tumia, "bash img.sh ");
-         	strcat(tumia, item ->url);
-//	} else{
-//		strcpy(tumia, "./neri.py '");
-//        	strcat(tumia, item ->url);
-//        	strcat(tumia, "'");
-//   	}
+	strcpy(tumia, "bash img.sh ");
+       	strcat(tumia, item ->url);
 
         FILE *pp = popen(tumia, "r");
 
@@ -700,9 +697,6 @@ void loadFeed(char *url)
   /* specify URL to get */
   curl_easy_setopt(curl_handle, CURLOPT_URL, url);
 
-  /* example.com is redirected, so we tell libcurl to follow redirection */
- // curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
-
   /* get it! */
   res = curl_easy_perform(curl_handle);
   /* check for errors */
@@ -718,21 +712,17 @@ void initMysql(){
                 fprintf(logptr, "ERROR:mysql_init() failed\n");fflush(logptr);
                 exit(EXIT_FAILURE);
         }
-        if (mysql_real_connect(con, "localhost", "XXXXX", "XXXXX", "XXXXX", 0, NULL, 0) == NULL){
+        if (mysql_real_connect(con, "localhost", "nerillos_neri", "carpa1", "nerillos_neri", 0, NULL, 0) == NULL){
                 fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
                 mysql_close(con);
                 exit(EXIT_FAILURE);
         }
 }
 
-size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
-        char beth[1024];
-        strcpy(beth, "wget --timeout=180 -S -O - "); // timeout after 3 minutes
-        strcat(beth, url);
-        FILE *pp = popen(beth, "r");
-
+uint32_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
+	FILE *pp = fopen(DOWNLOAD_FILE, "r"); // this file was created when img.sh was invoked
         if (pp == NULL) {
-                fprintf(stdout, "Error could not open pipe for parseUrl: %s\n", strerror(errno));
+                fprintf(stdout, "Error could not open DOWNLOAD_FILE for parseUrl: %s\n", strerror(errno));
                 exit(EXIT_FAILURE);
 	}
 	fprintf(logptr, "j");fflush(logptr);
@@ -751,19 +741,19 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
 	fprintf(logptr, "m");fflush(logptr);
         tumia[YY_BUF_SIZE-1]= '\0';
 
-	size_t out_len;
+	uint32_t out_len;
         *encoded = base64_encode(tumia, strlen(tumia), &out_len);
 	fprintf(logptr, "n");fflush(logptr);
 
-        pclose(pp);
+        fclose(pp);
         yy_delete_buffer(bp);
 	fprintf(logptr, "o");fflush(logptr);
 
 	return out_len;
 }
 
-// Endodes string to base64. Returned pointer must be freed after use.
-char *base64_encode(const unsigned char *data, size_t input_length, size_t *output_length) {
+// Encodes string to base64. Returned pointer must be freed after use.
+char *base64_encode(const unsigned char *data, uint32_t input_length,  uint32_t *output_length) {
 	static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
                                 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
                                 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
