@@ -1,7 +1,7 @@
 /*
 * C program that gets the latest rss feeds from various news agencies and categories and saves them to a database
 * Uses libcurl open source library to download feed.xml
-* The program the flex lexical analyzer to parse html and top image from the harvested urls.
+* Uses flex lexical analyzer to parse html and top image from the harvested urls.
 * The program files flex.h and lex.yy.c are created with the following command: flex --header-file=flex.h multiple.lex
 * where multiple.lex contains the rules for extracting the html data.
 * To extract the top images, the program makes use of the script img.sh which also uses Flex.
@@ -30,7 +30,6 @@
 #define NUM_REFRESH 15
 #define NUM_AGENCIES 11
 #define URL_TITLE_LEN 512
-#define DOWNLOAD_FILE  ((const unsigned char *)"DOWNLOAD")
 
 #define YY_HEADER_EXPORT_START_CONDITIONS
 #include "flex.h"
@@ -93,8 +92,8 @@ static void initMysql();
 static void cleanCurl();
 static void deleteExtraRecords(int type);
 static void deleteFutureRecords();
-static uint32_t parseUrlWithFlex(char *url, char **encoded, int flexStartState);
-static char *base64_encode(const unsigned char *data, uint32_t input_length,  uint32_t *output_length);
+static size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState);
+static char *base64_encode(char *data, size_t input_length,  size_t *output_length);
 static void setOwnEncodedHtml(struct item *item, struct extra *extra);
 
 MYSQL *con ;
@@ -578,13 +577,18 @@ void setOwnEncodedHtml(struct item *item, struct extra *extra){
 		}
 	}
 
-	uint32_t out_len = parseUrlWithFlex(item->url, &encoded, parseType);
+	size_t out_len = parseUrlWithFlex(item->url, &encoded, parseType);
+	fprintf(logptr, "HERE\n");fflush(logptr);
+	fprintf(logptr, "HERE\n");fflush(logptr);
+
+	int tumia = out_len;
+	fprintf(logptr, "tumia:%d\n", tumia);fflush(logptr);
 
 	if(encoded == NULL) {
 		fprintf(logptr, "encoded NULL!!!!\n");fflush(logptr);
 		exit(EXIT_FAILURE);
 	}
-	fprintf(logptr, "out_len:%u\n", out_len);fflush(logptr);
+	fprintf(logptr, "out_len:%zu\n", out_len);fflush(logptr);
 	fprintf(logptr, "encoded:%p\n", (void *) encoded);fflush(logptr);
 	if(out_len>10 && out_len<BUF_LEN*4){
 		strncpy(extra->html, encoded, out_len );
@@ -719,8 +723,8 @@ void initMysql(){
         }
 }
 
-uint32_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
-	FILE *pp = fopen(DOWNLOAD_FILE, "r"); // this file was created when img.sh was invoked
+size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
+	FILE *pp = fopen("DOWNLOAD", "r"); // this file was created when img.sh was invoked
         if (pp == NULL) {
                 fprintf(stdout, "Error could not open DOWNLOAD_FILE for parseUrl: %s\n", strerror(errno));
                 exit(EXIT_FAILURE);
@@ -741,19 +745,21 @@ uint32_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
 	fprintf(logptr, "m");fflush(logptr);
         tumia[YY_BUF_SIZE-1]= '\0';
 
-	uint32_t out_len;
+	size_t out_len = 0;
         *encoded = base64_encode(tumia, strlen(tumia), &out_len);
 	fprintf(logptr, "n");fflush(logptr);
-
-        fclose(pp);
+	fprintf(logptr, "o");fflush(logptr);
         yy_delete_buffer(bp);
+        fprintf(logptr, "%zu", out_len);fflush(logptr);
+	fprintf(logptr, "o");fflush(logptr);
+        fclose(pp);
 	fprintf(logptr, "o");fflush(logptr);
 
 	return out_len;
 }
 
 // Encodes string to base64. Returned pointer must be freed after use.
-char *base64_encode(const unsigned char *data, uint32_t input_length,  uint32_t *output_length) {
+char *base64_encode(char *data, size_t input_length,  size_t *output_length) {
 	static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
                                 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
                                 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
