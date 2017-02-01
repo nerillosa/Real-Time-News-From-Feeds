@@ -47,7 +47,7 @@ struct item{
 struct agencyParse{
 	char* agency;
 	int parseType;
-} agencyParseArray[] = {{"CNN", CNN}, {"FOX NEWS", FOX}, {"NY TIMES", NYT},{"ABC NEWS", ABC},
+} agencyParseArray[] = {{"CNN", CNN}, {"FOX NEWS", FOX}, {"NY TIMES", NYT},{"ABC NEWS", ABC},{"GESTION", GESTION},
 	{"PERU21", PERU21}, {"CNBC", CNBC}, {"REUTERS", REUTERS}, {"US TODAY", USTODAY}, {"WSH POST", WSH}} ;
 
 static int AGENCY_PARSE_SIZE = sizeof(agencyParseArray)/sizeof(agencyParseArray[0]);
@@ -106,20 +106,20 @@ char *yybuf;
 int agencyState;
 int main(int argc, char *argv[]){
 	if(argc<3){
-		fprintf(stdout, "usage: %s inputFile logFile\n", argv[0]);
+		fprintf(stderr, "usage: %s inputFile logFile\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 	inputptr = fopen(argv[1], "r");
 	if(inputptr == NULL){
-		fprintf(stdout, "Could not open file %s for reading \n", argv[1]);
+		fprintf(stderr, "Could not open file %s for reading \n", argv[1]);
 		exit(EXIT_FAILURE);
 	}
 	logptr = fopen(argv[2], "a");
 	if (logptr == NULL){
-		fprintf(stdout, "Could not open file %s for writing logs\n", argv[2]);
+		fprintf(stderr, "Could not open file %s for writing logs\n", argv[2]);
 		exit(EXIT_FAILURE);
 	}
-	setbuf(stdout, NULL);
+	setbuf(stderr, NULL);
 	initMysql();
 	initCurl();
 	time_t t = time(NULL);
@@ -148,7 +148,7 @@ static void getLatestItems(){
 	int currentItemsCount = 0;
 
 	if(pipe(pfd) == -1){
-      		fprintf(stdout, "Error on opening pipe\n");
+      		fprintf(stderr, "Error on opening pipe\n");
       		exit(EXIT_FAILURE);
   	}
 
@@ -578,18 +578,7 @@ void setOwnEncodedHtml(struct item *item, struct extra *extra){
 	}
 
 	size_t out_len = parseUrlWithFlex(item->url, &encoded, parseType);
-	fprintf(logptr, "HERE\n");fflush(logptr);
-	fprintf(logptr, "HERE\n");fflush(logptr);
 
-	int tumia = out_len;
-	fprintf(logptr, "tumia:%d\n", tumia);fflush(logptr);
-
-	if(encoded == NULL) {
-		fprintf(logptr, "encoded NULL!!!!\n");fflush(logptr);
-		exit(EXIT_FAILURE);
-	}
-	fprintf(logptr, "out_len:%zu\n", out_len);fflush(logptr);
-	fprintf(logptr, "encoded:%p\n", (void *) encoded);fflush(logptr);
 	if(out_len>10 && out_len<BUF_LEN*4){
 		strncpy(extra->html, encoded, out_len );
 		extra->html[out_len] = '\0'; //terminate
@@ -628,9 +617,11 @@ void fillStruct(struct item *item, struct extra *extra){
         char tumia[URL_TITLE_LEN];
 	char *cc;
 
-	strcpy(tumia, "bash img.sh ");
+	strcpy(tumia, "bash img.sh '");
        	strcat(tumia, item ->url);
+       	strcat(tumia, "'");
 
+	fprintf(stderr, "%s\n", item->url);
         FILE *pp = popen(tumia, "r");
 
         if (pp != NULL) {
@@ -726,7 +717,7 @@ void initMysql(){
 size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
 	FILE *pp = fopen("DOWNLOAD", "r"); // this file was created when img.sh was invoked
         if (pp == NULL) {
-                fprintf(stdout, "Error could not open DOWNLOAD_FILE for parseUrl: %s\n", strerror(errno));
+                fprintf(stderr, "Error could not open DOWNLOAD_FILE for parseUrl: %s\n", strerror(errno));
                 exit(EXIT_FAILURE);
 	}
 	fprintf(logptr, "j");fflush(logptr);
@@ -746,15 +737,15 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
         tumia[YY_BUF_SIZE-1]= '\0';
 
 	size_t out_len = 0;
-        *encoded = base64_encode(tumia, strlen(tumia), &out_len);
-	fprintf(logptr, "n");fflush(logptr);
-	fprintf(logptr, "o");fflush(logptr);
-        yy_delete_buffer(bp);
-        fprintf(logptr, "%zu", out_len);fflush(logptr);
-	fprintf(logptr, "o");fflush(logptr);
-        fclose(pp);
-	fprintf(logptr, "o");fflush(logptr);
 
+	if(strlen(tumia)< YY_BUF_SIZE-1){
+	        *encoded = base64_encode(tumia, strlen(tumia), &out_len);
+	}else{
+		fprintf(logptr, "HTML Too Long, url:%s\n", url);fflush(logptr);
+	}
+
+        yy_delete_buffer(bp);
+        fclose(pp);
 	return out_len;
 }
 

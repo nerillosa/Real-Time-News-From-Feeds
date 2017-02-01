@@ -23,12 +23,12 @@
 	}
 
 	//This query is a bit long but it gets rid of duplicate images for same news/changed titles
-	//$news = $db->query("SELECT a.*,b.logo from news a join agency b on a.agency=b.shortname join (select max(pubdate)" .
-	//" as pubdate, max(title) as title,img from news group by img)c on a.pubdate=c.pubdate and a.img=c.img and a.title=c.title" .
-	//" where a.news_type=" . $type .	" order by a.pubdate desc LIMIT 20");
+	$news = $db->query("SELECT a.*,b.logo from news a join agency b on a.agency=b.shortname join (select max(pubdate)" .
+	" as pubdate, max(title) as title,img from news group by img)c on a.pubdate=c.pubdate and a.img=c.img and a.title=c.title" .
+	" where a.news_type=" . $type .	" order by a.pubdate desc LIMIT 20");
 
-	$news = $db->query("SELECT a.*,b.logo from news a join agency b on a.agency=b.shortname where a.news_type=" . $type .
-	" order by pubdate desc LIMIT 20");
+	//$news = $db->query("SELECT a.*,b.logo from news a join agency b on a.agency=b.shortname where a.news_type=" . $type .
+	//" order by pubdate desc LIMIT 20");
 
 	$news_r = array();
 

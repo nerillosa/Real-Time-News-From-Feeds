@@ -55,7 +55,6 @@
     };
 
     function getHtml(html) {
-    	//return html.replace(/^[\n]+/g, "").
 	return html.replace(/^[^(A-Z]+(.*)/g, "$1").
 	replace(/[\n]&#10;[\n]/g, "\n\n");
     }
