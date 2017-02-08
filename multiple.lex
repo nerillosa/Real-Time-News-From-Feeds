@@ -3,22 +3,23 @@
 	This flex program parses various news agencies web pages.
 	If you modify this file you must do:
 	
-	flex --header-file=flex.h multiple.lex (creates news lex.yy.cc)
-	cp multiple.lex ..
+	flex --header-file=flex.h multiple.lex (creates new lex.yy.c)
+	cp lex.yy.c .. (copy to the folder where your main program resides)
 	cp flex.h ..  (optional if you added new start states)
-	cd ..
+	cd ..  (go to the folder where your main program resides)
 	gcc createNewsCron.c lex.yy.c -o createNews -lcurl `mysql_config --cflags --libs`
 */
 
 #include <stdio.h>
 #include <string.h>
+#define BUF_LEN 32768
 extern int agencyState;
 extern char *yybuf;
 void writeText();
 void writeString(char *str);
 %}
-%s WSH WSHSTORY REUTERS NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE
-%x WUMIA REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY
+%s WSH WSHSTORY REUTERS NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI
+%x WUMIA REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY
 %option noyywrap
 %%
 	BEGIN(agencyState);
@@ -32,6 +33,20 @@ void writeString(char *str);
 <ABCSTORY>"<"   {yymore();}
 <ABCSTORY>"</p>"  {yyless(yyleng-4);if(yyleng>10 && !strstr(yytext,"<strong>")){writeText(); strcat(yybuf,"&#10;");} BEGIN(ABC);}
 <ABCSTORY>"</h3>" {writeText();BEGIN(ABC);}
+
+<UPI>"<"article.itemprop  {BEGIN(PIMPLE);}
+<PIMPLE>"<".article">"  {BEGIN(INITIAL);}
+<PIMPLE>"<p>"   {BEGIN(UPISTORY);}
+<UPISTORY>[^<]+  {writeText();}
+<UPISTORY>"<"    {writeText();}
+<UPISTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(PIMPLE);}
+
+<WSJ>"<"div.class=.wsj.snippet.body.">"  {BEGIN(WIMPLE);}
+<WSJSTORY>"</div>"  {writeString("&#10;&#10;");BEGIN(INITIAL);}
+<WIMPLE>"<p>"   {BEGIN(WSJSTORY);}
+<WSJSTORY>[^<]+  {writeText();}
+<WSJSTORY>"<"    {writeText();}
+<WSJSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(WIMPLE);}
 
 <CNBC>"<p>"[^a-zA-Z0-9" ]  ;
 <CNBC>"<p>"   {BEGIN(CNBCSTORY);}
@@ -100,13 +115,13 @@ void writeString(char *str);
 %%
 
 void writeText(){
-        if(yyleng + strlen(yybuf) < YY_BUF_SIZE-1){
+        if(yyleng + strlen(yybuf) < BUF_LEN-512){
                 strcat(yybuf, yytext);
         }
 }
 
 void writeString(char *str){
-        if(strlen(str) + strlen(yybuf) < YY_BUF_SIZE-1){
+        if(strlen(str) + strlen(yybuf) < BUF_LEN-512){
                 strcat(yybuf, str);
         }
 }

@@ -60,10 +60,11 @@ title="${title}">mas...</a></div>
     };
 
     function getHtml(html) {
-    	var tt = html.replace(/\s{2,}/g, "&#10;");
-    	tt = tt.replace(/M&#225;s informaci&#243;n\n*/g, "").replace(/Si te interes.*newsletter\./g, ""); 
-    	tt = tt.replace(/puedes ver:.*$/g, "").replace(/\(Fuente:.*$/g, "");
-	return tt.replace(/\.([A-Z])/g, ". $1");
+//    	var tt = html.replace(/\s{2,}/g, "&#10;");
+//    	tt = tt.replace(/M&#225;s informaci&#243;n\n*/g, "").replace(/Si te interes.*newsletter\./g, ""); 
+//    	tt = tt.replace(/puedes ver:.*$/g, "").replace(/\(Fuente:.*$/g, "");
+//      .replace(/\.([A-Z])/g, ". $1");
+	return html;
     }
 
     function openNews(evt, newsType, newsName) {
@@ -138,10 +139,10 @@ title="${title}">mas...</a></div>
 <h2 style="text-align:center;margin-bottom:0;">Noticias del Peru<br />Actualizadas cada 10 minutos</h2>
 <div class="box-table" >
 <ul class="tab">
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 8, 'Actualidad')">Actualidad</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 9, 'Deporte')">Deporte</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 10, 'Politica')">Politica</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 11, 'Entretenimiento')">Entretenimiento</a></li>
+  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 9, 'Actualidad')">Actualidad</a></li>
+  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 10, 'Deporte')">Deporte</a></li>
+  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 11, 'Politica')">Politica</a></li>
+  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 12, 'Entretenimiento')">Entretenimiento</a></li>
 </ul>
 </div>
 

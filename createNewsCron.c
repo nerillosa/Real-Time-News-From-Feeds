@@ -28,7 +28,7 @@
 #define BUF_LEN 32768
 #define NUM_ITEMS 3000
 #define NUM_REFRESH 15
-#define NUM_AGENCIES 11
+#define NUM_CATEGORIES 12
 #define URL_TITLE_LEN 512
 
 #define YY_HEADER_EXPORT_START_CONDITIONS
@@ -48,7 +48,8 @@ struct agencyParse{
 	char* agency;
 	int parseType;
 } agencyParseArray[] = {{"CNN", CNN}, {"FOX NEWS", FOX}, {"NY TIMES", NYT},{"ABC NEWS", ABC},{"GESTION", GESTION},
-	{"PERU21", PERU21}, {"CNBC", CNBC}, {"REUTERS", REUTERS}, {"US TODAY", USTODAY}, {"WSH POST", WSH}} ;
+	{"PERU21", PERU21}, {"CNBC", CNBC}, {"REUTERS", REUTERS}, {"US TODAY", USTODAY}, {"WSH POST", WSH},
+	{"UPI", UPI}, {"WSJ", WSJ}} ;
 
 static int AGENCY_PARSE_SIZE = sizeof(agencyParseArray)/sizeof(agencyParseArray[0]);
 
@@ -95,6 +96,7 @@ static void deleteFutureRecords();
 static size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState);
 static char *base64_encode(char *data, size_t input_length,  size_t *output_length);
 static void setOwnEncodedHtml(struct item *item, struct extra *extra);
+static int fsize(const char *filename);
 
 MYSQL *con ;
 FILE *inputptr;
@@ -192,7 +194,7 @@ static void getLatestItems(){
 
 	char buff[BUF_LEN*8];
 	int j,k;
-	for(j=1;j<=NUM_AGENCIES;j++){
+	for(j=1;j<=NUM_CATEGORIES;j++){
 		for(i=0,k=0;i<currentItemsCount;i++){
 			if(k==NUM_REFRESH) break; //no more than NUM_REFRESH every 5 minutes
 	     		if(j==itemArray[i].type) {
@@ -484,6 +486,11 @@ void cleanRssDateString(char *rssDateString){
 		rssDateString[sz-2] = '0';
 	}
 
+        char *t;
+        if((t = strstr(rssDateString, "EST"))){
+           strcat (t, "-0500");
+        }
+
 	struct tm tmA;
 	memset(&tmA, 0, sizeof(struct tm));
 	strptime(rssDateString,"%a, %d %b %Y %H:%M:%S %Z", &tmA);
@@ -498,6 +505,10 @@ void cleanRssDateString(char *rssDateString){
 	diff += delta;
 	if(diff){
 		tmA.tm_hour -= diff;
+                if(tmA.tm_hour > 23){
+                        tmA.tm_hour -= 24;
+                        tmA.tm_mday += 1;
+                }
 		if(tmA.tm_hour < 0) {
 			tmA.tm_hour += 24;
 			if(tmA.tm_mday > 1){
@@ -621,7 +632,7 @@ void fillStruct(struct item *item, struct extra *extra){
        	strcat(tumia, item ->url);
        	strcat(tumia, "'");
 
-	fprintf(stderr, "%s\n", item->url);
+	//fprintf(stderr, "%s\n", item->url);
         FILE *pp = popen(tumia, "r");
 
         if (pp != NULL) {
@@ -720,28 +731,31 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
                 fprintf(stderr, "Error could not open DOWNLOAD_FILE for parseUrl: %s\n", strerror(errno));
                 exit(EXIT_FAILURE);
 	}
-	fprintf(logptr, "j");fflush(logptr);
+	fprintf(logptr, "fs:%d\n", fsize("DOWNLOAD"));fflush(logptr);
         yyin = pp;
-        char tumia[YY_BUF_SIZE];
-        tumia[0]= '\0';
+        char tumia[BUF_LEN];
+	memset(tumia, 0x00, BUF_LEN);
+
+//        tumia[0]= '\0';
         agencyState = flexStartState; //global variable that flex uses to define start state
         yybuf = &tumia[0]; //flex will write to yybuf
        	fprintf(logptr, "k");fflush(logptr);
 
-        YY_BUFFER_STATE bp = yy_create_buffer(yyin, YY_BUF_SIZE);
+        YY_BUFFER_STATE bp = yy_create_buffer(yyin, BUF_LEN);
         yy_switch_to_buffer(bp);
 	fprintf(logptr, "L");fflush(logptr);
 
         yylex();
 	fprintf(logptr, "m");fflush(logptr);
-        tumia[YY_BUF_SIZE-1]= '\0';
+        tumia[BUF_LEN-1]= '\0';
 
 	size_t out_len = 0;
 
-	if(strlen(tumia)< YY_BUF_SIZE-1){
+	if(strlen(tumia)< BUF_LEN-1){
 	        *encoded = base64_encode(tumia, strlen(tumia), &out_len);
 	}else{
 		fprintf(logptr, "HTML Too Long, url:%s\n", url);fflush(logptr);
+ 		fprintf(logptr, "fs:%d\n", fsize("DOWNLOAD"));fflush(logptr);
 	}
 
         yy_delete_buffer(bp);
@@ -785,5 +799,14 @@ char *base64_encode(char *data, size_t input_length,  size_t *output_length) {
     		encoded_data[*output_length - 1 - i] = '=';
 
   	return encoded_data;
+}
+
+int fsize(const char *filename) {
+        struct stat st;
+
+        if (stat(filename, &st) == 0)
+                return (st.st_size + 0);
+
+        return -1;
 }
 

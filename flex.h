@@ -222,16 +222,22 @@ extern char *yytext;
 #define PERU21 11
 #define GESTION 12
 #define GIMPLE 13
-#define WUMIA 14
-#define REUTSTORY 15
-#define NYTSTORY 16
-#define ABCSTORY 17
-#define SIMPLESTORY 18
-#define USTODAYSTORY 19
-#define CNNSTORY 20
-#define CNBCSTORY 21
-#define PERU21STORY 22
-#define GESTIONSTORY 23
+#define PIMPLE 14
+#define WIMPLE 15
+#define WSJ 16
+#define UPI 17
+#define WUMIA 18
+#define REUTSTORY 19
+#define NYTSTORY 20
+#define ABCSTORY 21
+#define SIMPLESTORY 22
+#define USTODAYSTORY 23
+#define CNNSTORY 24
+#define CNBCSTORY 25
+#define PERU21STORY 26
+#define GESTIONSTORY 27
+#define WSJSTORY 28
+#define UPISTORY 29
 
 #endif
 
@@ -335,9 +341,9 @@ extern int yylex (void);
 #undef YY_DECL
 #endif
 
-#line 100 "multiple.lex"
+#line 115 "multiple.lex"
 
 
-#line 342 "flex.h"
+#line 348 "flex.h"
 #undef yyIN_HEADER
 #endif /* yyHEADER_H */

@@ -13,15 +13,11 @@
 5,CNN,http://rss.cnn.com/rss/cnn_showbiz.rss
 6,CNN,http://rss.cnn.com/rss/cnn_health.rss
 7,CNN,http://rss.cnn.com/rss/cnn_us.rss
+8,CNN,http://rss.cnn.com/rss/money_latest.rss
 1,WSH POST,http://feeds.washingtonpost.com/rss/rss_powerpost
 2,WSH POST,http://www.washingtonpost.com/wp-dyn/rss/technology/index.xml
 6,WSH POST,http://www.washingtonpost.com/wp-dyn/rss/health/index.xml
 7,WSH POST,http://www.washingtonpost.com/wp-dyn/rss/nation/index.xml
-1,CNBC,http://www.cnbc.com/id/10000113/device/rss/rss.html
-2,CNBC,http://www.cnbc.com/id/19854910/device/rss/rss.html
-3,CNBC,http://www.cnbc.com/id/100727362/device/rss/rss.html
-6,CNBC,http://www.cnbc.com/id/10000108/device/rss/rss.html
-7,CNBC,http://www.cnbc.com/id/15837362/device/rss/rss.html
 1,ABC NEWS,http://feeds.abcnews.com/abcnews/politicsheadlines
 2,ABC NEWS,http://feeds.abcnews.com/abcnews/technologyheadlines
 3,ABC NEWS,http://feeds.abcnews.com/abcnews/internationalheadlines
@@ -36,27 +32,44 @@
 5,REUTERS,http://feeds.reuters.com/reuters/entertainment
 6,REUTERS,http://feeds.reuters.com/reuters/healthNews
 7,REUTERS,http://feeds.reuters.com/Reuters/domesticNews
+8,REUTERS,http://feeds.reuters.com/reuters/businessNews
 1,US TODAY,http://rssfeeds.usatoday.com/usatodaycomwashington-topstories&x=1
 4,US TODAY,http://rssfeeds.usatoday.com/usatodaycomsports-topstories&x=1
 5,US TODAY,http://rssfeeds.usatoday.com/usatoday-lifetopstories&amp;x=1
 7,US TODAY,http://rssfeeds.usatoday.com/usatodaycomnation-topstories&x=1
-8,COMERCIO,http://elcomercio.pe/feed/opinion.xml
-9,COMERCIO,http://elcomercio.pe/feed/deporte-total.xml
-10,COMERCIO,http://elcomercio.pe/feed/politica/gobierno.xml
-11,COMERCIO,http://elcomercio.pe/feed/luces.xml
-8,PERU21,http://peru21.pe/feed/actualidad
-9,PERU21,http://peru21.pe/feed/deportes
-10,PERU21,http://peru21.pe/feed/economia
-11,PERU21,http://peru21.pe/feed/espectaculos
-8,PERU,http://peru.com/feed/actualidad
-9,PERU,http://peru.com/feed/deportes
-10,PERU,http://peru.com/feed/actualidad/politicas
-11,PERU,http://peru.com/feed/entretenimiento
-8,RPP,http://rpp.pe/feed/actualidad
-9,RPP,http://rpp.pe/feed/deportes
-10,RPP,http://rpp.pe/feed/politica
-11,RPP,http://rpp.pe/feed/entretenimiento
-10,GESTION,http://gestion.pe/feed/politica
-8,GESTION,http://gestion.pe/feed/economia
+8,US TODAY,http://rssfeeds.usatoday.com/UsatodaycomMoney-TopStories
+9,COMERCIO,http://elcomercio.pe/feed/opinion.xml
+10,COMERCIO,http://elcomercio.pe/feed/deporte-total.xml
+11,COMERCIO,http://elcomercio.pe/feed/politica/gobierno.xml
+12,COMERCIO,http://elcomercio.pe/feed/luces.xml
+9,RPP,http://rpp.pe/feed/actualidad
+10,RPP,http://rpp.pe/feed/deportes
+11,RPP,http://rpp.pe/feed/politica
+12,RPP,http://rpp.pe/feed/entretenimiento
+9,PERU21,http://peru21.pe/feed/actualidad
+10,PERU21,http://peru21.pe/feed/deportes
+11,PERU21,http://peru21.pe/feed/economia
+12,PERU21,http://peru21.pe/feed/espectaculos
+9,PERU,http://peru.com/feed/actualidad
+10,PERU,http://peru.com/feed/deportes
+11,PERU,http://peru.com/feed/actualidad/politicas
+12,PERU,http://peru.com/feed/entretenimiento
+11,GESTION,http://gestion.pe/feed/politica
+9,GESTION,http://gestion.pe/feed/economia
 3,BBC,http://feeds.bbci.co.uk/news/world/rss.xml
 2,BBC,http://feeds.bbci.co.uk/news/science_and_environment/rss.xml
+8,BBC,http://feeds.bbci.co.uk/news/business/rss.xml
+1,CNBC,http://www.cnbc.com/id/10000113/device/rss/rss.html
+2,CNBC,http://www.cnbc.com/id/19854910/device/rss/rss.html
+3,CNBC,http://www.cnbc.com/id/100727362/device/rss/rss.html
+6,CNBC,http://www.cnbc.com/id/10000108/device/rss/rss.html
+7,CNBC,http://www.cnbc.com/id/15837362/device/rss/rss.html
+3,UPI,http://rss.upi.com/news/tn_int.rss
+5,UPI,http://rss.upi.com/news/entertainment_news.rss
+6,UPI,http://rss.upi.com/news/health_news.rss
+2,UPI,http://rss.upi.com/news/science_news.rss
+4,UPI,http://rss.upi.com/news/sports_news.rss
+8,UPI,http://rss.upi.com/news/business_news.rss
+8,WSJ,http://www.wsj.com/xml/rss/3_7014.xml
+3,WSJ,http://www.wsj.com/xml/rss/3_7085.xml
+2,WSJ,http://www.wsj.com/xml/rss/3_7455.xml
