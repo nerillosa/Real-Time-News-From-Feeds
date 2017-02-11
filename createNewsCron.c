@@ -209,9 +209,7 @@ static void getLatestItems(){
 		        		fprintf(logptr, "NULL pubdate:%d\n", j);fflush(logptr);
 		        		continue;
 		        	}
-		        	fprintf(logptr, "z");fflush(logptr);
 		        	if((p=strstr(itemArray[i].url, "http:")) != &(itemArray[i].url[0]) && p){
-		        		fprintf(logptr, "x");fflush(logptr);
 			        	long diff = p - itemArray[i].url;
 			        	memmove(itemArray[i].url, p, URL_TITLE_LEN-diff );
 	        	        }
@@ -220,7 +218,6 @@ static void getLatestItems(){
 				if (buff[0] && mysql_query(con, buff)){
 					fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
 				}
-				fprintf(logptr, "i\n");fflush(logptr);
 			}
 		}
 		deleteExtraRecords(j);
@@ -245,7 +242,6 @@ void deleteExtraRecords(int type){
 	strcat(buff, beth);
 	strcat(buff, " order by pubdate desc limit 49,1) and news_type=");
 	strcat(buff, beth);
-	//fprintf(logptr, "deletestring:%s\n",buff);
 	if (mysql_query(con, buff)){
 		fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
 	}
@@ -547,11 +543,8 @@ void getInsertString(struct item *item, char *json, int type){
 	cleanDateString(rssdate);
 	struct extra extra;
 	memset(&extra, 0, sizeof(struct extra));
-	fprintf(logptr, "ab");fflush(logptr);
 
 	fillStruct(item, &extra); // uses flex to scrape top image and html from url
-
-	fprintf(logptr, "g");fflush(logptr);
 
 	sprintf(beth, "%d", type);
 
@@ -572,7 +565,6 @@ void getInsertString(struct item *item, char *json, int type){
 		strcat(json, item ->agency);
 		strcat(json, "',now())");
 	}
-	fprintf(logptr, "h");fflush(logptr);
 
 }
 
@@ -636,7 +628,6 @@ void fillStruct(struct item *item, struct extra *extra){
         FILE *pp = popen(tumia, "r");
 
         if (pp != NULL) {
-	 	fprintf(logptr, "c");fflush(logptr);
   		if(fgets(tumia, sizeof(tumia), pp) != NULL) {
 			tumia[URL_TITLE_LEN - 1] = '\0';
 			strcpy(extra->imgurl, tumia);
