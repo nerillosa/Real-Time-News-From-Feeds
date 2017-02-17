@@ -4,12 +4,8 @@
 <title>Noticias del Peru al minuto</title>
 
 <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
-<meta name="keywords" content="news, world news, usa news, sports news, politics" />
+<meta name="keywords" content="news, world news, peru noticias, deporte noticias, politica noticias, entretenimiento, peru" />
 <link rel="stylesheet" href="tabs.css" type="text/css" media="screen" />
-<style>
-	body{background : #1E90FF;}
-	b{font-size:1em !important;}
-</style>
 <link rel="stylesheet" href="jtempl.css" type="text/css" media="screen" />
 
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
@@ -25,10 +21,12 @@
   <td>
   <div class="links">${title}&nbsp;&nbsp;&nbsp;<a href="#" onclick="hrefClick(event)" 
 title="${title}">mas...</a></div>
-  {{if img != ''}}<img class="lavida" src="${img}" />{{/if}}
-  <div class="htext" style="font-size: 1.2em;font-weight:bold;"><pre>${getHtml(html)}</pre></div>
+  <img class="lavida" src="${img}" />
+  <div class="htext" style="font-size: 1.2em;font-weight:bold;">${getHtml(html)}</div>
   </td>
-     <td class="user-photo"><img class="user-tumb" src="images/${logo}"/></td>
+     <td class="user-photo"><img style="cursor:pointer;" class="user-tumb" src="images/${logo}" onclick="tumia(event)"/><a
+     style="font-weight:bold;text-decoration:none;" href="${url}" 
+     target="_blank"><div style="margin-left:22px;">Ver art&iacute;culo original</div></a></td>
      <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate)}</td>
   </tr>
 </script>
@@ -39,6 +37,12 @@ title="${title}">mas...</a></div>
     $(document).ajaxStart(function(){$('.loadingDiv').show();});
     $(document).ajaxStop(function(){$('.loadingDiv').hide();});
     $(document).ready(function() {
+        $.ajax({
+           url: 'cambio.php',
+           success: function(data) {
+             $('#third').html(data);
+           }
+        });
 	$(".tablinks").eq(0).click(); //default ACTUALIDAD
     });
 
@@ -59,11 +63,11 @@ title="${title}">mas...</a></div>
     	});
     };
 
+    function tumia(evt){
+        window.open(evt.target.nextSibling, '_blank');
+    }
+
     function getHtml(html) {
-//    	var tt = html.replace(/\s{2,}/g, "&#10;");
-//    	tt = tt.replace(/M&#225;s informaci&#243;n\n*/g, "").replace(/Si te interes.*newsletter\./g, ""); 
-//    	tt = tt.replace(/puedes ver:.*$/g, "").replace(/\(Fuente:.*$/g, "");
-//      .replace(/\.([A-Z])/g, ". $1");
 	return html;
     }
 
@@ -131,18 +135,49 @@ title="${title}">mas...</a></div>
     }
 
 </script>
+<style>
+    body{background : #1E90FF;}
+    b{font-size:1em !important;}
 
+    #first {
+      background-color:#1E90FF;
+      width:33%;
+      float:left;
+    }
+    #second {
+      background-color:#1E90FF;
+      width:33%;
+      float:left;
+    }
+    #second h2{
+      text-align:center;
+      font-size:1.8em;
+    }
+    #third {
+      background-color:white;
+      width:33%;
+      font-weight: bold;
+      float:left;
+      text-align:center;
+    }
+</style>
 
 </head>
 <body>
 
-<h2 style="text-align:center;margin-bottom:0;">Noticias del Peru<br />Actualizadas cada 10 minutos</h2>
-<div class="box-table" >
+<div class="box-table">
+  <div id="first">&nbsp;</div>
+  <div id="second"><h2>Noticias del Peru<br />Actualizadas cada 10 minutos</h2></div>
+  <div id="third"></div>
+</div>
+
+<div class="box-table" style="padding-top: 0px;" >
 <ul class="tab">
   <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 9, 'Actualidad')">Actualidad</a></li>
   <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 10, 'Deporte')">Deporte</a></li>
   <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 11, 'Politica')">Politica</a></li>
   <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 12, 'Entretenimiento')">Entretenimiento</a></li>
+  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 13, 'Economia')">Economia</a></li>
 </ul>
 </div>
 

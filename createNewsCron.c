@@ -28,7 +28,7 @@
 #define BUF_LEN 32768
 #define NUM_ITEMS 3000
 #define NUM_REFRESH 15
-#define NUM_CATEGORIES 12
+#define NUM_CATEGORIES 13
 #define URL_TITLE_LEN 512
 
 #define YY_HEADER_EXPORT_START_CONDITIONS
@@ -97,6 +97,7 @@ static size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState);
 static char *base64_encode(char *data, size_t input_length,  size_t *output_length);
 static void setOwnEncodedHtml(struct item *item, struct extra *extra);
 static int fsize(const char *filename);
+static void printTime(char *msg);
 
 MYSQL *con ;
 FILE *inputptr;
@@ -124,22 +125,14 @@ int main(int argc, char *argv[]){
 	setbuf(stderr, NULL);
 	initMysql();
 	initCurl();
-	time_t t = time(NULL);
-        struct tm *tm = localtime(&t);
-        char s[64];
-        strftime(s, sizeof(s), "%c", tm);
-        fprintf(logptr, "start: %s\n", s);
-	fflush(logptr);
+	printTime("\nstart");
 	memset(&news_agency, 0, sizeof(struct newsAgency));
         getUrls(&news_agency);
 	fclose(inputptr);
 
 	getLatestItems();
 
-    	t = time(NULL);
-    	tm = localtime(&t);
-	strftime(s, sizeof(s), "%c", tm);
-    	fprintf(logptr, "end: %s\n\n", s);fflush(logptr);
+	printTime("end");
 	fclose(logptr);
 	mysql_close(con);
 	cleanCurl();
@@ -722,22 +715,21 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
                 fprintf(stderr, "Error could not open DOWNLOAD_FILE for parseUrl: %s\n", strerror(errno));
                 exit(EXIT_FAILURE);
 	}
-	fprintf(logptr, "fs:%d\n", fsize("DOWNLOAD"));fflush(logptr);
+//	fprintf(logptr, "fs:%d\n", fsize("DOWNLOAD"));fflush(logptr);
         yyin = pp;
         char tumia[BUF_LEN];
 	memset(tumia, 0x00, BUF_LEN);
 
-//        tumia[0]= '\0';
         agencyState = flexStartState; //global variable that flex uses to define start state
         yybuf = &tumia[0]; //flex will write to yybuf
-       	fprintf(logptr, "k");fflush(logptr);
+//       	fprintf(logptr, "k");fflush(logptr);
 
         YY_BUFFER_STATE bp = yy_create_buffer(yyin, BUF_LEN);
         yy_switch_to_buffer(bp);
-	fprintf(logptr, "L");fflush(logptr);
+//	fprintf(logptr, "L");fflush(logptr);
 
         yylex();
-	fprintf(logptr, "m");fflush(logptr);
+//	fprintf(logptr, "m");fflush(logptr);
         tumia[BUF_LEN-1]= '\0';
 
 	size_t out_len = 0;
@@ -801,3 +793,13 @@ int fsize(const char *filename) {
         return -1;
 }
 
+void printTime(char *msg){
+	time_t t = time(NULL);
+        struct tm *tm = localtime(&t);
+        char s[URL_TITLE_LEN];
+        strcpy(s, msg);
+        strcat(s, ": ");
+        strftime(s+strlen(msg)+2, URL_TITLE_LEN-strlen(msg)-2, "%c", tm);
+        fprintf(logptr, "%s\n", s);
+	fflush(logptr);
+}

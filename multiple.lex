@@ -31,7 +31,7 @@ void writeString(char *str);
 <ABC>"<h3>"  {writeText();BEGIN(ABCSTORY);}
 <ABCSTORY>[^<]+ {yymore();}
 <ABCSTORY>"<"   {yymore();}
-<ABCSTORY>"</p>"  {yyless(yyleng-4);if(yyleng>10 && !strstr(yytext,"<strong>")){writeText(); strcat(yybuf,"&#10;");} BEGIN(ABC);}
+<ABCSTORY>"</p>"  {yyless(yyleng-4);if(yyleng>10 && !strstr(yytext,"<strong>")){writeText(); writeString("&#10;");} BEGIN(ABC);}
 <ABCSTORY>"</h3>" {writeText();BEGIN(ABC);}
 
 <UPI>"<"article.itemprop  {BEGIN(PIMPLE);}
@@ -115,13 +115,13 @@ void writeString(char *str);
 %%
 
 void writeText(){
-        if(yyleng + strlen(yybuf) < BUF_LEN-512){
+        if(yyleng + strlen(yybuf) < BUF_LEN-1){
                 strcat(yybuf, yytext);
         }
 }
 
 void writeString(char *str){
-        if(strlen(str) + strlen(yybuf) < BUF_LEN-512){
+        if(strlen(str) + strlen(yybuf) < BUF_LEN-1){
                 strcat(yybuf, str);
         }
 }
