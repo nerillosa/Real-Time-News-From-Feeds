@@ -49,7 +49,7 @@ struct agencyParse{
 	int parseType;
 } agencyParseArray[] = {{"CNN", CNN}, {"FOX NEWS", FOX}, {"NY TIMES", NYT},{"ABC NEWS", ABC},{"GESTION", GESTION},
 	{"PERU21", PERU21}, {"CNBC", CNBC}, {"REUTERS", REUTERS}, {"US TODAY", USTODAY}, {"WSH POST", WSH},
-	{"UPI", UPI}, {"WSJ", WSJ}} ;
+	{"UPI", UPI}, {"WSJ", WSJ}, {"COMERCIO", COMERCIO}, {"RPP", RPP}} ;
 
 static int AGENCY_PARSE_SIZE = sizeof(agencyParseArray)/sizeof(agencyParseArray[0]);
 
@@ -162,6 +162,7 @@ static void getLatestItems(){
                 	chunk.memory = malloc(1);
         	        chunk.size = 0;
        	        	loadFeed(pp ->url); // Loads feed into memory.
+//			fprintf(logptr, "NAME:%.10s\n", pp ->name);fflush(logptr);
         	        getFeedItems(pp ->name, pp ->type, chunk.memory);
        	        	free(chunk.memory);
 		}while((pp = pp ->next) != NULL);
@@ -178,8 +179,13 @@ static void getLatestItems(){
 	close(pfd[0]); // parent closes read end of pipe
 
 	int i;
+
 	for(i=0;i<currentItemsCount;i++){
 		cleanRssDateString(itemArray[i].pubDate); // attempt to normalize all dates to MST time
+//	        if(!strcmp(itemArray[i].agency, "RPP")){
+//		     fprintf(logptr, "Title:%s\n", itemArray[i].title);
+//		     fprintf(logptr, "URL:%s\n\n", itemArray[i].url);fflush(logptr);
+//		}
 	}
 
 	fprintf(logptr, "Item count:%d\n",currentItemsCount);fflush(logptr);
@@ -189,7 +195,7 @@ static void getLatestItems(){
 	int j,k;
 	for(j=1;j<=NUM_CATEGORIES;j++){
 		for(i=0,k=0;i<currentItemsCount;i++){
-			if(k==NUM_REFRESH) break; //no more than NUM_REFRESH every 5 minutes
+			if(k==NUM_REFRESH) break; //no more than NUM_REFRESH every 10 minutes
 	     		if(j==itemArray[i].type) {
 	     			k++;
 		        	char *p;
@@ -242,6 +248,9 @@ void deleteExtraRecords(int type){
 
 void getFeedItems(char *agency, int type, char *buff)
 {
+//	 if(!strcmp(agency, "RPP"))
+//	       fprintf(logptr, "BUFF:%.1024s\n", buff);fflush(logptr);
+
         int i=0,k = 0;
         int state=OUT,pos=0;
         char a = 0;
@@ -278,6 +287,7 @@ void getFeedItems(char *agency, int type, char *buff)
                                         cleanUrl(item.url);
                                         getTitle(item.title);
                                         strcpy(item.agency, agency);
+//					fprintf(logptr, "AGENCY:%.10s\n", item.agency);fflush(logptr);
 					item.type = type;
                                         write(pfd[1], &item, ITEM_SIZE);
                                 }
@@ -537,6 +547,11 @@ void getInsertString(struct item *item, char *json, int type){
 	struct extra extra;
 	memset(&extra, 0, sizeof(struct extra));
 
+//        if(!strcmp(item ->agency, "RPP")){
+//            fprintf(logptr, "Title:%s\n", item ->title);
+//            fprintf(logptr, "URL:%s\n\n", item ->url);fflush(logptr);
+//	}
+
 	fillStruct(item, &extra); // uses flex to scrape top image and html from url
 
 	sprintf(beth, "%d", type);
@@ -557,6 +572,11 @@ void getInsertString(struct item *item, char *json, int type){
 		strcat(json, "','%Y-%m-%d %H:%i:%S'),'");
 		strcat(json, item ->agency);
 		strcat(json, "',now())");
+	}else{
+		if(!extra.imgurl[0])
+		    fprintf(logptr, "No Image for URL:%s\n\n", item ->url);fflush(logptr);
+//	        if(!extra.html[0])
+//	            fprintf(logptr, "No HTML for URL:%s\n\n", item ->url);fflush(logptr);
 	}
 
 }
@@ -582,9 +602,13 @@ void setOwnEncodedHtml(struct item *item, struct extra *extra){
         	fprintf(logptr, "bad agencyParse:%s\n", item->url);fflush(logptr);
 	}
 	free(encoded);
+
+//        if(!strcmp(item ->agency, "RPP")){
+//             fprintf(logptr, "HTML:%.1024s\n", extra ->html);
+//             fprintf(logptr, "IMGURL:%.512s\n\n", extra ->imgurl);fflush(logptr);
+//        }
+
 }
-
-
 
 void cleanDateString(char *rssDateString){
         struct tm tmA;
@@ -691,8 +715,7 @@ void loadFeed(char *url)
   res = curl_easy_perform(curl_handle);
   /* check for errors */
   if(res != CURLE_OK) {
-    fprintf(stderr, "curl_easy_perform() failed: %s\n",
-            curl_easy_strerror(res));
+    fprintf(stderr, "curl_easy_perform() %s failed: %s\n", url, curl_easy_strerror(res));
   }
 }
 
@@ -702,7 +725,7 @@ void initMysql(){
                 fprintf(logptr, "ERROR:mysql_init() failed\n");fflush(logptr);
                 exit(EXIT_FAILURE);
         }
-        if (mysql_real_connect(con, "localhost", "XXXXX", "XXXXX", "XXXXX", 0, NULL, 0) == NULL){
+        if (mysql_real_connect(con, "localhost", "nerillos_neri", "carpa1", "nerillos_neri", 0, NULL, 0) == NULL){
                 fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
                 mysql_close(con);
                 exit(EXIT_FAILURE);

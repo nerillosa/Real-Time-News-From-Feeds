@@ -16,8 +16,10 @@
 8,CNN,http://rss.cnn.com/rss/money_latest.rss
 1,WSH POST,http://feeds.washingtonpost.com/rss/rss_powerpost
 2,WSH POST,http://www.washingtonpost.com/wp-dyn/rss/technology/index.xml
+3,WSH POST,http://feeds.washingtonpost.com/rss/rss_blogpost
+4,WSH POST,http://feeds.washingtonpost.com/rss/rss_early-lead
 6,WSH POST,http://www.washingtonpost.com/wp-dyn/rss/health/index.xml
-7,WSH POST,http://www.washingtonpost.com/wp-dyn/rss/nation/index.xml
+7,WSH POST,http://feeds.washingtonpost.com/rss/rss_post-nation
 1,ABC NEWS,http://feeds.abcnews.com/abcnews/politicsheadlines
 2,ABC NEWS,http://feeds.abcnews.com/abcnews/technologyheadlines
 3,ABC NEWS,http://feeds.abcnews.com/abcnews/internationalheadlines
@@ -38,11 +40,7 @@
 5,US TODAY,http://rssfeeds.usatoday.com/usatoday-lifetopstories&amp;x=1
 7,US TODAY,http://rssfeeds.usatoday.com/usatodaycomnation-topstories&x=1
 8,US TODAY,http://rssfeeds.usatoday.com/UsatodaycomMoney-TopStories
-9,COMERCIO,http://elcomercio.pe/feed/opinion.xml
-10,COMERCIO,http://elcomercio.pe/feed/deporte-total.xml
-11,COMERCIO,http://elcomercio.pe/feed/politica/gobierno.xml
-12,COMERCIO,http://elcomercio.pe/feed/luces.xml
-13,COMERCIO,http://elcomercio.pe/feed/economia.xml
+9,COMERCIO,http://elcomercio.pe/rss/
 9,RPP,http://rpp.pe/feed/actualidad
 10,RPP,http://rpp.pe/feed/deportes
 11,RPP,http://rpp.pe/feed/politica

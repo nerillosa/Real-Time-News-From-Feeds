@@ -18,14 +18,20 @@ extern char *yybuf;
 void writeText();
 void writeString(char *str);
 %}
-%s WSH WSHSTORY REUTERS NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI
-%x WUMIA REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY
+%s WSH WSHSTORY REUTERS NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI COMERCIO
+%x WUMIA REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
 %option noyywrap
 %%
 	BEGIN(agencyState);
 
 [^<]+   ;
 "<"     ;
+
+<RPP>[^"]+   ;
+<RPP>\"      ;
+<RPP>\"articleBody\":.\"    {BEGIN(RPPSTORY);}
+<RPPSTORY>[^"]+             {writeText();}
+<RPPSTORY>\"                {BEGIN(RPP);}
 
 <ABC>"<"p.itemprop=[^<]+">"  {BEGIN(ABCSTORY);}
 <ABC>"<h3>"  {writeText();BEGIN(ABCSTORY);}
@@ -62,12 +68,17 @@ void writeString(char *str);
 <CNNSTORY>"</p>"   {writeString("&#10;&#10;"); BEGIN(CNN);}
 <CNNSTORY>"</div>" {writeString("&#10;&#10;"); BEGIN(CNN);}
 
-<FOX>"<"div.class=.article-text.">" {BEGIN(SIMPLE);}
+<FOX>"<"div.class=.article-body.">" {BEGIN(SIMPLE);}
 
 <NYT>"<"p.class=\"story.body.text[^>]+">"    {BEGIN(NYTSTORY);}
 <NYTSTORY>[^<]+             {writeText();}
 <NYTSTORY>"<"               {writeText();}
 <NYTSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(NYT);}
+
+<COMERCIO>"<"p.class=\"parrafo.first.parrafo[^>]+">"      {BEGIN(COMSTORY);}
+<COMSTORY>[^<]+             {writeText();}
+<COMSTORY>"<"               {writeText();}
+<COMSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(COMERCIO);}
 
 <REUTERS>"<"span.id=\"article-text\". {writeText();BEGIN(REUTSTORY);}
 <REUTSTORY>[^<]+   {writeText();}
