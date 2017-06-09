@@ -599,7 +599,9 @@ void setOwnEncodedHtml(struct item *item, struct extra *extra){
 		strncpy(extra->html, encoded, out_len );
 		extra->html[out_len] = '\0'; //terminate
 	}else{
-        	fprintf(logptr, "bad agencyParse:%s\n", item->url);fflush(logptr);
+                if(!strstr(item->url, "video")){
+	        	fprintf(logptr, "bad agencyParse:%s\n", item->url);fflush(logptr);
+                }
 	}
 	free(encoded);
 
