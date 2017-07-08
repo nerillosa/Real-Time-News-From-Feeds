@@ -186,7 +186,7 @@ app.controller('NewsCtrl', function ($scope, $http, $route, $routeParams, $locat
         var jdt = new Date(jsonDate);
         var rvalue = Math.ceil((Date.now() - jdt.getTime()) / 60000);
         if (rvalue < 60 && rvalue > 0)
-            if (parseInt($routeParams.inndex) <= 8)
+            if (parseInt($routeParams.inndex) <= 8 || parseInt($routeParams.inndex) == 14)
                 return "" + rvalue + (rvalue === 1 ? " minute" : " minutes") + " ago";
             else
                 return "Hace " + rvalue + (rvalue === 1 ? " minuto" : " minutos");
