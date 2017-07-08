@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/jquery-ui.css" />
+    <link href='http://fonts.googleapis.com/css?family=Vollkorn:400,700' rel='stylesheet' type='text/css'>
+    <link href="css/Mainbody.css" rel="stylesheet" type="text/css" />
+    <link href="css/800px.css" rel="stylesheet" type="text/css" media="screen and (max-width: 800px)" />
+    <link href="css/nstyle.css" rel="stylesheet" type="text/css" />
+    <meta charset="utf-8" />
+    <title>The Life of the Artist</title>
+    <link rel="icon" type="image/png" href="images/favicon.png">
+
+    <style type="text/css">
+        body {
+            background-color: #ff9933;
+            margin-left: 0;
+            margin-top: 50px;
+            margin-right: 0;
+            margin-bottom: 0;
+        }
+
+    </style>
+    <script src="js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="js/angular/angular.min.js"></script>
+    <script type="text/javascript" src="js/angular/angular-route.min.js"></script>
+    <script type="text/javascript" src="js/myApp.js"></script>
+
+</head>
+
+<body ng-app="myApp">
+    <div id="Container">
+        <div id="Header">
+            <img src="images/wallpaper.jpg" alt="Neri Llosa" style="float:left;">
+            <img class="neriphoto" src="images/guapopaladin.jpg" alt="Neri Llosa">
+            <div class="description"><br /><br />Neri Llosa,<br />Software Engineer<br />And<br />Electronic Hobbyist.
+            </div><img src="images/wallpaper.jpg" alt="Neri Llosa" style="float:right;">
+        </div>
+
+        <div class="menu-wrap" ng-controller="MenuCtrl">
+            <nav class="menu">
+                <ul class="clearfix">
+                    <li ng-class="{'current-item' : active()==1}"><a href="#/">Home</a></li>
+                    <li ng-class="{'current-item' : active()==2}">
+                        <a href="">Real Time News<span class="arrow">&#9660;</span></a>
+                        <ul class="sub-menu">
+                            <li><a ng-click='refreshNews("/usa_news/1", $event)' href="#usa_news/1">Politics</a></li>
+                            <li><a ng-click='refreshNews("/usa_news/2", $event)' href="#usa_news/2">Science</a></li>
+                            <li><a ng-click='refreshNews("/usa_news/3", $event)' href="#usa_news/3">World</a></li>
+                            <li><a ng-click='refreshNews("/usa_news/4", $event)' href="#usa_news/4">Sports</a></li>
+                            <li><a ng-click='refreshNews("/usa_news/5", $event)' href="#usa_news/5">Entertainment</a></li>
+                            <li><a ng-click='refreshNews("/usa_news/6", $event)' href="#usa_news/6">Health</a></li>
+                            <li><a ng-click='refreshNews("/usa_news/7", $event)' href="#usa_news/7">USA</a></li>
+                            <li><a ng-click='refreshNews("/usa_news/8", $event)' href="#usa_news/8">Business</a></li>
+                            <li><a ng-click='refreshNews("/usa_news/14", $event)' href="#usa_news/14">Trump</a></li>
+                        </ul>
+                    </li>
+                    <li ng-class="{'current-item' : active()==3}">
+                        <a href="">Noticias del Peru<span class="arrow">&#9660;</span></a>
+                        <ul class="sub-menu">
+                            <li><a ng-click='refreshNews("/usa_news/9", $event)' href="#usa_news/9">Actualidad</a></li>
+                            <li><a ng-click='refreshNews("/usa_news/10", $event)' href="#usa_news/10">Deporte</a></li>
+                            <li><a ng-click='refreshNews("/usa_news/11", $event)' href="#usa_news/11">Politica</a></li>
+                            <li><a ng-click='refreshNews("/usa_news/12", $event)' href="#usa_news/12">Entretenimiento</a></li>
+                            <li><a ng-click='refreshNews("/usa_news/13", $event)' href="#usa_news/13">Economia</a></li>
+                        </ul>
+                    </li>
+                    <li ng-class="{'current-item' : active()==4}"><a href="#about">About</a></li>
+                    <li ng-class="{'current-item' : active()==5}"><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <div ng-view id="MainBody">
+
+
+        </div>
+
+        <div id="Footer"></div>
+    </div>
+</body>
+
+</html>

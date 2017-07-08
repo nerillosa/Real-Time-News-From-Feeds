@@ -64,7 +64,7 @@ app.service('NewsUtil', function ($http) {
     };
 
     self.setNews = function (x) {
-        var isPeru = x > 8;
+        var isPeru = x > 8 && x != 14;
         self.type = isPeru ? 3 : 2;
         $http.get("../getNews.php?type=" + x)
             .then(function (response) {
@@ -146,13 +146,14 @@ app.controller('NewsCtrl', function ($scope, $http, $route, $routeParams, $locat
         "10": "Noticias Deportivas",
         "11": "Noticias Politicas",
         "12": "Noticias de Entretenimiento",
-        "13": "Noticias Economicas"
+        "13": "Noticias Economicas",
+        "14": "Trump News"
     };
 
     NewsUtil.setNews(parseInt($routeParams.inndex));
     $scope.headline = headlines[$routeParams.inndex];
-    $scope.newsType = parseInt($routeParams.inndex) > 8 ? "mas" : "more";
-    $scope.viewArticle = parseInt($routeParams.inndex) > 8 ? "Ver Articulo original" : "View full article";
+    $scope.newsType = parseInt($routeParams.inndex) > 8 && parseInt($routeParams.inndex)!=14  ? "mas" : "more";
+    $scope.viewArticle = parseInt($routeParams.inndex) > 8 && parseInt($routeParams.inndex)!=14 ? "Ver Articulo original" : "View full article";
 
     $scope.getDate = function (jsonDate) {
         return getDate(jsonDate);
