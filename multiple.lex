@@ -104,6 +104,7 @@ void writeString(char *str);
 <WUMIA>"<div"  {BEGIN(WSH);}
 
 <SIMPLE>"<p>"[^a-zA-Z0-9]  ;
+<SIMPLE>"<"p.class=\"speakable\"">"    {BEGIN(SIMPLESTORY);/*This is for first paragraphs of FOX NEWS*/}
 <SIMPLE>"<p>"   {BEGIN(SIMPLESTORY);}
 <SIMPLESTORY>[^<]+  {writeText();}
 <SIMPLESTORY>"<"    {writeText();}
