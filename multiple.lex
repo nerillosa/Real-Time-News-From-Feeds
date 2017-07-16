@@ -63,6 +63,8 @@ void writeString(char *str);
 
 <CNN>"<"p.class=\"zn-body..paragraph\"">"    {BEGIN(CNNSTORY);}
 <CNN>"<"div.class=\"zn-body..paragraph\"">"  {BEGIN(CNNSTORY);}
+<CNN>"<"p.class=\"zn-body..paragraph.speakable\"">"    {BEGIN(CNNSTORY);}
+<CNN>"<"div.class=\"zn-body..paragraph.speakable\"">"  {BEGIN(CNNSTORY);}
 <CNNSTORY>[^<]+    {writeText();}
 <CNNSTORY>"<"      {writeText();}
 <CNNSTORY>"</p>"   {writeString("&#10;&#10;"); BEGIN(CNN);}
@@ -103,7 +105,7 @@ void writeString(char *str);
 <WUMIA>"</p>"  {writeText();writeString("&#10;&#10;");}
 <WUMIA>"<div"  {BEGIN(WSH);}
 
-<SIMPLE>"<p>"[^a-zA-Z0-9]  ;
+<SIMPLE>"<p>"[^a-zA-Z0-9"]  ;
 <SIMPLE>"<"p.class=\"speakable\"">"    {BEGIN(SIMPLESTORY);/*This is for first paragraphs of FOX NEWS*/}
 <SIMPLE>"<p>"   {BEGIN(SIMPLESTORY);}
 <SIMPLESTORY>[^<]+  {writeText();}
