@@ -67,6 +67,7 @@ void writeString(char *str);
 <CNN>"<"div.class=\"zn-body..paragraph.speakable\"">"  {BEGIN(CNNSTORY);}
 <CNNSTORY>[^<]+    {writeText();}
 <CNNSTORY>"<"      {writeText();}
+<CNNSTORY>"<cite class=".+"</cite>"    ;
 <CNNSTORY>"</p>"   {writeString("&#10;&#10;"); BEGIN(CNN);}
 <CNNSTORY>"</div>" {writeString("&#10;&#10;"); BEGIN(CNN);}
 
@@ -82,17 +83,18 @@ void writeString(char *str);
 <COMSTORY>"<"               {writeText();}
 <COMSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(COMERCIO);}
 
-<REUTERS>"<"span.id=\"article-text\". {writeText();BEGIN(REUTSTORY);}
+<REUTERS>"<"p.data.reactid=\"[0-9]{2}\"">" {writeText();BEGIN(REUTSTORY);}
 <REUTSTORY>[^<]+   {writeText();}
 <REUTSTORY>"<"     {writeText();}
-<REUTSTORY>"<"script.type=\"text.javascript\"     {BEGIN(REUTERS);}
 <REUTSTORY>"<p></p>"	; /*ignore empty paragraphs*/
-<REUTSTORY>"</p>"	{writeText();writeString("&#10;");}
+<REUTSTORY>"</p>"	{writeText();writeString("&#10;&#10;");BEGIN(REUTERS);}
 
 <USTODAY>"<p>"USA  ;
 <USTODAY>"<p>"We.re.sorry   ;
 <USTODAY>"<p>"something.went.wrong   ;
 <USTODAY>"<p>"[^a-zA-Z0-9]  ;
+<USTODAY>"<"p.class=\"speakable-p-..p-text\"">"    {BEGIN(USTODAYSTORY);}
+<USTODAY>"<"p.class=\"p-text\"">"    {BEGIN(USTODAYSTORY);}
 <USTODAY>"<p>"   {BEGIN(USTODAYSTORY);}
 <USTODAYSTORY>[^<]+  {writeText();}
 <USTODAYSTORY>"<"    {writeText();}
