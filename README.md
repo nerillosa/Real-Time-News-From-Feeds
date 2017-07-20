@@ -1,5 +1,5 @@
 # Real-Time-News-From-Feeds
-This web project shows news in many categories from several news agencies. News is harvested from news feeds and is updated every 5 minutes.
+This web project shows news in many categories from several news agencies. News is harvested from news feeds and is updated every 10 minutes.
 This project uses php as the web backend and mysql as the database to save news records. 
 The heart of the project is a C program, createNewsCron.c, that is run every 5 minutes using a cron job. This program takes in a text file as a command line argument.
 This text file (news_urls.txt) contains lines with the following comma separated values : News Type (an integer), News Agency (short name), and the url of the news feed.
