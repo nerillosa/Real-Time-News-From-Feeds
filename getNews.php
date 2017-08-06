@@ -29,13 +29,11 @@
 	   " where a.news_type=" . $type .	" order by a.pubdate desc LIMIT 20");
 	} else{
 	//Trump news
-           $news = $db->query("select c.*,b.logo from (select max(create_date)as create_date,agency,news_type,img from news group by" .
-           " agency,news_type,img) a join (select * from news) c on a.create_date=c.create_date and a.agency=c.agency" .
-           " and a.news_type=c.news_type and a.img=c.img join agency b on a.agency=b.shortname where" .
-           " FROM_BASE64(html) like '%Trump%' and c.news_type<9 and c.title not like '%Venezuela%' order by" .
-           " c.pubdate desc limit 20");	}
-	//$news = $db->query("SELECT a.*,b.logo from news a join agency b on a.agency=b.shortname where a.news_type=" . $type .
-	//" order by pubdate desc LIMIT 20");
+           $news = $db->query("select c.*,b.logo from (select max(create_date)as create_date,html,img from news group by" .
+           " html,img) a join (select * from news) c on a.create_date=c.create_date and a.img=c.img and a.html=c.html" .
+           " join agency b on c.agency=b.shortname where FROM_BASE64(c.html) like '%Trump%'" .
+           " and c.news_type<9 order by c.pubdate desc limit 20");
+        }
 
 	$news_r = array();
 
