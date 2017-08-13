@@ -65,11 +65,14 @@ void writeString(char *str);
 <CNN>"<"div.class=\"zn-body..paragraph\"">"  {BEGIN(CNNSTORY);}
 <CNN>"<"p.class=\"zn-body..paragraph.speakable\"">"    {BEGIN(CNNSTORY);}
 <CNN>"<"div.class=\"zn-body..paragraph.speakable\"">"  {BEGIN(CNNSTORY);}
+<CNN>"<"p.class=\"speakable\"">"  {BEGIN(CNNSTORY);}
+<CNN>"<"h2.class=\"speakable\"">" {BEGIN(CNNSTORY);}
 <CNNSTORY>[^<]+    {writeText();}
 <CNNSTORY>"<"      {writeText();}
 <CNNSTORY>"<cite class=".+"</cite>"    ;
 <CNNSTORY>"</p>"   {writeString("&#10;&#10;"); BEGIN(CNN);}
 <CNNSTORY>"</div>" {writeString("&#10;&#10;"); BEGIN(CNN);}
+<CNNSTORY>"</h2>" {writeString("&#10;&#10;"); BEGIN(CNN);}
 
 <FOX>"<"div.class=.article-body.">" {BEGIN(SIMPLE);}
 
@@ -107,7 +110,8 @@ void writeString(char *str);
 <WUMIA>"</p>"  {writeText();writeString("&#10;&#10;");}
 <WUMIA>"<div"  {BEGIN(WSH);}
 
-<SIMPLE>"<p>"[^a-zA-Z0-9"]  ;
+<SIMPLE>"<p>&nbsp;</p>"  ;
+<SIMPLE>"<p><i></i></p>"  ;
 <SIMPLE>"<p>This material may not be published" ;
 <SIMPLE>"<"p.class=\"speakable\"">"    {BEGIN(SIMPLESTORY);/*This is for first paragraphs of FOX NEWS*/}
 <SIMPLE>"<p>"   {BEGIN(SIMPLESTORY);}
