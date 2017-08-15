@@ -98,6 +98,8 @@ void writeString(char *str);
 <USTODAY>"<p>"[^a-zA-Z0-9]  ;
 <USTODAY>"<"p.class=\"speakable-p-..p-text\"">"    {BEGIN(USTODAYSTORY);}
 <USTODAY>"<"p.class=\"p-text\"">"    {BEGIN(USTODAYSTORY);}
+<USTODAY>"<"p.class=["']speakable-p-..p-text["']">"    {BEGIN(USTODAYSTORY);}
+<USTODAY>"<"p.class=["']p-text["']">"    {BEGIN(USTODAYSTORY);}
 <USTODAY>"<p>"   {BEGIN(USTODAYSTORY);}
 <USTODAYSTORY>[^<]+  {writeText();}
 <USTODAYSTORY>"<"    {writeText();}
