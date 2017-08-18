@@ -39,6 +39,11 @@
 	window.open(evt.target.nextSibling, '_blank');
     }
 
+    function mary(evt){
+    	var link = savetds[0].find('a:first')[0];
+    	window.open(link, '_blank');
+    }
+
     function openNews(evt, newsType, newsName) {
 	$(".tablinks").removeClass("active");
 	$.getJSON("getNews.php?type=" + newsType, function (news) {
@@ -97,7 +102,8 @@
 
 		$(event.target).parent().parent().next().remove();
 		$(event.target).parent().parent().attr("colspan", "3"); //have td ocuppy all 3 columns
-		immg.removeAttr("style").removeAttr("onclick").css("float","right");
+		//immg.removeAttr("style").removeAttr("onclick").css("float","right");
+		immg.css("float","right").removeAttr("onclick").attr("onclick","mary(event)");
 		immg.insertAfter($(event.target).parent().parent().find('img:first'));
 		elem.removeClass("htext");
         	$(event.target).text("less...");
