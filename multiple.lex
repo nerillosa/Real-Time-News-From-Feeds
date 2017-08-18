@@ -116,6 +116,7 @@ void writeString(char *str);
 <SIMPLE>"<p><i></i></p>"  ;
 <SIMPLE>"<p>This material may not be published" ;
 <SIMPLE>"<"p.class=\"speakable\"">"    {BEGIN(SIMPLESTORY);/*This is for first paragraphs of FOX NEWS*/}
+<SIMPLE>"<"p.class=\"story-body[^"]+\"">" {BEGIN(SIMPLESTORY); /*First line of BBC NEWS */}
 <SIMPLE>"<p>"   {BEGIN(SIMPLESTORY);}
 <SIMPLESTORY>[^<]+  {writeText();}
 <SIMPLESTORY>"<"    {writeText();}
