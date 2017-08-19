@@ -10,7 +10,7 @@
     		return;
 	}
 
-	$db = new MySqli('localhost', 'XXXXX', 'XXXXX', 'XXXXX');
+	$db = new MySqli('localhost', 'nerillos_neri', 'carpa1', 'nerillos_neri');
 
 	$result = $db->query("SELECT MAX(id) FROM news_type");
 	$row = $result->fetch_row();

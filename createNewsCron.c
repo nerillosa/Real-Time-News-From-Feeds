@@ -599,9 +599,7 @@ void setOwnEncodedHtml(struct item *item, struct extra *extra){
 		strncpy(extra->html, encoded, out_len );
 		extra->html[out_len] = '\0'; //terminate
 	}else{
-                if(!strstr(item->url, "video")){
-	        	fprintf(logptr, "bad agencyParse:%s\n", item->url);fflush(logptr);
-                }
+        	fprintf(logptr, "bad agencyParse:%s\n", item->url);fflush(logptr);
 	}
 	free(encoded);
 
@@ -727,7 +725,7 @@ void initMysql(){
                 fprintf(logptr, "ERROR:mysql_init() failed\n");fflush(logptr);
                 exit(EXIT_FAILURE);
         }
-        if (mysql_real_connect(con, "localhost", "XXXXX", "XXXXX", "XXXXX", 0, NULL, 0) == NULL){
+        if (mysql_real_connect(con, "localhost", "nerillos_neri", "carpa1", "nerillos_neri", 0, NULL, 0) == NULL){
                 fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
                 mysql_close(con);
                 exit(EXIT_FAILURE);

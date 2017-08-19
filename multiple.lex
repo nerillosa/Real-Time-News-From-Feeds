@@ -100,10 +100,12 @@ void writeString(char *str);
 <USTODAY>"<"p.class=\"p-text\"">"    {BEGIN(USTODAYSTORY);}
 <USTODAY>"<"p.class=["']speakable-p-..p-text["']">"    {BEGIN(USTODAYSTORY);}
 <USTODAY>"<"p.class=["']p-text["']">"    {BEGIN(USTODAYSTORY);}
+<USTODAY>"<"h2.class=\"presto.h2\"">" {writeString("&lt;b&gt;");BEGIN(USTODAYSTORY);}
 <USTODAY>"<p>"   {BEGIN(USTODAYSTORY);}
 <USTODAYSTORY>[^<]+  {writeText();}
 <USTODAYSTORY>"<"    {writeText();}
 <USTODAYSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(USTODAY);}
+<USTODAYSTORY>"</h2>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
 
 <WSH>"<"span.class=\"pb-caption\"">"	{BEGIN(WSHSTORY);}
 <WSHSTORY>"<p>"  {writeText();BEGIN(WUMIA);}

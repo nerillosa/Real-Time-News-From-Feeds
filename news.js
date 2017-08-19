@@ -54,7 +54,7 @@
 			$(this)[0].childNodes[0].nodeValue = dd;
 		});
 		$(".htext").each(function(){
-			var dina = $(this).html().replace(/&lt;\/b&gt;/g,'</b>').replace(/&lt;b&gt;/g,'<br><b>');
+			var dina = $(this).html().replace(/&lt;\/b&gt;/g,'</b>').replace(/&lt;b&gt;/g,'<b>');
 			$(this).html('');
 			var pre = $("<pre> " + dina + " </pre>");
 			$(this).append(pre);
@@ -102,7 +102,6 @@
 
 		$(event.target).parent().parent().next().remove();
 		$(event.target).parent().parent().attr("colspan", "3"); //have td ocuppy all 3 columns
-		//immg.removeAttr("style").removeAttr("onclick").css("float","right");
 		immg.css("float","right").removeAttr("onclick").attr("onclick","mary(event)");
 		immg.insertAfter($(event.target).parent().parent().find('img:first'));
 		elem.removeClass("htext");
