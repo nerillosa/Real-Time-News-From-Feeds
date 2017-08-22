@@ -98,17 +98,22 @@ void writeString(char *str);
 <USTODAY>"<p>"[^a-zA-Z0-9]  ;
 <USTODAY>"<"p.class=\"speakable-p-..p-text\"">"    {BEGIN(USTODAYSTORY);}
 <USTODAY>"<"p.class=["']speakable-p-..p-text["']">"    {BEGIN(USTODAYSTORY);}
+
 <USTODAY>"<"p.class=["']p-text["']"><strong>"  {writeString("<strong>");BEGIN(USTODAYSTORY);}
+<USTODAY>"<"p.class=["']p-text["']"><span style=\"line-height:normal\">"  {writeString("<span>");BEGIN(USTODAYSTORY);}
+
 <USTODAY>"<"p.class=["']p-text["']"><"    ;
 <USTODAY>"<"p.class=["']p-text["']">"    {BEGIN(USTODAYSTORY);}
 <USTODAY>"<"p.class=\"MsoNoSpacing\"">"    {BEGIN(USTODAYSTORY);}
 <USTODAY>"<"h2.class=\"presto.h2\"">" {writeString("&lt;b&gt;");BEGIN(USTODAYSTORY);}
+<USTODAY>"<"h3.class=\"presto.h3\"">" {writeString("&lt;b&gt;");BEGIN(USTODAYSTORY);}
 <USTODAY>"<"h4.class=\"presto.h4\"">" {writeString("&lt;b&gt;");BEGIN(USTODAYSTORY);}
 <USTODAY>"<p>"   {BEGIN(USTODAYSTORY);}
 <USTODAYSTORY>[^<]+  {writeText();}
 <USTODAYSTORY>"<"    {writeText();}
 <USTODAYSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(USTODAY);}
 <USTODAYSTORY>"</h2>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
+<USTODAYSTORY>"</h3>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
 <USTODAYSTORY>"</h4>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
 
 <WSH>"<"span.class=\"pb-caption\"">"	{BEGIN(WSHSTORY);}
