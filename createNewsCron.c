@@ -108,8 +108,8 @@ struct MemoryStruct chunk;
 char *yybuf;
 int agencyState;
 int main(int argc, char *argv[]){
-	if(argc<3){
-		fprintf(stderr, "usage: %s inputFile logFile\n", argv[0]);
+	if(argc<2){
+		fprintf(stderr, "usage: %s inputFile \n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 	inputptr = fopen(argv[1], "r");
@@ -117,12 +117,13 @@ int main(int argc, char *argv[]){
 		fprintf(stderr, "Could not open file %s for reading \n", argv[1]);
 		exit(EXIT_FAILURE);
 	}
-	logptr = fopen(argv[2], "a");
-	if (logptr == NULL){
-		fprintf(stderr, "Could not open file %s for writing logs\n", argv[2]);
-		exit(EXIT_FAILURE);
-	}
+	logptr = stdout; //fopen(argv[2], "a");
+//	if (logptr == NULL){
+//		fprintf(stderr, "Could not open file %s for writing logs\n", argv[2]);
+//		exit(EXIT_FAILURE);
+//	}
 	setbuf(stderr, NULL);
+	setbuf(stdout, NULL);
 	initMysql();
 	initCurl();
 	printTime("\nstart");
@@ -133,7 +134,7 @@ int main(int argc, char *argv[]){
 	getLatestItems();
 
 	printTime("end");
-	fclose(logptr);
+//	fclose(logptr);
 	mysql_close(con);
 	cleanCurl();
 	return 0;
@@ -599,7 +600,9 @@ void setOwnEncodedHtml(struct item *item, struct extra *extra){
 		strncpy(extra->html, encoded, out_len );
 		extra->html[out_len] = '\0'; //terminate
 	}else{
-        	fprintf(logptr, "bad agencyParse:%s\n", item->url);fflush(logptr);
+                if(!strstr(item->url, "video")){
+	        	fprintf(logptr, "bad agencyParse:%s\n", item->url);fflush(logptr);
+                }
 	}
 	free(encoded);
 
@@ -725,7 +728,7 @@ void initMysql(){
                 fprintf(logptr, "ERROR:mysql_init() failed\n");fflush(logptr);
                 exit(EXIT_FAILURE);
         }
-        if (mysql_real_connect(con, "localhost", "XXXXXX", "XXXXXX", "XXXXXX", 0, NULL, 0) == NULL){
+        if (mysql_real_connect(con, "localhost", "XXXXX_neri", "XXXXX", "XXXXX_neri", 0, NULL, 0) == NULL){
                 fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
                 mysql_close(con);
                 exit(EXIT_FAILURE);
@@ -745,14 +748,11 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
 
         agencyState = flexStartState; //global variable that flex uses to define start state
         yybuf = &tumia[0]; //flex will write to yybuf
-//       	fprintf(logptr, "k");fflush(logptr);
 
         YY_BUFFER_STATE bp = yy_create_buffer(yyin, BUF_LEN);
         yy_switch_to_buffer(bp);
-//	fprintf(logptr, "L");fflush(logptr);
 
         yylex();
-//	fprintf(logptr, "m");fflush(logptr);
         tumia[BUF_LEN-1]= '\0';
 
 	size_t out_len = 0;

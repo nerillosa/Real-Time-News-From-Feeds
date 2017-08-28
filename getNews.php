@@ -10,7 +10,7 @@
     		return;
 	}
 
-	$db = new MySqli('localhost', 'XXXXX', 'XXXXXXX', 'XXXXXX');
+	$db = new MySqli('localhost', 'XXXXX_neri', 'XXXXX', 'XXXXX_neri');
 
 	$result = $db->query("SELECT MAX(id) FROM news_type");
 	$row = $result->fetch_row();
@@ -18,19 +18,20 @@
 
 	if($type > ($maxType+1) || $type < 1) {
 		echo("Non valid type");
-		$output = shell_exec("/home1/XXXXXX/public_html/log_error.sh $type");
+		$output = shell_exec("/home1/XXXXX/public_html/log_error.sh $type");
 		return;
 	}
 
-	//This query is a bit long but it gets rid of duplicate images for same news/changed titles
+	//This query is a bit long but it gets rid of articles with duplicate html content
 	if($type <= $maxType){
-	   $news = $db->query("SELECT a.*,b.logo from news a join agency b on a.agency=b.shortname join (select max(pubdate)" .
-	   " as pubdate, max(title) as title,img from news group by img)c on a.pubdate=c.pubdate and a.img=c.img and a.title=c.title" .
-	   " where a.news_type=" . $type .	" order by a.pubdate desc LIMIT 20");
+           $news = $db->query("select c.*,b.logo from (select max(create_date)as create_date,html from news group by" .
+           " html) a join (select * from news) c on a.create_date=c.create_date and a.html=c.html" .
+           " join agency b on c.agency=b.shortname where" .
+           " c.news_type=" . $type . " order by c.pubdate desc limit 20");
 	} else{
 	//Trump news
-           $news = $db->query("select c.*,b.logo from (select max(create_date)as create_date,html,img from news group by" .
-           " html,img) a join (select * from news) c on a.create_date=c.create_date and a.img=c.img and a.html=c.html" .
+           $news = $db->query("select c.*,b.logo from (select max(create_date)as create_date,html from news group by" .
+           " html) a join (select * from news) c on a.create_date=c.create_date and a.html=c.html" .
            " join agency b on c.agency=b.shortname where FROM_BASE64(c.html) like '%Trump%'" .
            " and c.news_type<9 order by c.pubdate desc limit 20");
         }

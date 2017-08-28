@@ -1,1 +1,3 @@
-*/5 * * * * /home3/llosaus/cnews.sh
+*/15 * * * * export LD_LIBRARY_PATH=/home1/nerillos/opt/flex-2-5-39/lib:/usr/local/lib && /home1/nerillos/run_create.sh
+0 0 * * 0 echo "$(tail -1000 /home1/nerillos/news.log)" > /home1/nerillos/news.log
+

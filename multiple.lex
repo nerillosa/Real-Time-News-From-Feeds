@@ -100,7 +100,9 @@ void writeString(char *str);
 <USTODAY>"<"p.class=["']speakable-p-..p-text["']">"    {BEGIN(USTODAYSTORY);}
 
 <USTODAY>"<"p.class=["']p-text["']"><strong>"  {writeString("<strong>");BEGIN(USTODAYSTORY);}
+<USTODAY>"<"p.class=["']p-text["']"><b>"  {writeString("<b>");BEGIN(USTODAYSTORY);}
 <USTODAY>"<"p.class=["']p-text["']"><span style=\"line-height:normal\">"  {writeString("<span>");BEGIN(USTODAYSTORY);}
+
 
 <USTODAY>"<"p.class=["']p-text["']"><"    ;
 <USTODAY>"<"p.class=["']p-text["']">"    {BEGIN(USTODAYSTORY);}

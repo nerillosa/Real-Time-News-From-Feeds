@@ -4,6 +4,12 @@
     $(document).ajaxStop(function(){$('.loadingDiv').hide();});
     $(document).ready(function(){
     	$(".tablinks").eq(5).click();
+
+	$("div.box-table").eq(1).click(function(e){
+		if (e.target !== this)//only click on parent
+			return;
+	    	$('html, body').animate({scrollTop: $("div.box-table").eq(0).offset().top}, 250);
+	});
     });
 
     $.fn.OverFlowed = function() {
