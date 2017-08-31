@@ -50,19 +50,13 @@
 		$html = base64_decode($row['html']);
 		if($html === FALSE) $html='';
 
-/*
-	        $pattern = '/<h3>/s';
-        	$html = preg_replace($pattern, '&lt;b&gt;', $html);
-	        $pattern = '/<strong>/s';
+	        $pattern = '/<b>|<strong>/s';
         	$html = preg_replace($pattern, '&lt;b&gt;', $html);
 
-	        $pattern = '/<\/h3>/s';
+	        $pattern = '/<\/b>|<\/strong>/s';
         	$html = preg_replace($pattern, '&lt;/b&gt;', $html);
-	        $pattern = '/<\/strong>/s';
-        	$html = preg_replace($pattern, '&lt;/b&gt;', $html);
-*/
-	        $html = filter_var($html, FILTER_SANITIZE_STRING);
 
+	        $html = filter_var($html, FILTER_SANITIZE_STRING);//removes all xml characters
 
 		$news_r[] = array('html' => $html, 'pubdate' => $pubdate, 'url' => $url, 'title' => $title, 'agency' =>
 		$agency,'logo' => $logo,'img'=>$img );

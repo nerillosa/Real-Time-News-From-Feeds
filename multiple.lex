@@ -76,6 +76,7 @@ void writeString(char *str);
 
 <FOX>"<"div.class=.article-body.">" {BEGIN(SIMPLE);}
 
+<NYT>"<"p.class=\"story.body.text[^>]+"><em>"    ;
 <NYT>"<"p.class=\"story.body.text[^>]+">"    {BEGIN(NYTSTORY);}
 <NYTSTORY>[^<]+             {writeText();}
 <NYTSTORY>"<"               {writeText();}
