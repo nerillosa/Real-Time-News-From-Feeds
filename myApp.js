@@ -35,7 +35,9 @@ app.directive('newsDiv', function () {
     directive.compile = function (element, attributes) { // compile gets executed once per each occurence of directive element
         element.css("padding-left", "5px").css("overflow", "hidden").css("height", "110px").css("line-height", "14px");
         var linkFunction = function ($scope, element, attributes) {
-            element.html($scope.news()[attributes.newsDiv].html);
+            var htm = $scope.news()[attributes.newsDiv].html;
+            htm = htm.replace(/&lt;\/b&gt;/g, '</b>').replace(/&lt;b&gt;/g, '<b>');
+            element.html('<code>' + htm + '</code>');
             $scope.htmlChanged(attributes.newsDiv, element); //check to see if overflowed so to add the more... link
         }
         return linkFunction; //called every time the element is to be bound to data in the $scope object
@@ -49,7 +51,7 @@ app.directive('selectedDiv', function () {
         element.css("margin", "0px 10px").css("height", "190px");
         var htm = $scope.selectedNews.html;
         htm = htm.replace(/^[^(A-Z]+(.*)/g, "$1").replace(/[\n]&#10;[\n]/g, "\n\n");
-        //htm = htm.replace(/&lt;\/b&gt;/g, '</b>').replace(/&lt;b&gt;/g, '<br><b>');
+        htm = htm.replace(/&lt;\/b&gt;/g, '</b>').replace(/&lt;b&gt;/g, '<b>');
         element.append('<pre>' + htm + '</pre>');
     };
 });

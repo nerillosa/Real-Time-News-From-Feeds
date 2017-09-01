@@ -1,0 +1,100 @@
+#Container {
+    width: 1000px;
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 11px;
+    margin-bottom: 21px;
+}
+
+#Header {
+    height: 150px;
+    background-color: #666;
+    border-bottom: 1px solid gray;
+}
+
+#Header img {
+    height: 150px;
+}
+
+#Header img.neriphoto {
+    margin-left: 70px;
+}
+
+#Header div.description {
+    height: 150px;
+    font-weight: bold;
+    padding-left: 10px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+#SideBar {
+    width: 150px;
+    height: 400px;
+    background-color: green;
+    float: left;
+}
+
+#Footer {
+    height: 30px;
+    background-color: #104E8B;
+    clear: both;
+}
+
+#MainBody {
+    padding-top: 10px;
+    height: 1800px;
+    background-color: #104E8B;
+}
+
+#MainBody ol {
+    list-style: none;
+    margin: 0 0 10px;
+    display: block;
+    padding: 0 3%;
+}
+
+#MainBody ol li {
+    height: 150px;
+    overflow: hidden;
+    vertical-align: top;
+    display: block;
+}
+
+#MainBody ol li:nth-child(odd) {
+    background-color: #bdc3c7;
+}
+
+#MainBody ol li:nth-child(even) {
+    background-color: lightgray;
+}
+
+#MainBody ol li div.main {
+    vertical-align: middle; // Align children divs to top of line
+    height: 150px;
+    display: inline-block;
+}
+
+#MainBody ol li div.main:nth-child(1) {
+    width: 78%;
+    font-size: .8em;
+}
+
+#MainBody ol li div.main:nth-child(2) {
+    background-color: cadetblue;
+    width: 10%;
+}
+
+#MainBody ol li div.main:nth-child(3) {
+    width: 10%;
+    color: black;
+    font-size: .9em;
+/*    padding-top: 50px;*/
+    text-align: center;
+}
+
+#MainBody code{
+    font-size:1.4em;
+}
+    

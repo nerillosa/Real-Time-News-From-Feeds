@@ -4,13 +4,13 @@ body{
   background:#1abc9c;
   font-family: "Lato", sans-serif;
 }
-
+/*
 .description{
   font-family: 'Vollkorn', serif;
   text-align:center;
   color:#ecf0f1;
   text-shadow:0 0.1em 0.2em #008c8d;
-}
+}*/
 /* = Scroll body
 ------------------------*/
 ::-webkit-scrollbar{
@@ -215,6 +215,21 @@ pre{
     white-space: pre-wrap;
     margin-top: 0px;
 }
+pre b{
+    color:blue;
+    font-size:1.1em;
+}
+div.loadingDiv{
+    position: absolute;
+    top:  0;
+    left: 0;
+    width: 100px;
+    height: 100px;
+    margin-top:  250px;
+    margin-left: 50%;
+    z-index: 1000;
+}
+
 /*This is to fix the skinny Chrome dialog vertical scrollbars*/
 ::-webkit-scrollbar {
 width: 16px;
