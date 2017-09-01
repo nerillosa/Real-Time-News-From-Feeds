@@ -118,10 +118,6 @@ int main(int argc, char *argv[]){
 		exit(EXIT_FAILURE);
 	}
 	logptr = stdout; //fopen(argv[2], "a");
-//	if (logptr == NULL){
-//		fprintf(stderr, "Could not open file %s for writing logs\n", argv[2]);
-//		exit(EXIT_FAILURE);
-//	}
 	setbuf(stderr, NULL);
 	setbuf(stdout, NULL);
 	initMysql();
@@ -134,7 +130,6 @@ int main(int argc, char *argv[]){
 	getLatestItems();
 
 	printTime("end");
-//	fclose(logptr);
 	mysql_close(con);
 	cleanCurl();
 	return 0;
@@ -151,19 +146,16 @@ static void getLatestItems(){
 	pid_t pid = fork();
 	if(pid == -1){
                 fprintf(logptr, "Error on forking a child for feed download:%s\n", strerror(errno));
-                fflush(logptr);
                 exit(EXIT_FAILURE);
 	}
         if(pid == 0){ //Child code.
        	        close(pfd[0]);  // Child closes it's read end.
 	        struct newsAgency *pp = &news_agency;
-		//int ii = 1;
 		do{
 	        	if(strlen(pp->name)==0) continue;
                 	chunk.memory = malloc(1);
         	        chunk.size = 0;
        	        	loadFeed(pp ->url); // Loads feed into memory.
-//			fprintf(logptr, "NAME:%.10s\n", pp ->name);fflush(logptr);
         	        getFeedItems(pp ->name, pp ->type, chunk.memory);
        	        	free(chunk.memory);
 		}while((pp = pp ->next) != NULL);
@@ -183,13 +175,9 @@ static void getLatestItems(){
 
 	for(i=0;i<currentItemsCount;i++){
 		cleanRssDateString(itemArray[i].pubDate); // attempt to normalize all dates to MST time
-//	        if(!strcmp(itemArray[i].agency, "RPP")){
-//		     fprintf(logptr, "Title:%s\n", itemArray[i].title);
-//		     fprintf(logptr, "URL:%s\n\n", itemArray[i].url);fflush(logptr);
-//		}
 	}
 
-	fprintf(logptr, "Item count:%d\n",currentItemsCount);fflush(logptr);
+	fprintf(logptr, "Item count:%d\n",currentItemsCount);
 	qsort(itemArray, currentItemsCount, sizeof(struct item), compare_pubDates); //sort by pubDate descending
 
 	char buff[BUF_LEN*8];
@@ -202,11 +190,11 @@ static void getLatestItems(){
 		        	char *p;
 		        	//sanity check
 		        	if(itemArray[i].url == NULL) {
-		        		fprintf(logptr, "NULL url:%d\n", j);fflush(logptr);
+		        		fprintf(logptr, "NULL url:%d\n", j);
 		        		continue;
 		        	}
 		        	if(itemArray[i].pubDate == NULL) {
-		        		fprintf(logptr, "NULL pubdate:%d\n", j);fflush(logptr);
+		        		fprintf(logptr, "NULL pubdate:%d\n", j);
 		        		continue;
 		        	}
 		        	if((p=strstr(itemArray[i].url, "http:")) != &(itemArray[i].url[0]) && p){
@@ -216,7 +204,7 @@ static void getLatestItems(){
 	        	        buff[0] = '\0';
 				getInsertString(&itemArray[i], buff, itemArray[i].type);
 				if (buff[0] && mysql_query(con, buff)){
-					fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
+					fprintf(logptr, "ERROR:%s\n", mysql_error(con));
 				}
 			}
 		}
@@ -229,7 +217,7 @@ static void getLatestItems(){
 void deleteFutureRecords(){
 	char *buff = "DELETE FROM news WHERE pubdate > now()+ INTERVAL 7 hour";
 	if (mysql_query(con, buff)){
-		fprintf(logptr, "ERROR del future dates:%s\n", mysql_error(con));fflush(logptr);
+		fprintf(logptr, "ERROR del future dates:%s\n", mysql_error(con));
 	}
 }
 
@@ -243,15 +231,12 @@ void deleteExtraRecords(int type){
 	strcat(buff, " order by pubdate desc limit 49,1) and news_type=");
 	strcat(buff, beth);
 	if (mysql_query(con, buff)){
-		fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
+		fprintf(logptr, "ERROR:%s\n", mysql_error(con));
 	}
 }
 
 void getFeedItems(char *agency, int type, char *buff)
 {
-//	 if(!strcmp(agency, "RPP"))
-//	       fprintf(logptr, "BUFF:%.1024s\n", buff);fflush(logptr);
-
         int i=0,k = 0;
         int state=OUT,pos=0;
         char a = 0;
@@ -288,7 +273,6 @@ void getFeedItems(char *agency, int type, char *buff)
                                         cleanUrl(item.url);
                                         getTitle(item.title);
                                         strcpy(item.agency, agency);
-//					fprintf(logptr, "AGENCY:%.10s\n", item.agency);fflush(logptr);
 					item.type = type;
                                         write(pfd[1], &item, ITEM_SIZE);
                                 }
@@ -548,11 +532,6 @@ void getInsertString(struct item *item, char *json, int type){
 	struct extra extra;
 	memset(&extra, 0, sizeof(struct extra));
 
-//        if(!strcmp(item ->agency, "RPP")){
-//            fprintf(logptr, "Title:%s\n", item ->title);
-//            fprintf(logptr, "URL:%s\n\n", item ->url);fflush(logptr);
-//	}
-
 	fillStruct(item, &extra); // uses flex to scrape top image and html from url
 
 	sprintf(beth, "%d", type);
@@ -575,9 +554,7 @@ void getInsertString(struct item *item, char *json, int type){
 		strcat(json, "',now())");
 	}else{
 		if(!extra.imgurl[0])
-		    fprintf(logptr, "No Image for URL:%s\n\n", item ->url);fflush(logptr);
-//	        if(!extra.html[0])
-//	            fprintf(logptr, "No HTML for URL:%s\n\n", item ->url);fflush(logptr);
+		    fprintf(logptr, "No Image for URL:%s\n\n", item ->url);
 	}
 
 }
@@ -601,15 +578,10 @@ void setOwnEncodedHtml(struct item *item, struct extra *extra){
 		extra->html[out_len] = '\0'; //terminate
 	}else{
                 if(!strstr(item->url, "video")){
-	        	fprintf(logptr, "bad agencyParse:%s\n", item->url);fflush(logptr);
+	        	fprintf(logptr, "bad agencyParse:%s\n", item->url);
                 }
 	}
 	free(encoded);
-
-//        if(!strcmp(item ->agency, "RPP")){
-//             fprintf(logptr, "HTML:%.1024s\n", extra ->html);
-//             fprintf(logptr, "IMGURL:%.512s\n\n", extra ->imgurl);fflush(logptr);
-//        }
 
 }
 
@@ -644,7 +616,6 @@ void fillStruct(struct item *item, struct extra *extra){
        	strcat(tumia, item ->url);
        	strcat(tumia, "'");
 
-	//fprintf(stderr, "%s\n", item->url);
         FILE *pp = popen(tumia, "r");
 
         if (pp != NULL) {
@@ -654,14 +625,13 @@ void fillStruct(struct item *item, struct extra *extra){
 			if((cc = strstr(extra->imgurl, "\n")))
 				*cc = '\0';
 			if(strlen(extra->imgurl)<10){
-                     		fprintf(logptr, "!!!!BAD imgurl %s: %s\n", item ->url, extra->imgurl);fflush(logptr);
+                     		fprintf(logptr, "!!!!BAD imgurl %s: %s\n", item ->url, extra->imgurl);
                      	}
   		}
                 pclose(pp);
         }
 	else{
 		fprintf(logptr, "Error could not open pipe: %s\n", strerror(errno));
-		fflush(logptr);
 		exit(EXIT_FAILURE);
 	}
 	setOwnEncodedHtml(item, extra);
@@ -725,11 +695,11 @@ void loadFeed(char *url)
 void initMysql(){
         con = mysql_init(NULL);
         if (con == NULL){
-                fprintf(logptr, "ERROR:mysql_init() failed\n");fflush(logptr);
+                fprintf(logptr, "ERROR:mysql_init() failed\n");
                 exit(EXIT_FAILURE);
         }
         if (mysql_real_connect(con, "localhost", "XXXXX_neri", "XXXXX", "XXXXX_neri", 0, NULL, 0) == NULL){
-                fprintf(logptr, "ERROR:%s\n", mysql_error(con));fflush(logptr);
+                fprintf(logptr, "ERROR:%s\n", mysql_error(con));
                 mysql_close(con);
                 exit(EXIT_FAILURE);
         }
@@ -741,7 +711,6 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
                 fprintf(stderr, "Error could not open DOWNLOAD_FILE for parseUrl: %s\n", strerror(errno));
                 exit(EXIT_FAILURE);
 	}
-//	fprintf(logptr, "fs:%d\n", fsize("DOWNLOAD"));fflush(logptr);
         yyin = pp;
         char tumia[BUF_LEN];
 	memset(tumia, 0x00, BUF_LEN);
@@ -760,8 +729,8 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState){
 	if(strlen(tumia)< BUF_LEN-1){
 	        *encoded = base64_encode(tumia, strlen(tumia), &out_len);
 	}else{
-		fprintf(logptr, "HTML Too Long, url:%s\n", url);fflush(logptr);
- 		fprintf(logptr, "fs:%d\n", fsize("DOWNLOAD"));fflush(logptr);
+		fprintf(logptr, "HTML Too Long, url:%s\n", url);
+ 		fprintf(logptr, "fs:%d\n", fsize("DOWNLOAD"));
 	}
 
         yy_delete_buffer(bp);
@@ -824,5 +793,4 @@ void printTime(char *msg){
         strcat(s, ": ");
         strftime(s+strlen(msg)+2, URL_TITLE_LEN-strlen(msg)-2, "%c", tm);
         fprintf(logptr, "%s\n", s);
-	fflush(logptr);
 }
