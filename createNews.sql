@@ -20,7 +20,7 @@ CREATE TABLE news (
   html text NOT NULL,
   img varchar(512) DEFAULT NULL,
   create_date datetime DEFAULT NULL,
-  PRIMARY KEY (agency,news_type,html(255)),
+  PRIMARY KEY (agency,news_type,img,html(255)),
   KEY news_ibfk_1 (news_type),
   CONSTRAINT news_ibfk_1 FOREIGN KEY (news_type) REFERENCES news_type (id),
   CONSTRAINT news_ibfk_2 FOREIGN KEY (agency) REFERENCES agency (shortname)
