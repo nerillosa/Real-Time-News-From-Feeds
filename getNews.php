@@ -22,16 +22,12 @@
 		return;
 	}
 
-	//This query is a bit long but it gets rid of articles with duplicate html/img content which are annoying
-	if($type <= $maxType){
-           $news = $db->query("select c.*,b.logo from (select max(create_date)as create_date,html,img from news group by" .
-           " LEFT(html, 25),img) a join (select * from news) c on a.create_date=c.create_date and a.html=c.html and a.img=c.img" .
+        if($type <= $maxType){
+           $news = $db->query("select c.*,b.logo from news c" .
            " join agency b on c.agency=b.shortname where" .
            " c.news_type=" . $type . " order by c.pubdate desc limit 20");
-	} else{
-	//Trump news
-           $news = $db->query("select c.*,b.logo from (select max(create_date)as create_date,html,img from news group by" .
-           " LEFT(html, 25),img) a join (select * from news) c on a.create_date=c.create_date and a.html=c.html and a.img=c.img" .
+        } else{
+           $news = $db->query("select c.*,b.logo from news c" .
            " join agency b on c.agency=b.shortname where FROM_BASE64(c.html) like '%Trump%'" .
            " and c.news_type<9 order by c.pubdate desc limit 20");
         }
