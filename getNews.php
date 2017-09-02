@@ -26,7 +26,8 @@
            $news = $db->query("select c.*,b.logo from news c" .
            " join agency b on c.agency=b.shortname where" .
            " c.news_type=" . $type . " order by c.pubdate desc limit 20");
-        } else{
+        } else{ 
+	   // Trump news	
            $news = $db->query("select c.*,b.logo from news c" .
            " join agency b on c.agency=b.shortname where FROM_BASE64(c.html) like '%Trump%'" .
            " and c.news_type<9 order by c.pubdate desc limit 20");
