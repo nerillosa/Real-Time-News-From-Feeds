@@ -11,19 +11,19 @@ CREATE TABLE `news_type` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
- CREATE TABLE `news` (
-  `agency` varchar(25) NOT NULL,
-  `url` varchar(512) DEFAULT NULL,
-  `title` varchar(512) NOT NULL,
-  `pubdate` datetime NOT NULL,
-  `news_type` int(11) NOT NULL,
-  `html` text,
-  `img` varchar(512) DEFAULT NULL,
-  `create_date` datetime DEFAULT NULL,
-  PRIMARY KEY (`agency`,`title`),
-  KEY `news_ibfk_1` (`news_type`),
-  CONSTRAINT `news_ibfk_1` FOREIGN KEY (`news_type`) REFERENCES `news_type` (`id`),
-  CONSTRAINT `news_ibfk_2` FOREIGN KEY (`agency`) REFERENCES `agency` (`shortname`)
+CREATE TABLE news (
+  agency varchar(25) NOT NULL,
+  url varchar(512) DEFAULT NULL,
+  title varchar(512) NOT NULL,
+  pubdate datetime NOT NULL,
+  news_type int(11) NOT NULL,
+  html text NOT NULL,
+  img varchar(512) DEFAULT NULL,
+  create_date datetime DEFAULT NULL,
+  PRIMARY KEY (agency,news_type,html(255)),
+  KEY news_ibfk_1 (news_type),
+  CONSTRAINT news_ibfk_1 FOREIGN KEY (news_type) REFERENCES news_type (id),
+  CONSTRAINT news_ibfk_2 FOREIGN KEY (agency) REFERENCES agency (shortname)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 insert into agency (fullname,shortname,logo) values ('USA TODAY','US TODAY','USATODAY.png');
