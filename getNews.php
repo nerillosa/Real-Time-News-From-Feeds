@@ -22,14 +22,19 @@
 		return;
 	}
 
+        //This query is a bit long but it gets rid of duplicate images for same img/news_types
         if($type <= $maxType){
-           $news = $db->query("select c.*,b.logo from news c" .
-           " join agency b on c.agency=b.shortname where" .
+           $news = $db->query("select c.*,d.logo from" .
+           " (select a.* from (select * from news) a, (select max(create_date)as create_date,img,news_type" .
+           " from news group by img,news_type) b where a.create_date=b.create_date and a.img=b.img and a.news_type=b.news_type) c" .
+           " join agency d on c.agency=d.shortname where" .
            " c.news_type=" . $type . " order by c.pubdate desc limit 20");
-        } else{ 
-	   // Trump news	
-           $news = $db->query("select c.*,b.logo from news c" .
-           " join agency b on c.agency=b.shortname where FROM_BASE64(c.html) like '%Trump%'" .
+        } else{
+	   // Trump news
+           $news = $db->query("select c.*,d.logo from" .
+           " (select a.* from (select * from news) a, (select max(create_date)as create_date,img" .
+           " from news group by img) b where a.create_date=b.create_date and a.img=b.img) c" .
+           " join agency d on c.agency=d.shortname where FROM_BASE64(c.html) like '%Trump%'" .
            " and c.news_type<9 order by c.pubdate desc limit 20");
         }
 
