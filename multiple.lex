@@ -43,6 +43,8 @@ void writeString(char *str);
 <UPI>"<"article.itemprop  {BEGIN(PIMPLE);}
 <PIMPLE>"<".article">"  {BEGIN(INITIAL);}
 <PIMPLE>"<p>"   {BEGIN(UPISTORY);}
+<PIMPLE>"</script>" {BEGIN(UPISTORY);}
+<UPISTORY>"<script" {BEGIN(PIMPLE);}
 <UPISTORY>[^<]+  {writeText();}
 <UPISTORY>"<"    {writeText();}
 <UPISTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(PIMPLE);}
