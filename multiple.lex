@@ -71,6 +71,8 @@ void writeString(char *str);
 <CNN>"<"h2.class=\"speakable\"">" {BEGIN(CNNSTORY);}
 <CNNSTORY>[^<]+    {writeText();}
 <CNNSTORY>"<"      {writeText();}
+<CNNSTORY>"<h3>"   {writeString("&lt;b&gt;");}
+<CNNSTORY>"</h3>"  {writeString("&lt;/b&gt;");}
 <CNNSTORY>"<cite class=".+"</cite>"    ;
 <CNNSTORY>"</p>"   {writeString("&#10;&#10;"); BEGIN(CNN);}
 <CNNSTORY>"</div>" {writeString("&#10;&#10;"); BEGIN(CNN);}
@@ -122,10 +124,11 @@ void writeString(char *str);
 <USTODAYSTORY>"</h4>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
 
 <WSH>"<"span.class=\"pb-caption\"">"	{BEGIN(WSHSTORY);}
+<WSHSTORY>"<p"[ ]  ;
 <WSHSTORY>"<p>"  {writeText();BEGIN(WUMIA);}
 <WUMIA>[^<]+   {writeText();}
 <WUMIA>"<"     {writeText();}
-<WUMIA>"</p>"  {writeText();writeString("&#10;&#10;");}
+<WUMIA>"</p>"  {writeText();writeString("&#10;&#10;");BEGIN(WSHSTORY);}
 <WUMIA>"<div"  {BEGIN(WSH);}
 
 <SIMPLE>"<p>&nbsp;</p>"  ;
