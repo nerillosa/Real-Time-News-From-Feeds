@@ -92,6 +92,7 @@
 		if(savetds.length >0){
 			var tdd = $("table tbody").find("td[colspan='3']");
 			tdd.find('img:last').remove();
+                        tdd.find('pre:first').unbind( "click" );
 		        tdd.parent().append(savetds[0]);
 		        tdd.parent().append(savetds[1]);
 		        savetds = [];
@@ -108,6 +109,13 @@
 
 		$(event.target).parent().parent().next().remove();
 		$(event.target).parent().parent().attr("colspan", "3"); //have td ocuppy all 3 columns
+		var pre =  $(event.target).parent().parent().find('pre:first');
+	        pre.click(function(event){ //when clicking on the expanded pre text, un-expand it
+			event.stopPropagation();
+			$(event.target).unbind( "click" );
+			$(event.target).parent().parent().find('a:first').click(); // click on less link
+        	});
+
 		immg.css("float","right").removeAttr("onclick").attr("onclick","mary(event)");
 		immg.insertAfter($(event.target).parent().parent().find('img:first'));
 		elem.removeClass("htext");

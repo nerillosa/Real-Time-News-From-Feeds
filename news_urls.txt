@@ -20,13 +20,13 @@
 4,WSH POST,http://feeds.washingtonpost.com/rss/rss_early-lead
 6,WSH POST,http://www.washingtonpost.com/wp-dyn/rss/health/index.xml
 7,WSH POST,http://feeds.washingtonpost.com/rss/rss_post-nation
-1,ABC NEWS,http://feeds.abcnews.com/abcnews/politicsheadlines
-2,ABC NEWS,http://feeds.abcnews.com/abcnews/technologyheadlines
-3,ABC NEWS,http://feeds.abcnews.com/abcnews/internationalheadlines
-4,ABC NEWS,http://feeds.abcnews.com/abcnews/sportsheadlines
-5,ABC NEWS,http://feeds.abcnews.com/abcnews/entertainmentheadlines
-6,ABC NEWS,http://feeds.abcnews.com/abcnews/healthheadlines
-7,ABC NEWS,http://feeds.abcnews.com/abcnews/usheadlines
+1,ABC NEWS,http://abcnews.go.com/abcnews/politicsheadlines
+2,ABC NEWS,http://abcnews.go.com/abcnews/technologyheadlines
+3,ABC NEWS,http://abcnews.go.com/abcnews/internationalheadlines
+4,ABC NEWS,http://abcnews.go.com/abcnews/sportsheadlines
+5,ABC NEWS,http://abcnews.go.com/abcnews/entertainmentheadlines
+6,ABC NEWS,http://abcnews.go.com/abcnews/healthheadlines
+7,ABC NEWS,http://abcnews.go.com/abcnews/usheadlines
 1,REUTERS,http://feeds.reuters.com/Reuters/PoliticsNews
 2,REUTERS,http://feeds.reuters.com/reuters/scienceNews
 3,REUTERS,http://feeds.reuters.com/Reuters/worldNews
@@ -40,22 +40,23 @@
 5,US TODAY,http://rssfeeds.usatoday.com/usatoday-lifetopstories&amp;x=1
 7,US TODAY,http://rssfeeds.usatoday.com/usatodaycomnation-topstories&x=1
 8,US TODAY,http://rssfeeds.usatoday.com/UsatodaycomMoney-TopStories
-9,COMERCIO,http://elcomercio.pe/rss/
+10,COMERCIO,http://elcomercio.pe/feed/deporte-total
+11,COMERCIO,http://elcomercio.pe/feed/politica
 9,RPP,http://rpp.pe/feed/actualidad
 10,RPP,http://rpp.pe/feed/deportes
 11,RPP,http://rpp.pe/feed/politica
 12,RPP,http://rpp.pe/feed/entretenimiento
 13,RPP,http://rpp.pe/feed/economia
-9,PERU21,http://peru21.pe/feed/actualidad
-10,PERU21,http://peru21.pe/feed/deportes
-11,PERU21,http://peru21.pe/feed/economia
-12,PERU21,http://peru21.pe/feed/espectaculos
-13,PERU21,http://peru21.pe/feed/economia
-9,PERU,http://peru.com/feed/actualidad
-10,PERU,http://peru.com/feed/deportes
-11,PERU,http://peru.com/feed/actualidad/politicas
-12,PERU,http://peru.com/feed/entretenimiento
-13,PERU,http://peru.com/feed/actualidad/economia-y-finanzas
+9,PERU21,https://peru21.pe/feed/actualidad
+10,PERU21,https://peru21.pe/feed/deportes
+11,PERU21,https://peru21.pe/feed/economia
+12,PERU21,https://peru21.pe/feed/espectaculos
+13,PERU21,https://peru21.pe/feed/economia
+9,PERU,https://peru.com/feed/actualidad
+10,PERU,https://peru.com/feed/deportes
+11,PERU,https://peru.com/feed/actualidad/politicas
+12,PERU,https://peru.com/feed/entretenimiento
+13,PERU,https://peru.com/feed/actualidad/economia-y-finanzas
 11,GESTION,http://gestion.pe/feed/politica
 13,GESTION,http://gestion.pe/feed/economia
 3,BBC,http://feeds.bbci.co.uk/news/world/rss.xml
@@ -75,3 +76,4 @@
 8,WSJ,http://www.wsj.com/xml/rss/3_7014.xml
 3,WSJ,http://www.wsj.com/xml/rss/3_7085.xml
 2,WSJ,http://www.wsj.com/xml/rss/3_7455.xml
+

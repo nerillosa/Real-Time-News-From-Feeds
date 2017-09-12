@@ -237,7 +237,7 @@ void deleteExtraRecords(int type){
 
 void getFeedItems(char *agency, int type, char *buff)
 {
-        int i=0,k = 0;
+        int i=0,k = 0, check = 0;
         int state=OUT,pos=0;
         char a = 0;
         char buffer[BUFFER_SIZE];
@@ -245,7 +245,11 @@ void getFeedItems(char *agency, int type, char *buff)
         memset(identifier, 0, 12);
         do { //this do loop will capture all the texts in between item tags
                 a = buff[i];
-                if(!a) break;
+                if(!a) {
+			if(!check) //never changed state -- no items
+				fprintf(logptr, "NO RESULTS FOR %s type:%d\n\n", agency,type);
+                	break;
+                }
                 for(k=1;k<11;k++){ //shift left
                         identifier[k-1] = identifier[k];
                 }
@@ -253,6 +257,7 @@ void getFeedItems(char *agency, int type, char *buff)
                 if(state==OUT){
                         if(strstr(identifier, "<item>") != NULL){
                                 state=IN;
+                                check=1;
                                 pos=0;
                         }
                 }
@@ -698,7 +703,7 @@ void initMysql(){
                 fprintf(logptr, "ERROR:mysql_init() failed\n");
                 exit(EXIT_FAILURE);
         }
-        if (mysql_real_connect(con, "localhost", "XXXXX_neri", "XXXXX", "XXXXX_neri", 0, NULL, 0) == NULL){
+	if (mysql_real_connect(con, "localhost", "XXXXX_neri", "XXXXX", "XXXXX_neri", 0, NULL, 0) == NULL){
                 fprintf(logptr, "ERROR:%s\n", mysql_error(con));
                 mysql_close(con);
                 exit(EXIT_FAILURE);
