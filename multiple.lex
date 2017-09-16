@@ -141,11 +141,10 @@ void writeString(char *str);
 <SIMPLESTORY>"<"    {writeText();}
 <SIMPLESTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(SIMPLE);}
 
-<PERU21>"<p>"[^a-zA-Z0-9]  ;
-<PERU21>"<p>"       {BEGIN(PERU21STORY);}
-<PERU21STORY>[^<]+  {yymore();}
-<PERU21STORY>"<"    {yymore();}
-<PERU21STORY>"</p>" {yyless(yyleng-4);if(yyleng>75){writeText(); writeString("&#10;&#10;");} BEGIN(PERU21);}
+<PERU21>"<p class=\"parrafo first-parrafo\""  {writeText(); BEGIN(PERU21STORY);}
+<PERU21STORY>[^<]+  {writeText();}
+<PERU21STORY>"<"    {writeText();}
+<PERU21STORY>"</p>" {writeString("&#10;&#10;"); BEGIN(PERU21);}
 
 <GESTION>"<div class="  {BEGIN(GIMPLE);}
 <GIMPLE>"<p>"[^a-zA-Z0-9]  ;
