@@ -131,8 +131,9 @@ void writeString(char *str);
 <WUMIA>"</p>"  {writeText();writeString("&#10;&#10;");BEGIN(WSHSTORY);}
 <WUMIA>"<div"  {BEGIN(WSH);}
 
-<SIMPLE>"<p>&nbsp;</p>"  ;
 <SIMPLE>"<p><i></i></p>"  ;
+<SIMPLE>"<p>&nbsp;</p>"  ;
+<SIMPLE>"<p>"[^a-zA-Z0-9] ;
 <SIMPLE>"<p>This material may not be published" ;
 <SIMPLE>"<"p.class=\"speakable\"">"    {BEGIN(SIMPLESTORY);/*This is for first paragraphs of FOX NEWS*/}
 <SIMPLE>"<"p.class=\"story-body[^"]+\"">" {BEGIN(SIMPLESTORY); /*First line of BBC NEWS */}
@@ -141,7 +142,7 @@ void writeString(char *str);
 <SIMPLESTORY>"<"    {writeText();}
 <SIMPLESTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(SIMPLE);}
 
-<PERU21>"<p class=\"parrafo first-parrafo\""  {writeText(); BEGIN(PERU21STORY);}
+<PERU21>"<p class=\"parrafo first-parrafo"  {writeText(); BEGIN(PERU21STORY);}
 <PERU21STORY>[^<]+  {writeText();}
 <PERU21STORY>"<"    {writeText();}
 <PERU21STORY>"</p>" {writeString("&#10;&#10;"); BEGIN(PERU21);}

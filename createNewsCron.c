@@ -247,7 +247,7 @@ void getFeedItems(char *agency, int type, char *buff)
                 a = buff[i];
                 if(!a) {
 			if(!check) //never changed state -- no items
-				fprintf(logptr, "NO RESULTS FOR %s type:%d\n\n", agency,type);
+                              fprintf(logptr, "NO RESULTS FOR %s type:%d\n\n", agency,type);
                 	break;
                 }
                 for(k=1;k<11;k++){ //shift left
@@ -376,6 +376,18 @@ void getTitle(char *line){
 
 void cleanUrl(char *url){
 	static char *cdata = "<![CDATA[";
+	//make sure it starts with http
+	if(strstr(url, "http") && strstr(url, "http") != &url[0]){
+	  int pos = strstr(url, "http") - &url[0];
+	  int length = strlen(url) - pos;
+	  if(strstr(url, cdata)){ // take care of "]]>"
+	  	length -= 3;
+	  }
+	  memmove(url, url + pos, length);
+	  url[length] = '\0';
+	  return;
+	}
+	//remove CDATA if there
 	if(strstr(url, cdata) != &url[0]) return;
 	int cdataSize = strlen(cdata);
 	int last = strlen(url) - cdataSize - 3;
@@ -558,8 +570,8 @@ void getInsertString(struct item *item, char *json, int type){
 		strcat(json, item ->agency);
 		strcat(json, "',now())");
 	}else{
-		if(!extra.imgurl[0])
-		    fprintf(logptr, "No Image for URL:%s\n\n", item ->url);
+		if(!extra.imgurl[0] && !strstr(item->url, "video"))
+		    fprintf(logptr, "No Image for URL:%s\n", item ->url);
 	}
 
 }
@@ -578,12 +590,14 @@ void setOwnEncodedHtml(struct item *item, struct extra *extra){
 
 	size_t out_len = parseUrlWithFlex(item->url, &encoded, parseType);
 
-	if(out_len>10 && out_len<BUF_LEN*4){
+	if(out_len>20 && out_len<BUF_LEN*4){
 		strncpy(extra->html, encoded, out_len );
 		extra->html[out_len] = '\0'; //terminate
 	}else{
-                if(!strstr(item->url, "video")){
-	        	fprintf(logptr, "bad agencyParse:%s\n", item->url);
+                if(strstr(item->url, "video")){
+	        	fprintf(logptr, "It is a video:%s\n", item->url);
+                }else{
+	        	fprintf(logptr, "Error:%s\n", item->url);
                 }
 	}
 	free(encoded);
@@ -629,9 +643,9 @@ void fillStruct(struct item *item, struct extra *extra){
 			strcpy(extra->imgurl, tumia);
 			if((cc = strstr(extra->imgurl, "\n")))
 				*cc = '\0';
-			if(strlen(extra->imgurl)<10){
-                     		fprintf(logptr, "!!!!BAD imgurl %s: %s\n", item ->url, extra->imgurl);
-                     	}
+//			if(strlen(extra->imgurl)<10){
+//                     		fprintf(logptr, "!!!!BAD imgurl %s: %s\n", item ->url, extra->imgurl);
+//                     	}
   		}
                 pclose(pp);
         }
