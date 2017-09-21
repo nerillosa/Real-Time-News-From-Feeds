@@ -56,7 +56,7 @@ void writeString(char *str);
 <WSJSTORY>"<"    {writeText();}
 <WSJSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(WIMPLE);}
 
-<CNBC>"<p>"[^a-zA-Z0-9" ]  ;
+<CNBC>"<p>"[^a-zA-Z0-9" <]  ;
 <CNBC>"<p>"   {BEGIN(CNBCSTORY);}
 <CNBC>"<p>YOUR BROWSER IS NOT SUPPORTED.</p>"  {BEGIN(INITIAL);}
 <CNBCSTORY>[^<]+  {writeText();}
