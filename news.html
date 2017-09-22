@@ -1,135 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <title>Real Time News</title>
 <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
 <meta name="keywords" content="news, world news, usa news, sports news, politics" />
-<link rel="stylesheet" href="tabs.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="jtempl.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
+<link rel="stylesheet" href="css/tabs.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/jtempl.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/jquery-ui.css" />
 <link rel="icon" type="image/png" href="images/favicon.png">
 <link href='http://fonts.googleapis.com/css?family=Vollkorn:400,700' rel='stylesheet' type='text/css'>
 
-<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-<script src="http://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
+<script src="js/jquery-1.11.1.min.js"></script>
+<script src="js/jquery-ui.js"></script>
 <script type="text/javascript" src="js/jquery.tmpl.min.js"></script>
+<script type="text/javascript" src="js/news.js"></script>
 <script id="newsTemplate" type="text/x-jquery-tmpl"> 
   <tr>
   <td>
   <div class="links">${title}&nbsp;&nbsp;&nbsp;<a href="#" onclick="hrefClick(event)" 
   title="${title}">more...</a></div>
-  <img class="lavida" src="${img}" />
+  <img class="lavida" src="${img}" onclick="cuando(event)"/>
   <div class="htext" style="font-size: 1.2em;font-weight:bold;">${getHtml(html)}</div>
   </td>
      <td class="user-photo"><img style="cursor:pointer;" class="user-tumb" src="images/${logo}" onclick="tumia(event)"/><a 
      style="font-weight:bold;padding-left:12px;text-decoration:none;" href="${url}" 
-     target="_blank">view post</a></td>
+     target="_blank">View <br> full article</a></td>
      <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate)}</td>
   </tr>
 </script>
 
-<script type="text/javascript">
-    var savetds = [];
- 
-    $(document).ajaxStart(function(){$('.loadingDiv').show();});
-    $(document).ajaxStop(function(){$('.loadingDiv').hide();});
-    $(document).ready(function(){
-    	$(".tablinks").eq(0).click();
-    });
-
-    $.fn.OverFlowed = function() {
-    	var _elm = $(this)[0];
-    	var _hasScrollBar = false; 
-    	if ((_elm.clientHeight < _elm.scrollHeight) || (_elm.clientWidth < _elm.scrollWidth)) {
-        	_hasScrollBar = true;
-    	}
-    	return _hasScrollBar;
-    };
-
-    $.fn.scrollView = function () {
-  	return this.each(function () {
-    	$('html, body').animate({
-      	scrollTop: $(this).offset().top
-    	}, 500);
-        });
-    };
-
-    function getHtml(html) {
-	return html.replace(/^[^(A-Z]+(.*)/g, "$1").
-	replace(/[\n]&#10;[\n]/g, "\n\n");
-    }
-
-    function tumia(evt){
-	window.open(evt.target.nextSibling, '_blank');
-    }
-
-    function openNews(evt, newsType, newsName) {
-	$(".tablinks").removeClass("active");
-	$.getJSON("getNews.php?type=" + newsType, function (news) {
-		$("#newsList").empty();
-		$("#newsTemplate").tmpl(news).appendTo("#newsList");
-		$(".htext").each(function(){  
-			var dina = $(this).html().replace(/&lt;\/b&gt;/g,'</b>').replace(/&lt;b&gt;/g,'<br><b>');
-			$(this).html('');
-			var pre = $("<pre> " + dina + " </pre>");
-			$(this).append(pre);
-			if(!$(this).OverFlowed()){
-				$(this).parent().find("a").remove(); // Remove the ...more link
-			}
-			document.getElementById("title").innerHTML = newsName + " News";
-			$(evt.target).addClass("active");
-		});
-	});
-    }
-
-    function getDate(jsonDate) { //2016-12-13 19:21:45 mysql DateTime
-        var tokens = jsonDate.split(" ");
-        jsonDate = tokens[0] + "T" + tokens[1] + "Z"; //2016-12-13T19:21:45Z UTC time
-	    var jdt = new Date(jsonDate);
-  	    var rvalue = Math.ceil((Date.now() - jdt.getTime())/60000);
-  	    if (rvalue < 60 && rvalue > 0)
-  	        return "" + rvalue + (rvalue === 1 ? " minute" : " minutes") + " ago";
-  	    else {
-  	        return jdt.toLocaleString();
-  	    }
-    }
-
-    function hrefClick(event){
-	event.preventDefault();
-	var elem = $(event.target).parent().next().next();
-	if($(event.target).text() == "more..."){
-		if(savetds.length >0){
-			var tdd = $("table tbody").find("td[colspan='3']");
-		        tdd.parent().append(savetds[0]);
-		        tdd.parent().append(savetds[1]);
-		        savetds = [];
-			tdd.removeAttr("colspan");
-			$(":last-child", tdd).addClass("htext");		
-			tdd.find("a").text("more...");
-		}
-		savetds.push($(event.target).parent().parent().next().clone()); //remove the img and date
-		$(event.target).parent().parent().next().remove();
-		savetds.push($(event.target).parent().parent().next().clone());
-		$(event.target).parent().parent().next().remove();
-		$(event.target).parent().parent().attr("colspan", "3"); //have td ocuppy all 3 columns
-		elem.removeClass("htext");
-        	$(event.target).text("less...");
-        }else{
-		$(event.target).parent().parent().parent().append(savetds[0]);
-		$(event.target).parent().parent().parent().append(savetds[1]);
-		savetds = [];
-		$(event.target).parent().parent().removeAttr("colspan");
-		elem.addClass("htext");
-        	$(event.target).text("more...");
-        }
-		setTimeout(function(){ $(event.target).scrollView();}, 10);
-    }
-
-</script>
 </head>
 <body>
 
-<h2 style="text-align:center;margin-bottom:0;">Real Time News<br />updated every 10 minutes</h2>
+<h2 style="text-align:center;margin-bottom:0;">Real Time News<br />updated every 15 minutes</h2>
 <div class="box-table" >
 <ul class="tab">
   <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 1, 'Politics')">Politics</a></li>
@@ -137,7 +41,7 @@
   <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 3, 'World')">World</a></li>
   <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 4, 'Sports')">Sports</a></li>
   <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 5, 'Entertainment')">Entertainment</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 6, 'Health')">Health</a></li>
+  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 14, 'Trump')">Trump</a></li>
   <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 7, 'USA')">USA</a></li>
   <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 8, 'Business')">Business</a></li>
 </ul>

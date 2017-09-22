@@ -45,6 +45,14 @@
 	window.open(evt.target.nextSibling, '_blank');
     }
 
+    function cuando(evt){
+	if($(evt.target).hasClass("clickable")){
+		evt.target.style.height = evt.target.clientHeight*2 + "px";
+		$(evt.target).removeClass("clickable").addClass("doubled");
+		$(evt.target).css("cursor","");
+	}
+    }
+
     function mary(evt){
     	var link = savetds[0].find('a:first')[0];
     	window.open(link, '_blank');
@@ -97,6 +105,12 @@
 		        tdd.parent().append(savetds[1]);
 		        savetds = [];
 			tdd.removeAttr("colspan");
+			var immg = tdd.find('img:first');
+			immg.removeClass("clickable").css("cursor","");
+			if(immg.hasClass("doubled")){
+				immg.removeClass("doubled");
+				immg[0].style.height = immg[0].clientHeight/2 + "px";
+			}
 			$(":last-child", tdd).addClass("htext");
 			tdd.find("a").text("more...");
 		}
@@ -108,7 +122,10 @@
 		savetds.push($(event.target).parent().parent().next().clone());
 
 		$(event.target).parent().parent().next().remove();
-		$(event.target).parent().parent().attr("colspan", "3"); //have td ocuppy all 3 columns
+
+		var ttd = $(event.target).parent().parent();
+		ttd.attr("colspan", "3"); //have td occupy all 3 columns
+		ttd.find('img:first').addClass("clickable").css("cursor","pointer");
 		var pre =  $(event.target).parent().parent().find('pre:first');
 	        pre.click(function(event){ //when clicking on the expanded pre text, un-expand it
 			event.stopPropagation();
@@ -125,6 +142,12 @@
 		$(event.target).parent().parent().parent().append(savetds[1]);
 		savetds = [];
 		$(event.target).parent().parent().removeAttr("colspan");
+		var iimg = $(event.target).parent().parent().find('img:first');
+		iimg.removeClass("clickable");
+                if(iimg.hasClass("doubled")){
+	                iimg.removeClass("doubled");
+        	        iimg[0].style.height = iimg[0].clientHeight/2 + "px";
+                }
 		elem.next().addClass("htext");
         	$(event.target).text("more...");
         	$(event.target).parent().parent().find('img.user-tumb').remove();
