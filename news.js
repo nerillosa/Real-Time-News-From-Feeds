@@ -29,6 +29,11 @@
         });
     };
 
+    function setTimeOnScreen(){
+	var date = new Date();
+	$("#timer").text(date.toDateString() + ' ' + date.toLocaleTimeString());
+    }
+
     function htmlDecode(input){
 	var e = document.createElement('div');
 	e.innerHTML = input;
@@ -67,6 +72,7 @@
 			var dd = htmlDecode($(this)[0].childNodes[0].nodeValue);
 			$(this)[0].childNodes[0].nodeValue = dd;
 		});
+		setTimeOnScreen();
 		$(".htext").each(function(){
 			var dina = $(this).html().replace(/&lt;\/b&gt;/g,'</b>').replace(/&lt;b&gt;/g,'<b>');
 			$(this).html('');
