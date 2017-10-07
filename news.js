@@ -106,7 +106,7 @@
 		if(savetds.length >0){
 			var tdd = $("table tbody").find("td[colspan='3']");
 			tdd.find('img:last').remove();
-                        tdd.find('pre:first').unbind( "click" );
+                        tdd.find('pre:first').unbind( "dblclick" );
 		        tdd.parent().append(savetds[0]);
 		        tdd.parent().append(savetds[1]);
 		        savetds = [];
@@ -133,9 +133,9 @@
 		ttd.attr("colspan", "3"); //have td occupy all 3 columns
 		ttd.find('img:first').addClass("clickable").css("cursor","pointer");
 		var pre =  $(event.target).parent().parent().find('pre:first');
-	        pre.click(function(event){ //when clicking on the expanded pre text, un-expand it
+	        pre.dblclick(function(event){ //when clicking on the expanded pre text, un-expand it
 			event.stopPropagation();
-			$(event.target).unbind( "click" );
+			$(event.target).unbind( "dblclick" );
 			$(event.target).parent().parent().find('a:first').click(); // click on less link
         	});
 
