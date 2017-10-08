@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/jquery-ui.css" />
+    <link href='http://fonts.googleapis.com/css?family=Vollkorn:400,700' rel='stylesheet' type='text/css'>
+    <link href="css/Mainbody.css" rel="stylesheet" type="text/css" />
+    <link href="css/800px.css" rel="stylesheet" type="text/css" media="screen and (max-width: 800px)" />
+    <link href="css/nstyle.css" rel="stylesheet" type="text/css" />
+    <meta charset="utf-8">
+    <meta name="description" content="Installing Kodi on the Raspberry Pi 3">
+    <meta name="keywords" content="VPN,openvpn,Raspberry Pi,Raspberry, Kodi, media player">
+    <meta name="author" content="Neri Llosa">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Installing Kodi on the Raspberry Pi 3</title>
+    <link rel="icon" type="image/png" href="images/favicon.png">
+
+    <style type="text/css">
+        body {
+            background-color: #ff9933;
+            margin-left: 0;
+            margin-top: 50px;
+            margin-right: 0;
+            margin-bottom: 0;
+        }
+        #MainBody{
+            height: auto;
+            padding: 30px;
+            line-height: 1.5;
+        }
+        #MainBody h1{
+            text-align: center;
+        }
+        #MainBody > :first-child{ /*center rpi image at top*/
+            text-align: center;
+        }
+        #MainBody a:link{
+            background-color: #ff9933;
+        }
+    </style>
+
+    <script src="js/jquery-1.11.1.min.js"></script>
+
+    <script type="text/javascript">
+    	$(document).ready(function(){
+	    $.ajax({
+		url: "Kodi.raw",
+		async: false,
+	       	cache: false,
+               	success: function (data){
+		   $("#MainBody").html(data);
+               	}
+            });    	
+    	});
+    </script>
+
+
+</head>
+
+<body>
+    <div id="Container">
+        <div id="Header">
+            <img src="images/wallpaper.jpg" alt="Neri Llosa" style="float:left;">
+            <img class="neriphoto" src="images/neri2.jpg" alt="Neri Llosa">
+            <div class="description"><br /><br />Neri Llosa,<br />Software Engineer<br />And<br />Electronic Hobbyist.</div>
+            <div class="description" style="margin-left: 5%;"><br /><br /><a href="index.html"><img src="images/home.jpg" alt="HOME Button"
+                        style="width:75px;height:75px;"></a></div>
+            <img src="images/wallpaper.jpg" alt="Neri Llosa" style="float:right;">
+        </div>
+
+        <div id="MainBody"> </div>
+
+    </div>
+    
+</body>
+
+</html>

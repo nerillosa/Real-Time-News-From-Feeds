@@ -9,7 +9,10 @@
     <link href="css/Mainbody.css" rel="stylesheet" type="text/css" />
     <link href="css/800px.css" rel="stylesheet" type="text/css" media="screen and (max-width: 800px)" />
     <link href="css/nstyle.css" rel="stylesheet" type="text/css" />
-    <meta charset="utf-8" />
+    <meta charset="utf-8">
+    <meta name="author" content="Neri Llosa">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>The Life of the Artist</title>
     <link rel="icon" type="image/png" href="images/favicon.png">
 
@@ -34,11 +37,12 @@
     <div id="Container">
         <div id="Header">
             <img src="images/wallpaper.jpg" alt="Neri Llosa" style="float:left;">
-            <img class="neriphoto" src="images/guapopaladin.jpg" alt="Neri Llosa">
-            <div class="description"><br /><br />Neri Llosa,<br />Software Engineer<br />And<br />Electronic Hobbyist.
-            </div><img src="images/wallpaper.jpg" alt="Neri Llosa" style="float:right;">
+            <img class="neriphoto" src="images/neri2.jpg" alt="Neri Llosa">
+            <div class="description"><br /><br />Neri Llosa,<br />Software Engineer<br />And<br />Electronic Hobbyist.</div>
+            <div class="description" style="margin-left: 5%;"><br /><br /><a href="/index.html#/"><img src="images/home.jpg" alt="HOME Button"
+                        style="width:75px;height:75px;"></a></div>
+            <img src="images/wallpaper.jpg" alt="Neri Llosa" style="float:right;">
         </div>
-
         <div class="menu-wrap" ng-controller="MenuCtrl">
             <nav class="menu">
                 <ul class="clearfix">
@@ -68,7 +72,7 @@
                         </ul>
                     </li>
                     <li ng-class="{'current-item' : active()==4}"><a href="#about">About</a></li>
-                    <li ng-class="{'current-item' : active()==5}"><a href="#contact">Contact</a></li>
+                    <li ng-class="{'current-item' : active()==5}"><a href="#contact">Useful Links</a></li>
                 </ul>
             </nav>
         </div>

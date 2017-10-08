@@ -1,5 +1,5 @@
 #Container {
-    width: 1000px;
+    width: 1200px;
     height: auto;
     margin-left: auto;
     margin-right: auto;
@@ -45,7 +45,7 @@
 #MainBody {
     padding-top: 10px;
     height: 1800px;
-    background-color: #104E8B;
+    background-color: #33A5FF;
 }
 
 #MainBody ol {

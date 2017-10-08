@@ -6,7 +6,7 @@ app.config(function ($routeProvider) {
             controller: "TemplateCtrl"
         })
         .when("/contact", {
-            template: "<h1 style='padding-top:50px;text-align:center;'>https://facebook.com/neri.llosa <br><br> Email: nerillosa@cox.net <br><br>Twitter: https://twitter.com/nllosa</h1>",
+            template: "<h1 style='padding-top:50px;text-align:center;'><a href='Kodi.html'>Installing Kodi on a Raspberry Pi 3</a> <br><br>https://facebook.com/neri.llosa <br><br> Email: nerillosa@cox.net <br><br>Twitter: https://twitter.com/nllosa</h1>",
             controller: "TemplateCtrl"
         })
         .when("/about", {
