@@ -9,9 +9,8 @@
     <link href="css/Mainbody.css" rel="stylesheet" type="text/css" />
     <link href="css/800px.css" rel="stylesheet" type="text/css" media="screen and (max-width: 800px)" />
     <link href="css/nstyle.css" rel="stylesheet" type="text/css" />
-    <meta charset="utf-8">
-    <meta name="author" content="Neri Llosa">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="author" content="Neri Llosa" />
     
     <title>The Life of the Artist</title>
     <link rel="icon" type="image/png" href="images/favicon.png">
@@ -20,7 +19,7 @@
         body {
             background-color: #ff9933;
             margin-left: 0;
-            margin-top: 50px;
+            margin-top: 0;
             margin-right: 0;
             margin-bottom: 0;
         }
@@ -71,8 +70,15 @@
                             <li><a ng-click='refreshNews("/usa_news/13", $event)' href="#usa_news/13">Economia</a></li>
                         </ul>
                     </li>
+                    <li ng-class="{'current-item' : active()==5}">
+                        <a href="" style="padding:10px 100px;">Articles<span class="arrow">&#9660;</span></a>
+                        <ul class="sub-menu">
+                            <li><a href="WeeklyPrint.html">Weekly Print Task</a></li>
+                            <li><a href="Kodi.html">Kodi on a Raspberry Pi</a></li>
+                            <li><a href="LedPanel.html">Moving Message LED panel</a></li>
+                        </ul>
+                    </li>
                     <li ng-class="{'current-item' : active()==4}"><a href="#about">About</a></li>
-                    <li ng-class="{'current-item' : active()==5}"><a href="#contact">Useful Links</a></li>
                 </ul>
             </nav>
         </div>

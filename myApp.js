@@ -5,10 +5,6 @@ app.config(function ($routeProvider) {
             templateUrl: "home.html",
             controller: "TemplateCtrl"
         })
-        .when("/contact", {
-            template: "<h1 style='padding-top:50px;text-align:center;'><a href='Kodi.html'>Installing Kodi on a Raspberry Pi 3</a> <br><br>https://facebook.com/neri.llosa <br><br> Email: nerillosa@cox.net <br><br>Twitter: https://twitter.com/nllosa</h1>",
-            controller: "TemplateCtrl"
-        })
         .when("/about", {
             template: "<iframe src='about2.html' frameborder='0' style='overflow:hidden;height:100%;width:100%' height='100%' width='100%'></iframe>",
             controller: "TemplateCtrl"
@@ -99,9 +95,8 @@ app.controller('MenuCtrl', function ($scope, $route, $routeParams, $location, $l
 app.controller('TemplateCtrl', function ($scope, $route, $routeParams, $location, $log, NewsUtil) {
     if ($location.path() == "/about") {
         NewsUtil.setType(4);
-    } else if ($location.path() == "/contact") {
-        NewsUtil.setType(5);
-    } else {
+    }
+    else {
         NewsUtil.setType(1);
     }
 });
