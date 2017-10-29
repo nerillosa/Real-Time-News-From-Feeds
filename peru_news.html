@@ -5,194 +5,114 @@
 
 <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
 <meta name="keywords" content="news, world news, peru noticias, deporte noticias, politica noticias, entretenimiento, peru" />
-<link rel="stylesheet" href="tabs.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="jtempl.css" type="text/css" media="screen" />
 
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css" />
+<link rel="stylesheet" href="css/tabs.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/jtempl.css" type="text/css" media="screen" />
 <link rel="icon" type="image/png" href="images/favicon.png">
 <link href='http://fonts.googleapis.com/css?family=Vollkorn:400,700' rel='stylesheet' type='text/css'>
 
-<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-<script src="http://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
+<script src="js/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="js/jquery.tmpl.min.js"></script>
-
-<script id="newsTemplate" type="text/x-jquery-tmpl"> 
-  <tr>
-  <td>
-  <div class="links">${title}&nbsp;&nbsp;&nbsp;<a href="#" onclick="hrefClick(event)" 
-title="${title}">mas...</a></div>
-  <img class="lavida" src="${img}" />
-  <div class="htext" style="font-size: 1.2em;font-weight:bold;">${getHtml(html)}</div>
-  </td>
-     <td class="user-photo"><img style="cursor:pointer;" class="user-tumb" src="images/${logo}" onclick="tumia(event)"/><a
-     style="font-weight:bold;text-decoration:none;" href="${url}" 
-     target="_blank"><div style="margin-left:22px;">Ver art&iacute;culo original</div></a></td>
-     <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate)}</td>
-  </tr>
-</script>
-
+<script type="text/javascript" src="js/news.js"></script>
 <script type="text/javascript">
-    var savetds = [];
-    
-    $(document).ajaxStart(function(){$('.loadingDiv').show();});
-    $(document).ajaxStop(function(){$('.loadingDiv').hide();});
-    $(document).ready(function() {
+
+    var menus = [{"newsType":9, "newsTitle": "Actualidad"},{"newsType":10, "newsTitle": "Deporte"},{"newsType":11, "newsTitle": "Politica"},
+    	{"newsType":12, "newsTitle": "Entretenimiento"},{"newsType":13, "newsTitle": "Economia"}];
+
+    $(document).ready(function(){
+        $("#newsMenu").tmpl(menus).appendTo("#tabb");
         $.ajax({
            url: 'cambio.php',
            success: function(data) {
              $('#third').html(data);
            }
         });
-	$(".tablinks").eq(0).click(); //default ACTUALIDAD
+        $.ajax({
+           url: 'clima.php',
+           success: function(data) {
+             $('#second').html(data);
+           }
+           
+        });
+       $(".tablinks:contains('Actualidad')").click();
+
+        $("div.box-table").eq(2).click(function(e){
+                if (e.target !== this)//only click on parent
+                        return;
+                $('html, body').animate({scrollTop: $("div.box-table").eq(0).offset().top}, 250);
+        });
     });
 
-    $.fn.OverFlowed = function() {
-    	var _elm = $(this)[0];
-    	var _hasScrollBar = false; 
-    	if ((_elm.clientHeight < _elm.scrollHeight) || (_elm.clientWidth < _elm.scrollWidth)) {
-        	_hasScrollBar = true;
-    	}
-    	return _hasScrollBar;
-    };
-
-    $.fn.scrollView = function () {
-        return this.each(function () {
-        $('html, body').animate({
-        scrollTop: $(this).offset().top
-        }, 500);
-    	});
-    };
-
-    function tumia(evt){
-        window.open(evt.target.nextSibling, '_blank');
-    }
-
-    function getHtml(html) {
-	return html;
-    }
-
-    function openNews(evt, newsType, newsName) {
-        $(".tablinks").removeClass("active");
-        $(evt.target).addClass("active");
-        $.getJSON("getNews.php?type=" + newsType, function (news) {
-        	$("#newsList").empty();
-            	$("#newsTemplate").tmpl(news).appendTo("#newsList");
-		$(".htext").each(function(){
-			var dina = $(this).html().replace(/&lt;\/b&gt;/g,'</b>').replace(/&lt;b&gt;/g,'<b>');
-			$(this).html('');
-			var pre = $("<pre> " + dina + " </pre>");
-			$(this).append(pre);
-			if(!$(this).OverFlowed()){
-			   $(this).parent().find("a").remove();
-			}
-		        document.getElementById("title").innerHTML = newsName;
-            	});
-        });
-    }
-
-    function getDate(jsonDate) { //2016-12-13 19:21:45 mysql DateTime
-        var tokens = jsonDate.split(" ");
-        jsonDate = tokens[0] + "T" + tokens[1] + "Z"; //2016-12-13T19:21:45Z UTC time
-	    var jdt = new Date(jsonDate);
-  	    var rvalue = Math.ceil((Date.now() - jdt.getTime())/60000);
-  	    if (rvalue < 60 && rvalue > 0)
-  	        return "hace " + rvalue + (rvalue === 1 ? " minuto" : " minutos");
-  	    else {
-  	        return jdt.toLocaleString();
-  	    }
-    }
-
-    function hrefClick(event){
-	event.preventDefault();
-	var elem = $(event.target).parent().next();
-	if(elem.is( "img" )) elem = elem.next();
-	if($(event.target).text() == "mas..."){
-		if(savetds.length >0){
-			var tdd = $("table tbody").find("td[colspan='3']");
-		        tdd.parent().append(savetds[0]);
-		        tdd.parent().append(savetds[1]);
-		        savetds = [];
-			tdd.removeAttr("colspan");
-			$(":last-child", tdd).addClass("htext");		
-			tdd.find("a").text("mas...");
-		}
-		savetds.push($(event.target).parent().parent().next().clone()); //remove the img and date
-		$(event.target).parent().parent().next().remove();
-		savetds.push($(event.target).parent().parent().next().clone());
-		$(event.target).parent().parent().next().remove();
-		$(event.target).parent().parent().attr("colspan", "3"); //have td ocuppy all 3 columns
-		elem.removeClass("htext");
-        	$(event.target).text("menos...");
-        }else{
-		$(event.target).parent().parent().parent().append(savetds[0]);
-		$(event.target).parent().parent().parent().append(savetds[1]);
-		savetds = [];
-		$(event.target).parent().parent().removeAttr("colspan");
-		elem.addClass("htext");
-        	$(event.target).text("mas...");
-        }
-		setTimeout(function(){ $(event.target).scrollView();}, 10);
-    }
-
 </script>
+
+<script id="newsTemplate" type="text/x-jquery-tmpl"> 
+  <tr>
+  <td>
+  <div class="links">${title}&nbsp;&nbsp;&nbsp;<a href="#" onclick="hrefClick(event)" 
+title="${title}">mas...</a></div>
+  <img class="lavida" src="${img}" onclick="cuando(event)"/>
+  <div class="htext" style="font-size: 1.2em;font-weight:bold;">${getHtml(html)}</div>
+  </td>
+     <td class="user-photo"><img style="cursor:pointer;" class="user-tumb" src="images/${logo}" onclick="tumia(event)"/><a
+     style="font-weight:bold;text-decoration:none;" href="${url}" 
+     target="_blank"><div style="margin-left:22px;">Ver art&iacute;culo original</div></a></td>
+     <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate,'Spanish')}</td>
+  </tr>
+</script>
+
+<script id="newsMenu" type="text/x-jquery-tmpl"> 
+	<li><a href="#" class="tablinks" onclick="openNews(event, ${newsType}, '${newsTitle}')">${newsTitle}</a></li>
+</script>
+
 <style>
     body{background : #1E90FF;}
     b{font-size:1em !important;}
-
+    #first,#second,#third{
+      background-color:#1E90FF;
+      font-weight: bold;
+      float:left;
+      text-align:center;
+      width:33%
+    }            
     #first {
-      background-color:#1E90FF;
-      width:33%;
-      float:left;
-    }
-    #second {
-      background-color:#1E90FF;
-      width:33%;
-      float:left;
+      font-size:1.3em;
     }
     #second h2{
-      text-align:center;
       font-size:1.8em;
     }
     #third {
       background-color:white;
-      width:33%;
-      font-weight: bold;
-      float:left;
-      text-align:center;
     }
 </style>
 
 </head>
+
 <body>
 
-<div class="box-table">
-  <div id="first">&nbsp;</div>
-  <div id="second"><h2>Noticias del Peru<br />Actualizadas cada 10 minutos</h2></div>
-  <div id="third"></div>
-</div>
+  <div class="box-table">
+    <div id="first"><a href="cartelera.php"><img border="0" alt="List&iacute;n Cinematogr&aacute;fico" src="images/listing.png" width="90"></a></div>
+    <div id="second">&nbsp;<br/>&nbsp;</div>
+    <div id="third">&nbsp;<br/>&nbsp;</div>
+  </div>
+  <h2 style="text-align:center;margin-bottom:10px;margin-top: 0">Noticias del Peru Actualizadas cada 15 minutos</h2>
+  <div class="box-table" style="padding-top: 0px;padding-bottom: 0px;" >
+    <ul class="tab" id="tabb" style="background-color:#ffd699"></ul>
+  </div>
+  <div id="timer" style="margin-top: 20px;text-align: center;font-family: 'Arial Black', Gadget, sans-serif;"></div>
+  <div class="box-table">
+    <table>
+     <thead>
+     <tr>
+       <th id="title"></th>
+       <th style="line-height: 1.2;">Agencia de <br />Noticias</th>
+       <th>Fecha</th>
+     </tr>
+     </thead>
+     <tbody id="newsList"></tbody>
+    </table>
+  </div>
+  <div class="loadingDiv"><img src="images/loading_green.gif" width="100px;"></div>
 
-<div class="box-table" style="padding-top: 0px;" >
-<ul class="tab">
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 9, 'Actualidad')">Actualidad</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 10, 'Deporte')">Deporte</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 11, 'Politica')">Politica</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 12, 'Entretenimiento')">Entretenimiento</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 13, 'Economia')">Economia</a></li>
-</ul>
-</div>
-
-<div class="box-table">
-<table>
-<thead><tr>
- <th id="title"></th>
- <th>Fuente</th>
- <th>Fecha</th>
-</tr></thead>
-
-
-<tbody id="newsList"></tbody>
-</table>
-</div>
-<div class="loadingDiv"><img src="images/loading_green.gif" width="100px;"></div>
 </body>
+
 </html> 

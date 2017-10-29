@@ -34,6 +34,7 @@ void writeString(char *str);
 <RPPSTORY>\"                {BEGIN(RPP);}
 
 <ABC>"<"p.itemprop=[^<]+">"  {BEGIN(ABCSTORY);}
+<ABC>"<h3>"Interested  ;
 <ABC>"<h3>"  {writeText();BEGIN(ABCSTORY);}
 <ABCSTORY>[^<]+ {yymore();}
 <ABCSTORY>"<"   {yymore();}

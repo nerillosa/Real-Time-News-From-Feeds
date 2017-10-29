@@ -13,7 +13,6 @@
     <meta name="description" content="Installing Kodi on the Raspberry Pi 3">
     <meta name="keywords" content="VPN,openvpn,Raspberry Pi,Raspberry, Kodi, media player">
     <meta name="author" content="Neri Llosa">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Installing Kodi on the Raspberry Pi 3</title>
     <link rel="icon" type="image/png" href="images/favicon.png">
@@ -21,20 +20,17 @@
     <style type="text/css">
         body {
             background-color: #ff9933;
-            margin-left: 0;
-            margin-top: 50px;
-            margin-right: 0;
-            margin-bottom: 0;
+            margin: 0;
         }
         #MainBody{
             height: auto;
-            padding: 30px;
+            padding: 30px 100px;
             line-height: 1.5;
         }
-        #MainBody h1{
+        #MainBody > :first-child{ /*center rpi image at top*/
             text-align: center;
         }
-        #MainBody > :first-child{ /*center rpi image at top*/
+        #MainBody > :nth-child(2),:nth-child(3){
             text-align: center;
         }
         #MainBody a:link{
@@ -45,16 +41,15 @@
     <script src="js/jquery-1.11.1.min.js"></script>
 
     <script type="text/javascript">
-    	$(document).ready(function(){
-	    $.ajax({
-		url: "Kodi.raw",
-		async: false,
-	       	cache: false,
-               	success: function (data){
-		   $("#MainBody").html(data);
-               	}
-            });    	
-    	});
+	$(document).ready(function(){
+		$.ajax({
+			url: "getHub.php?type=Kodi",
+			cache: false,
+			success: function (data){
+				$("#MainBody").html(data);
+			}
+		});    	
+	});
     </script>
 
 

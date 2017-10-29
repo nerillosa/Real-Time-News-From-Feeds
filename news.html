@@ -7,14 +7,28 @@
 <meta name="keywords" content="news, world news, usa news, sports news, politics" />
 <link rel="stylesheet" href="css/tabs.css" type="text/css" media="screen" />
 <link rel="stylesheet" href="css/jtempl.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="css/jquery-ui.css" />
 <link rel="icon" type="image/png" href="images/favicon.png">
 <link href='http://fonts.googleapis.com/css?family=Vollkorn:400,700' rel='stylesheet' type='text/css'>
 
 <script src="js/jquery-1.11.1.min.js"></script>
-<script src="js/jquery-ui.js"></script>
 <script type="text/javascript" src="js/jquery.tmpl.min.js"></script>
 <script type="text/javascript" src="js/news.js"></script>
+<script type="text/javascript">
+    var menus = [{"newsType":1, "newsTitle": "Politics"},{"newsType":2, "newsTitle": "Science"},{"newsType":3, "newsTitle": "World"},
+    	{"newsType":4, "newsTitle": "Sports"},{"newsType":5, "newsTitle": "Entertainment"},{"newsType":14, "newsTitle": "Trump"},
+    	{"newsType":7, "newsTitle": "USA"},{"newsType":8, "newsTitle": "Business"}];
+
+    $(document).ready(function(){
+        $("#newsMenu").tmpl(menus).appendTo("#tabb");
+        $(".tablinks:contains('Trump')").click();
+        $("div.box-table").eq(1).click(function(e){
+                if (e.target !== this)//only click on parent
+                        return;
+                $('html, body').animate({scrollTop: $("div.box-table").eq(0).offset().top}, 250);
+        });
+    });
+</script>
+
 <script id="newsTemplate" type="text/x-jquery-tmpl"> 
   <tr>
   <td>
@@ -26,38 +40,31 @@
      <td class="user-photo"><img style="cursor:pointer;" class="user-tumb" src="images/${logo}" onclick="tumia(event)"/><a 
      style="font-weight:bold;padding-left:12px;text-decoration:none;" href="${url}" 
      target="_blank">View <br> full article</a></td>
-     <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate)}</td>
+     <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate,'English')}</td>
   </tr>
 </script>
 
+<script id="newsMenu" type="text/x-jquery-tmpl"> 
+	<li><a href="#" class="tablinks" onclick="openNews(event, ${newsType}, '${newsTitle}')">${newsTitle}</a></li>
+</script>
+
 </head>
+
 <body>
-
-<h2 style="text-align:center;margin-bottom:0;">Real Time News<br />updated every 15 minutes</h2>
-<div class="box-table" >
-<ul class="tab">
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 1, 'Politics')">Politics</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 2, 'Science')">Science</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 3, 'World')">World</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 4, 'Sports')">Sports</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 5, 'Entertainment')">Entertainment</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 14, 'Trump')">Trump</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 7, 'USA')">USA</a></li>
-  <li><a href="javascript:void(0)" class="tablinks" onclick="openNews(event, 8, 'Business')">Business</a></li>
-</ul>
-</div>
-<div id="timer" style="text-align: center;font-family: 'Arial Black', Gadget, sans-serif;"></div>
-<div class="box-table">
-<table>
-<thead><tr>
- <th id="title"></th>
- <th>News <br />Agency</th>
- <th>Date</th>
-</tr></thead>
-
-<tbody id="newsList"></tbody>
-</table>
-</div>
-<div class="loadingDiv"><img src="images/loading_green.gif" width="100px;"></div>
+  <h2 style="text-align:center;margin-bottom:0;">Real Time News<br />updated every 15 minutes</h2>
+  <div class="box-table" >
+    <ul class="tab" id="tabb"></ul>
+  </div>
+  <div id="timer" style="text-align: center;font-family: 'Arial Black', Gadget, sans-serif;"></div>
+  <div class="box-table">
+    <table>
+      <thead>
+        <tr><th id="title"></th><th>News <br />Agency</th><th>Date</th></tr>
+      </thead>
+      <tbody id="newsList"></tbody>
+    </table>
+  </div>
+  <div class="loadingDiv"><img src="images/loading_green.gif" width="100px;"></div>
 </body>
+
 </html> 
