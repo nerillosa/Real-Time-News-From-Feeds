@@ -75,6 +75,8 @@ void writeString(char *str);
 <CNNSTORY>"<h3>"   {writeString("&lt;b&gt;");}
 <CNNSTORY>"</h3>"  {writeString("&lt;/b&gt;");}
 <CNNSTORY>"<cite class=".+"</cite>"    ;
+<CNNSTORY>"</p>"[ \t\n]+"<p>"  {writeString("&#10;&#10;");}
+<CNNSTORY>"</p>"[ \t\n]+"<"div[ \t\n]+id=\"[a-zA-Z0-9_ ]+\""></div>"[ \t\n]+"<p>"  {writeString("&#10;&#10;");} 
 <CNNSTORY>"</p>"   {writeString("&#10;&#10;"); BEGIN(CNN);}
 <CNNSTORY>"</div>" {writeString("&#10;&#10;"); BEGIN(CNN);}
 <CNNSTORY>"</h2>" {writeString("&#10;&#10;"); BEGIN(CNN);}
