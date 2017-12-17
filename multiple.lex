@@ -94,7 +94,7 @@ void writeString(char *str);
 <COMSTORY>"<"               {writeText();}
 <COMSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(COMERCIO);}
 
-<REUTERS>"<"p.data.reactid=\"[0-9]{2}\"">" {writeText();BEGIN(REUTSTORY);}
+<REUTERS>"<"div.class=\"StandardArticleBody_body_1gnLA\"">"  {writeText();BEGIN(REUTSTORY);}
 <REUTSTORY>[^<]+   {writeText();}
 <REUTSTORY>"<"     {writeText();}
 <REUTSTORY>"<p></p>"	; /*ignore empty paragraphs*/
