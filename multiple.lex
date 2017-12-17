@@ -94,11 +94,11 @@ void writeString(char *str);
 <COMSTORY>"<"               {writeText();}
 <COMSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(COMERCIO);}
 
-<REUTERS>"<"div.class=\"StandardArticleBody_body_1gnLA\"">"  {writeText();BEGIN(REUTSTORY);}
+<REUTERS>"<"div.class=\"StandardArticleBody_body_1gnLA\"">"  {BEGIN(REUTSTORY);}
+<REUTSTORY>"<p>"	{writeString("&#10;&#10;");}
+<REUTSTORY>"<"div     {BEGIN(REUTERS);}
+<REUTSTORY>"</p>"	;
 <REUTSTORY>[^<]+   {writeText();}
-<REUTSTORY>"<"     {writeText();}
-<REUTSTORY>"<p></p>"	; /*ignore empty paragraphs*/
-<REUTSTORY>"</p>"	{writeText();writeString("&#10;&#10;");BEGIN(REUTERS);}
 
 <USTODAY>"<p>"USA  ;
 <USTODAY>"<p>"We.re.sorry   ;
