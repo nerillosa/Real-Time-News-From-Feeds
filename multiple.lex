@@ -128,6 +128,7 @@ void writeString(char *str);
 
 <WSH>"<"span.class=\"pb-caption\"">"	{BEGIN(WSHSTORY);}
 <WSHSTORY>"<p"[ ]  ;
+<WSHSTORY>"<p><script>"  ;
 <WSHSTORY>"<p>"  {writeText();BEGIN(WUMIA);}
 <WUMIA>[^<]+   {writeText();}
 <WUMIA>"<"     {writeText();}
