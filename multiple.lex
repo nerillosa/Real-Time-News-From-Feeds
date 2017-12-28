@@ -97,8 +97,14 @@ void writeString(char *str);
 <REUTERS>"<"div.class=\"StandardArticleBody_body_1gnLA\"">"  {BEGIN(REUTSTORY);}
 <REUTSTORY>"<p>"	{writeString("&#10;&#10;");}
 <REUTSTORY>"<"div     {BEGIN(REUTERS);}
+<REUTSTORY>"<"span[^>]+">"   ;
+<REUTSTORY>"</span>"   ;
+<REUTSTORY>"<h3>"   {writeString("&lt;b&gt;");}
+<REUTSTORY>"</h3>"  {writeString("&lt;/b&gt;");}
 <REUTSTORY>"</p>"	;
-<REUTSTORY>[^<]+   {writeText();}
+<REUTSTORY>"</a>"   {writeText();}
+<REUTSTORY>"<a href"   {writeText();}
+<REUTSTORY>[^<]+    {writeText();}
 
 <USTODAY>"<p>"USA  ;
 <USTODAY>"<p>"We.re.sorry   ;
