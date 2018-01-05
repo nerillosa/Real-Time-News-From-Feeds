@@ -552,28 +552,45 @@ void getInsertString(struct item *item, char *json, int type){
 	fillStruct(item, &extra); // uses flex to scrape top image and html from url
 
 	sprintf(beth, "%d", type);
-
-	if(extra.imgurl[0] && !strstr(extra.imgurl, "You must") && extra.html[0]){ // non blank img and html
-		strcpy(json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency,create_date) values ('");
-		strcat(json, item ->url);
-		strcat(json, "','");
-		strcat(json, extra.html);
-		strcat(json, "','");
-        	strcat(json, extra.imgurl);
-		strcat(json, "',");
-		strcat(json, beth);
-		strcat(json, ",'");
-		strcat(json, item ->title);
-		strcat(json, "',STR_TO_DATE('");
-		strcat(json, rssdate);
-		strcat(json, "','%Y-%m-%d %H:%i:%S'),'");
-		strcat(json, item ->agency);
-		strcat(json, "',now())");
-	}else{
-		if(!extra.imgurl[0] && !strstr(item->url, "video"))
-		    fprintf(logptr, "No Image for URL:%s\n", item ->url);
+//update news set title = (select concat('http://nllosa.com/images/',logo) from agency limit 1) where title='ABC.png';
+	if(extra.html[0]){ // there is html
+		if(!extra.imgurl[0] || strstr(extra.imgurl, "You must")){// get the logo image
+			strcpy(json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency,create_date) values ('");
+			strcat(json, item ->url);
+			strcat(json, "','");
+			strcat(json, extra.html);
+			strcat(json, "',(");
+        		strcat(json, "select concat('http://nllosa.com/images/',logo) from agency where shortname='");
+			strcat(json, item ->agency);
+			strcat(json, "'),");
+			strcat(json, beth);
+			strcat(json, ",'");
+			strcat(json, item ->title);
+			strcat(json, "',STR_TO_DATE('");
+			strcat(json, rssdate);
+			strcat(json, "','%Y-%m-%d %H:%i:%S'),'");
+			strcat(json, item ->agency);
+			strcat(json, "',now())");
+			if(!strstr(item->url, "video"))
+				fprintf(logptr, "No Image, using logo:%s\n", item ->url);
+		}else{
+			strcpy(json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency,create_date) values ('");
+			strcat(json, item ->url);
+			strcat(json, "','");
+			strcat(json, extra.html);
+			strcat(json, "','");
+        		strcat(json, extra.imgurl);
+			strcat(json, "',");
+			strcat(json, beth);
+			strcat(json, ",'");
+			strcat(json, item ->title);
+			strcat(json, "',STR_TO_DATE('");
+			strcat(json, rssdate);
+			strcat(json, "','%Y-%m-%d %H:%i:%S'),'");
+			strcat(json, item ->agency);
+			strcat(json, "',now())");
+		}
 	}
-
 }
 
 void setOwnEncodedHtml(struct item *item, struct extra *extra){
