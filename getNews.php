@@ -26,8 +26,8 @@
         if($type <= $maxType){
            $news = $db->query("select c.*,d.logo from" .
            " (select a.* from (select * from news) a, (select max(create_date)as create_date,img,news_type" .
-           " from news group by img,news_type) b where a.create_date=b.create_date and a.img=b.img and a.news_type=b.news_type) c" .
-           " join agency d on c.agency=d.shortname where" .
+           " from news group by img,news_type) b where a.create_date=b.create_date and a.img=b.img and" .
+           " a.news_type=b.news_type) c join agency d on c.agency=d.shortname where" .
            " c.news_type=" . $type . " order by c.pubdate desc limit 20");
         } else{
 	   // Trump news
@@ -55,13 +55,16 @@
 	        $pattern = '/<b>|<strong>/s';
         	$html = preg_replace($pattern, '&lt;b&gt;', $html);
 
+	        $pattern = '/<br><br>/s';
+        	$html = preg_replace($pattern, '&#10;&#10;', $html);
+
 	        $pattern = '/<\/b>|<\/strong>/s';
         	$html = preg_replace($pattern, '&lt;/b&gt;', $html);
 
 	        $html = filter_var($html, FILTER_SANITIZE_STRING);//removes all xml characters
 
-		$news_r[] = array('html' => $html, 'pubdate' => $pubdate, 'url' => $url, 'title' => $title, 'agency' =>
-		$agency,'logo' => $logo,'img'=>$img );
+                $news_r[] = array('html' => $html, 'pubdate' => $pubdate, 'url' => $url, 'title' => utf8_encode($title),
+                'agency' =>$agency,'logo' => $logo,'img'=>$img );
 	}
 
 	echo json_encode($news_r); //convert the array to JSON string
