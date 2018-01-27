@@ -18,8 +18,8 @@ extern char *yybuf;
 void writeText();
 void writeString(char *str);
 %}
-%s WSH WSHSTORY REUTERS NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI COMERCIO
-%x WUMIA REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
+%s WSH REUTERS NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI COMERCIO
+%x WUMIA WSHTORY REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
 %option noyywrap
 %%
 	BEGIN(agencyState);
@@ -133,14 +133,16 @@ void writeString(char *str);
 <USTODAYSTORY>"</h3>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
 <USTODAYSTORY>"</h4>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
 
-<WSH>"<"span.class=\"pb-caption\"">"	{BEGIN(WSHSTORY);}
-<WSHSTORY>"<p"[ ]  ;
-<WSHSTORY>"<p><script>"  ;
-<WSHSTORY>"<p>"  {writeText();BEGIN(WUMIA);}
-<WUMIA>[^<]+   {writeText();}
-<WUMIA>"<"     {writeText();}
-<WUMIA>"</p>"  {writeText();writeString("&#10;&#10;");BEGIN(WSHSTORY);}
-<WUMIA>"<div"  {BEGIN(WSH);}
+<WSH>"<"article.(class|itemprop)   {BEGIN(WUMIA);}
+<WUMIA>[^<]+   ;
+<WUMIA>"<"     ;
+<WUMIA>"<p>" {writeText();BEGIN(WSHTORY);}
+<WSHTORY>[^<]+   {writeText();}
+<WSHTORY>"<a href=\""[^"]+"\">" ;
+<WSHTORY>"</a>"  ;
+<WSHTORY>"</p>"  {writeText();strcat(yybuf, "&#10;&#10;");BEGIN(WUMIA);}
+<WSHTORY>"<" ;
+<WUMIA>"<".article">"  {BEGIN(WSH);}
 
 <SIMPLE>"<p><i></i></p>"  ;
 <SIMPLE>"<p>&nbsp;</p>"  ;
