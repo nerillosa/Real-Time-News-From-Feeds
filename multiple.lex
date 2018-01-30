@@ -136,11 +136,21 @@ void writeString(char *str);
 <WSH>"<"article.(class|itemprop)   {BEGIN(WUMIA);}
 <WUMIA>[^<]+   ;
 <WUMIA>"<"     ;
-<WUMIA>"<p>" {writeText();BEGIN(WSHTORY);}
+<WUMIA>"<p>" {BEGIN(WSHTORY);}
 <WSHTORY>[^<]+   {writeText();}
-<WSHTORY>"<a href=\""[^"]+"\">" ;
+<WSHTORY>"<a href=\""[^>]+">" ;
+<WSHTORY>"<span style=\""[^"]+"\">" ;
+<WSHTORY>"<sup>" ;
+<WSHTORY>"</sup>" ;
+<WSHTORY>"<"script.async[^>]+"></script>"   ;
+<WSHTORY>"<em>This article has been updated.</em>"  ;
+<WSHTORY>"<strong>More reading:</strong>"  ;
+<WSHTORY>"<strong>Read more:</strong>"  ;
+<WSHTORY>"<strong>"  {writeText();}
+<WSHTORY>"</strong>"  {writeText();}
 <WSHTORY>"</a>"  ;
-<WSHTORY>"</p>"  {writeText();strcat(yybuf, "&#10;&#10;");BEGIN(WUMIA);}
+<WSHTORY>"</span>"  ;
+<WSHTORY>"</p>"  {writeString("&#10;&#10;");BEGIN(WUMIA);}
 <WSHTORY>"<" ;
 <WUMIA>"<".article">"  {BEGIN(WSH);}
 
