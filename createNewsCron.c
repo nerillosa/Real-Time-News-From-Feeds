@@ -291,7 +291,6 @@ int getUrls(struct newsAgency *news_agency){
         char * line = NULL;
         size_t len = 0;
         ssize_t read;
-
         struct newsAgency *pp = news_agency;
 
         while ((read = getline(&line, &len, inputptr)) != -1) {
