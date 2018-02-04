@@ -293,14 +293,12 @@ int getUrls(struct newsAgency *news_agency){
         ssize_t read;
 
         struct newsAgency *pp = news_agency;
-       	read = getline(&line, &len, inputptr);
-	if(read == -1) return 1;
-        sscanf( line, "%d,%10[^,],%s", &pp->type, pp->name, pp->url );
 
         while ((read = getline(&line, &len, inputptr)) != -1) {
+		if(line[0] == '#') continue;  //skip comments
                 pp->next = calloc(1, sizeof(struct newsAgency));
-                pp = pp->next;
                 sscanf( line, "%d,%10[^,],%s", &pp->type, pp->name, pp->url );
+                pp = pp->next;
         }
 	free(line);
         return 0;
@@ -572,7 +570,7 @@ void getInsertString(struct item *item, char *json, int type){
 			strcat(json, item ->agency);
 			strcat(json, "',now())");
 			if(!strstr(item->url, "video"))
-				fprintf(logptr, "No Image, using logo:%s\n", item ->url);
+				fprintf(logptr, "No Image type %d, url:%s\n", type, item ->url);
 		}else{
 			strcpy(json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency,create_date) values ('");
 			strcat(json, item ->url);
@@ -612,7 +610,7 @@ void setOwnEncodedHtml(struct item *item, struct extra *extra){
 		extra->html[out_len] = '\0'; //terminate
 	}else{
                 if(strstr(item->url, "video")){
-	        	fprintf(logptr, "It is a video:%s\n", item->url);
+	        	//fprintf(logptr, "It is a video:%s\n", item->url);
                 }else{
 	        	fprintf(logptr, "Error:%s\n", item->url);
                 }

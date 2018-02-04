@@ -210,24 +210,24 @@ extern char *yytext;
 #ifdef YY_HEADER_EXPORT_START_CONDITIONS
 #define INITIAL 0
 #define WSH 1
-#define WSHSTORY 2
-#define REUTERS 3
-#define NYT 4
-#define ABC 5
-#define USTODAY 6
-#define SIMPLE 7
-#define CNN 8
-#define FOX 9
-#define CNBC 10
-#define PERU21 11
-#define GESTION 12
-#define GIMPLE 13
-#define PIMPLE 14
-#define WIMPLE 15
-#define WSJ 16
-#define UPI 17
-#define COMERCIO 18
-#define WUMIA 19
+#define REUTERS 2
+#define NYT 3
+#define ABC 4
+#define USTODAY 5
+#define SIMPLE 6
+#define CNN 7
+#define FOX 8
+#define CNBC 9
+#define PERU21 10
+#define GESTION 11
+#define GIMPLE 12
+#define PIMPLE 13
+#define WIMPLE 14
+#define WSJ 15
+#define UPI 16
+#define COMERCIO 17
+#define WUMIA 18
+#define WSHTORY 19
 #define REUTSTORY 20
 #define NYTSTORY 21
 #define ABCSTORY 22
@@ -345,7 +345,7 @@ extern int yylex (void);
 #undef YY_DECL
 #endif
 
-#line 155 "multiple.lex"
+#line 181 "multiple.lex"
 
 
 #line 352 "flex.h"
