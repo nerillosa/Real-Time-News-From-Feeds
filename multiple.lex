@@ -97,6 +97,7 @@ void writeString(char *str);
 
 <REUTERS>"<"div.class=\"StandardArticleBody_body_1gnLA\"">"  {BEGIN(REUTSTORY);}
 <REUTSTORY>"<p>"	{writeString("&#10;&#10;");}
+<REUTSTORY>"<p class="[^>]+>    {writeString("&#10;&#10;");}
 <REUTSTORY>"<"div     {BEGIN(REUTERS);}
 <REUTSTORY>"<"span[^>]+">"   ;
 <REUTSTORY>"</span>"   ;
