@@ -96,16 +96,16 @@ void writeString(char *str);
 <COMSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(COMERCIO);}
 
 <REUTERS>"<"div.class=\"StandardArticleBody_body_1gnLA\"">"  {BEGIN(REUTSTORY);}
-<REUTSTORY>"<p>"	{writeString("&#10;&#10;");}
-<REUTSTORY>"<p class="[^>]+>    {writeString("&#10;&#10;");}
-<REUTSTORY>"<"div     {BEGIN(REUTERS);}
+<REUTERS>"<p class=\"\">"    {BEGIN(REUTSTORY);writeString("&#10;&#10;");}
+<REUTSTORY>"<p class=\"MegaArticleBody"[^>]+>  ;
+<REUTSTORY>"<div class=\"Attribution"  {BEGIN(REUTERS);}
 <REUTSTORY>"<"span[^>]+">"   ;
 <REUTSTORY>"</span>"   ;
+<REUTSTORY>"<a href="[^>]+">"   ;
+<REUTSTORY>"</a>"   ;
 <REUTSTORY>"<h3>"   {writeString("&lt;b&gt;");}
 <REUTSTORY>"</h3>"  {writeString("&lt;/b&gt;");}
-<REUTSTORY>"</p>"	;
-<REUTSTORY>"</a>"   {writeText();}
-<REUTSTORY>"<a href"   {writeText();}
+<REUTSTORY>"</p>"   {BEGIN(REUTERS);}
 <REUTSTORY>[^<]+    {writeText();}
 
 <USTODAY>"<p>"USA  ;
