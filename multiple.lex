@@ -95,10 +95,10 @@ void writeString(char *str);
 <COMSTORY>"<"               {writeText();}
 <COMSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(COMERCIO);}
 
-<REUTERS>"<"div.class=\"StandardArticleBody_body_1gnLA\"">"  {BEGIN(REUTSTORY);}
 <REUTERS>"<p class=\"\">"    {BEGIN(REUTSTORY);writeString("&#10;&#10;");}
-<REUTSTORY>"<p class=\"MegaArticleBody"[^>]+>  ;
-<REUTSTORY>"<div class=\"Attribution"  {BEGIN(REUTERS);}
+<REUTERS>"<p><span>" ;
+<REUTERS>"<p><a href" ;
+<REUTERS>"<p>"    {BEGIN(REUTSTORY);writeString("&#10;&#10;");}
 <REUTSTORY>"<"span[^>]+">"   ;
 <REUTSTORY>"</span>"   ;
 <REUTSTORY>"<a href="[^>]+">"   ;
