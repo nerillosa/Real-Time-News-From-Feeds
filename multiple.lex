@@ -84,6 +84,7 @@ void writeString(char *str);
 <FOX>"<"div.class=.article-body.">" {BEGIN(SIMPLE);}
 
 <NYT>"<"p.class=\"story.body.text[^>]+"><em>"    ;
+<NYT>"<"p.class=\"css[^>]+">"   {BEGIN(NYTSTORY);}
 <NYT>"<"p.class=\"story.body.text[^>]+">"    {BEGIN(NYTSTORY);}
 <NYT>"<"p.class=\"Paragraph[^>]+">"    {BEGIN(NYTSTORY);}
 <NYTSTORY>[^<]+             {writeText();}
@@ -138,6 +139,7 @@ void writeString(char *str);
 <WUMIA>[^<]+   ;
 <WUMIA>"<"     ;
 <WUMIA>"<p>" {BEGIN(WSHTORY);}
+<WUMIA>"<p"[^>]+">" {BEGIN(WSHTORY);}
 <WSHTORY>[^<]+   {writeText();}
 <WSHTORY>"<a href=\""[^>]+">" ;
 <WSHTORY>"<span style=\""[^"]+"\">" ;
