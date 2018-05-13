@@ -49,7 +49,7 @@ struct agencyParse{
 	int parseType;
 } agencyParseArray[] = {{"CNN", CNN}, {"FOX NEWS", FOX}, {"NY TIMES", NYT},{"ABC NEWS", ABC},{"GESTION", GESTION},
 	{"PERU21", PERU21}, {"CNBC", CNBC}, {"REUTERS", REUTERS}, {"US TODAY", USTODAY}, {"WSH POST", WSH},
-	{"UPI", UPI}, {"WSJ", WSJ}, {"COMERCIO", COMERCIO}, {"RPP", RPP}} ;
+	{"UPI", UPI}, {"WSJ", WSJ}, {"COMERCIO", COMERCIO}} ;
 
 static int AGENCY_PARSE_SIZE = sizeof(agencyParseArray)/sizeof(agencyParseArray[0]);
 
@@ -291,6 +291,7 @@ int getUrls(struct newsAgency *news_agency){
         char * line = NULL;
         size_t len = 0;
         ssize_t read;
+
         struct newsAgency *pp = news_agency;
 
         while ((read = getline(&line, &len, inputptr)) != -1) {
@@ -611,7 +612,7 @@ void setOwnEncodedHtml(struct item *item, struct extra *extra){
                 if(strstr(item->url, "video")){
 	        	//fprintf(logptr, "It is a video:%s\n", item->url);
                 }else{
-	        	fprintf(logptr, "Error:%s\n", item->url);
+	        	fprintf(logptr, "Error:Type:%d:%s\n", item->type, item->url);
                 }
 	}
 	free(encoded);
