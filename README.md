@@ -15,5 +15,5 @@ To compile the code into an executable (createNews) that can be called by the Cr
 gcc createNewsCron.c lex.yy.c -o createNews -lcurl `mysql_config --cflags --libs`
 
 <br><br>
-<b> Demo:  http://nllosa.com/news.html </b>
+<b> Demo:  </b>
 
