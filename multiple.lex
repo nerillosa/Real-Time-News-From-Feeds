@@ -87,6 +87,7 @@ void writeString(char *str);
 <NYT>"<"p.class=\"css[^>]+">"   {BEGIN(NYTSTORY);}
 <NYT>"<"p.class=\"story.body.text[^>]+">"    {BEGIN(NYTSTORY);}
 <NYT>"<"p.class=\"Paragraph[^>]+">"    {BEGIN(NYTSTORY);}
+<NYT>"<div class=\"bottom-of-article\">"  {BEGIN(FOX);}
 <NYTSTORY>[^<]+             {writeText();}
 <NYTSTORY>"<"               {writeText();}
 <NYTSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(NYT);}
