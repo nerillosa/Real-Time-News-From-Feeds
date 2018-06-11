@@ -1,3 +1,4 @@
+#COMMENTS start with the pound sign
 1,FOX NEWS,http://feeds.foxnews.com/foxnews/politics?format=xml
 2,FOX NEWS,http://feeds.foxnews.com/foxnews/science?format=xml
 4,FOX NEWS,http://feeds.foxnews.com/foxnews/sports?format=xml
@@ -12,15 +13,15 @@
 3,CNN,http://rss.cnn.com/rss/cnn_world.rss
 5,CNN,http://rss.cnn.com/rss/cnn_showbiz.rss
 6,CNN,http://rss.cnn.com/rss/cnn_health.rss
-7,CNN,http://rss.cnn.com/rss/cnn_us.rss
+7,CNN,http://rss.cnn.com/services/podcasting/cnn10/rss.xml
 8,CNN,http://rss.cnn.com/rss/money_latest.rss
-1,ABC NEWS,http://abcnews.go.com/abcnews/politicsheadlines
-2,ABC NEWS,http://abcnews.go.com/abcnews/technologyheadlines
-3,ABC NEWS,http://abcnews.go.com/abcnews/internationalheadlines
-4,ABC NEWS,http://abcnews.go.com/abcnews/sportsheadlines
-5,ABC NEWS,http://abcnews.go.com/abcnews/entertainmentheadlines
-6,ABC NEWS,http://abcnews.go.com/abcnews/healthheadlines
-7,ABC NEWS,http://abcnews.go.com/abcnews/usheadlines
+1,ABC NEWS,https://abcnews.go.com/abcnews/politicsheadlines
+2,ABC NEWS,https://abcnews.go.com/abcnews/technologyheadlines
+3,ABC NEWS,https://abcnews.go.com/abcnews/internationalheadlines
+4,ABC NEWS,https://abcnews.go.com/abcnews/sportsheadlines
+5,ABC NEWS,https://abcnews.go.com/abcnews/entertainmentheadlines
+6,ABC NEWS,https://abcnews.go.com/abcnews/healthheadlines
+7,ABC NEWS,https://abcnews.go.com/abcnews/usheadlines
 1,REUTERS,http://feeds.reuters.com/Reuters/PoliticsNews
 2,REUTERS,http://feeds.reuters.com/reuters/scienceNews
 3,REUTERS,http://feeds.reuters.com/Reuters/worldNews
@@ -29,19 +30,21 @@
 6,REUTERS,http://feeds.reuters.com/reuters/healthNews
 7,REUTERS,http://feeds.reuters.com/Reuters/domesticNews
 8,REUTERS,http://feeds.reuters.com/reuters/businessNews
+8,BLOOMBERG,https://www.bloomberg.com/view/rss/topics/economics.rss
 1,US TODAY,http://rssfeeds.usatoday.com/usatodaycomwashington-topstories&x=1
 4,US TODAY,http://rssfeeds.usatoday.com/usatodaycomsports-topstories&x=1
 5,US TODAY,http://rssfeeds.usatoday.com/usatoday-lifetopstories&amp;x=1
 7,US TODAY,http://rssfeeds.usatoday.com/usatodaycomnation-topstories&x=1
 8,US TODAY,http://rssfeeds.usatoday.com/UsatodaycomMoney-TopStories
-3,WSH POST,http://feeds.washingtonpost.com/rss/rss_blogpost
-5,WSH POST,http://feeds.washingtonpost.com/rss/rss_going-out-gurus
-7,WSH POST,http://feeds.washingtonpost.com/rss/rss_post-nation
+#3,WSH POST,http://feeds.washingtonpost.com/rss/rss_blogpost
+#5,WSH POST,http://feeds.washingtonpost.com/rss/rss_going-out-gurus
+#7,WSH POST,http://feeds.washingtonpost.com/rss/rss_post-nation
+#8,WSH POST,http://feeds.washingtonpost.com/rss/national/energy-environment
 9,COMERCIO,https://elcomercio.pe/feed/peru
 10,COMERCIO,https://elcomercio.pe/feed/deporte-total
 11,COMERCIO,https://elcomercio.pe/feed/politica
 12,COMERCIO,https://elcomercio.pe/feed/luces
-13,COMERCIO,https://elcomercio.pe/feed/economia/peru
+13,COMERCIO,https://elcomercio.pe/feed/economia
 9,RPP,http://rpp.pe/feed/actualidad
 10,RPP,http://rpp.pe/feed/deportes
 11,RPP,http://rpp.pe/feed/politica
@@ -57,7 +60,7 @@
 11,PERU,https://peru.com/feed/actualidad/politicas
 12,PERU,https://peru.com/feed/entretenimiento
 13,PERU,https://peru.com/feed/actualidad/economia-y-finanzas
-11,GESTION,https://gestion.pe/feed/politica
+11,GESTION,https://gestion.pe/feed
 13,GESTION,https://gestion.pe/feed/economia
 3,BBC,http://feeds.bbci.co.uk/news/world/rss.xml
 2,BBC,http://feeds.bbci.co.uk/news/science_and_environment/rss.xml
@@ -73,7 +76,7 @@
 2,UPI,https://rss.upi.com/news/science_news.rss
 4,UPI,https://rss.upi.com/news/sports_news.rss
 8,UPI,https://rss.upi.com/news/business_news.rss
-8,WSJ,http://www.wsj.com/xml/rss/3_7014.xml
-3,WSJ,http://www.wsj.com/xml/rss/3_7085.xml
-2,WSJ,http://www.wsj.com/xml/rss/3_7455.xml
+#8,WSJ,http://www.wsj.com/xml/rss/3_7014.xml
+#3,WSJ,http://www.wsj.com/xml/rss/3_7085.xml
+#2,WSJ,http://www.wsj.com/xml/rss/3_7455.xml
 
