@@ -33,8 +33,9 @@
     }
 
     function getHtml(html) {
-	return html.replace(/^[^(A-Z]+(.*)/g, "$1").
-	replace(/[\n]&#10;[\n]/g, "\n\n");
+        //return html.replace(/^[^(A-Z]+(.*)/g, "$1").  // this was filtering out \u201C left quotes at beginning
+	return html.replace(/[\n]&#10;[\n]/g, "\n\n").
+	replace(/&amp;nbsp;/g, " ");
     }
 
     function tumia(evt){
@@ -57,7 +58,9 @@
 
     function openNews(evt, newsType, newsName) {
         $(".tablinks").removeClass("active");
-        $.getJSON("getNews.php?type=" + newsType, function (news) {
+
+	var urll = evt.target ? ("getNews.php?type=" + newsType) : "getBloom.php";
+        $.getJSON(urll, function (news) {
                 $("#newsList").empty();
                 $("#newsTemplate").tmpl(news).appendTo("#newsList");
                 $(".links").each(function(){

@@ -30,6 +30,8 @@ void writeString(char *str);
 <BLOOM>"<p>"   {BEGIN(BLOOMSTORY);}
 <BLOOMSTORY>[^<]+  {writeText();}
 <BLOOMSTORY>"<"    {writeText();}
+<BLOOMSTORY>"<a href=\"#footnote"[^>]+> ;
+<BLOOMSTORY>"<span id=\"footnote"[^>]+"></span>"[ \t\n]*[1-9][ \t\n]*"</a>" ;
 <BLOOMSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(BLOOM);}
 
 <RPP>[^"]+   ;
