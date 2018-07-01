@@ -9,7 +9,7 @@
 	cd ..  (go to the folder where your main program resides)
 	gcc createNewsCron.c lex.yy.c -o createNews -lcurl `mysql_config --cflags --libs`
 */
-
+        
 #include <stdio.h>
 #include <string.h>
 #define BUF_LEN 32768
@@ -18,19 +18,25 @@ extern char *yybuf;
 void writeText();
 void writeString(char *str);
 %}
-%s WSH REUTERS BLOOM NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI COMERCIO
-%x WUMIA BLOOMSTORY WSHTORY REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
+%s WSH HUFF REUTERS BLOOM NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI COMERCIO
+%x WUMIA HUFFSTORY BLOOMSTORY WSHTORY REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
 %option noyywrap
 %%
 	BEGIN(agencyState);
 
 [^<]+   ;
 "<"     ;
+
+<HUFF>"<div class=\"content-list-component"[^>]+"><p>"   {BEGIN(HUFFSTORY);}
+<HUFFSTORY>[^<]+             {writeText();}
+<HUFFSTORY>"<"               {writeText();}
+<HUFFSTORY>"</p></div>"      {writeString("&#10;&#10;"); BEGIN(HUFF);}
+
 <BLOOM>"<"span.class=\"lede[^>]+">"[ \t\n]*"<p>" ;
 <BLOOM>"<p>"   {BEGIN(BLOOMSTORY);}
 <BLOOMSTORY>[^<]+  {writeText();}
 <BLOOMSTORY>"<"    {writeText();}
-<BLOOMSTORY>"<a href=\"#footnote"[^>]+> ;
+<BLOOMSTORY>"<a href=\"#footnote"[^>]+>[ \t\n]* ;
 <BLOOMSTORY>"<span id=\"footnote"[^>]+"></span>"[ \t\n]*[1-9][ \t\n]*"</a>" ;
 <BLOOMSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(BLOOM);}
 

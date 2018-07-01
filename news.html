@@ -15,18 +15,22 @@
 <script type="text/javascript" src="js/news.js"></script>
 <script type="text/javascript">
     var menus = [{"newsType":1, "newsTitle": "Politics"},{"newsType":2, "newsTitle": "Science"},{"newsType":3, "newsTitle": "World"},
-    	{"newsType":4, "newsTitle": "Sports"},{"newsType":5, "newsTitle": "Entertainment"},{"newsType":14, "newsTitle": "Trump"},
+    	{"newsType":4, "newsTitle": "Sports"},{"newsType":5, "newsTitle": "Entertainment"},{"newsType":6, "newsTitle": "Health"},
     	{"newsType":7, "newsTitle": "USA"},{"newsType":8, "newsTitle": "Business"}];
-
     $(document).ready(function(){
         $("#newsMenu").tmpl(menus).appendTo("#tabb");
-        $(".tablinks:contains('Trump')").click();
+        $(".tablinks:contains('USA')").click();
         $("div.box-table").eq(1).click(function(e){
                 if (e.target !== this)//only click on parent
                         return;
                 $('html, body').animate({scrollTop: $("div.box-table").eq(0).offset().top}, 250);
         });
+        $("#tabb").append('<li><a href="#" class="tablinks" onclick="linda(\'Bloomberg\')">Bloomberg</a></li>');
+        $("#tabb").append('<li><a href="#" class="tablinks" onclick="linda(\'Huffington\')">Huffington</a></li>');
     });
+    function linda(site){
+    	openNews({target:site}, 8, site);
+    }
 </script>
 
 <script id="newsTemplate" type="text/x-jquery-tmpl"> 
@@ -53,7 +57,7 @@
 <body>
   <h2 style="text-align:center;margin-bottom:0;">Real Time News<br />updated every 15 minutes</h2>
   <div class="box-table" >
-    <ul class="tab" id="tabb"></ul>
+    <ul class="tab" id="tabb" style="padding-left:3%;"></ul>
   </div>
   <div id="timer" style="text-align: center;font-family: 'Arial Black', Gadget, sans-serif;"></div>
   <div class="box-table">

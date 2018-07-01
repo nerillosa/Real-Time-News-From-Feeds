@@ -34,7 +34,8 @@
 
     function getHtml(html) {
         //return html.replace(/^[^(A-Z]+(.*)/g, "$1").  // this was filtering out \u201C left quotes at beginning
-	return html.replace(/[\n]&#10;[\n]/g, "\n\n").
+	return html.replace(/^[ \t\n]*(&#10;)*/g,"").
+	replace(/[\n]&#10;[\n]/g, "\n\n").
 	replace(/&amp;nbsp;/g, " ");
     }
 
@@ -55,12 +56,23 @@
     	window.open(link, '_blank');
     }
 
+    function compare(a,b) {
+      if (a.pubdate > b.pubdate)
+        return -1;
+      if (a.pubdate < b.pubdate)
+        return 1;
+      return 0;
+    }
 
     function openNews(evt, newsType, newsName) {
         $(".tablinks").removeClass("active");
 
-	var urll = evt.target ? ("getNews.php?type=" + newsType) : "getBloom.php";
+	var urll = typeof evt.target !== 'string' ? ("getNews.php?type=" + newsType) : evt.target.toLowerCase() == "bloomberg" ? "getBloom.php" : "getHuff.php";
         $.getJSON(urll, function (news) {
+		if(urll === "getHuff.php"){
+			news.sort(compare);
+		}
+
                 $("#newsList").empty();
                 $("#newsTemplate").tmpl(news).appendTo("#newsList");
                 $(".links").each(function(){
@@ -152,9 +164,12 @@
 		setTimeout(function(){ $(event.target).scrollView();}, 10);
     }
 
-    function getDate(jsonDate, language) { //2016-12-13 19:21:45 
+    function getDate(jsonDate, language, offset) { //2016-12-13 19:21:45 
         var tokens = jsonDate.split(" ");
-        jsonDate = tokens[0] + "T" + tokens[1] + "Z"; //2016-12-13T19:21:45Z UTC time
+        if(!offset){
+        	offset = "Z";
+        }
+        jsonDate = tokens[0] + "T" + tokens[1] + offset; //2016-12-13T19:21:45Z UTC time
             var jdt = new Date(jsonDate);
             var rvalue = Math.ceil((Date.now() - jdt.getTime())/60000);
             if (rvalue < 60 && rvalue > 0){
