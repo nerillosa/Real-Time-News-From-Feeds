@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Huffington Post</title>
+<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+<meta name="keywords" content="news, world news, usa news, sports news, politics" />
+<link rel="stylesheet" href="css/tabs.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/jtempl.css" type="text/css" media="screen" />
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link href='http://fonts.googleapis.com/css?family=Vollkorn:400,700' rel='stylesheet' type='text/css'>
+
+<script src="js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="js/jquery.tmpl.min.js"></script>
+<script type="text/javascript" src="js/news.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        openNews({target:"huffington"}, 8, 'All');
+        $("div.box-table").click(function(e){
+                if (e.target !== this)//only click on parent
+                        return;
+                $('html, body').animate({scrollTop: $("div.box-table").offset().top}, 250);
+        });
+    });
+</script>
+
+<script id="newsTemplate" type="text/x-jquery-tmpl"> 
+  <tr>
+  <td>
+  <div class="links">${title}&nbsp;&nbsp;&nbsp;<a href="#" onclick="hrefClick(event)" 
+  title="${title}">more...</a></div>
+  <img class="lavida" src="${img}" onclick="cuando(event)"/>
+  <div class="htext" style="font-size: 1.2em;font-weight:bold;">${getHtml(html)}</div>
+  </td>
+     <td class="user-photo"><img style="cursor:pointer;" class="user-tumb" src="images/${logo}" onclick="tumia(event)"/><a 
+     style="font-weight:bold;padding-left:12px;text-decoration:none;" href="${url}" 
+     target="_blank">View <br> full article</a></td>
+     <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate,'English','-04:00')}</td>
+  </tr>
+</script>
+
+</head>
+
+<body>
+  <h2 style="text-align:center;margin-bottom:0;">Huffington Post</h2>
+  <div id="timer" style="text-align: center;font-family: 'Arial Black', Gadget, sans-serif;"></div>
+  <div class="box-table">
+    <table>
+      <thead>
+        <tr><th id="title"></th><th>News <br />Agency</th><th>Date</th></tr>
+      </thead>
+      <tbody id="newsList"></tbody>
+    </table>
+  </div>
+  <div class="loadingDiv"><img src="images/loading_green.gif" width="100px;"></div>
+</body>
+
+</html> 

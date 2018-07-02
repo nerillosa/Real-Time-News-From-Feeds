@@ -19,7 +19,7 @@ void writeText();
 void writeString(char *str);
 %}
 %s WSH HUFF REUTERS BLOOM NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI COMERCIO
-%x WUMIA HUFFSTORY BLOOMSTORY WSHTORY REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
+%x WUMIA HUFFSTORY BLOOMSTORY WSHSTORY REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
 %option noyywrap
 %%
 	BEGIN(agencyState);
@@ -149,27 +149,10 @@ void writeString(char *str);
 <USTODAYSTORY>"</h3>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
 <USTODAYSTORY>"</h4>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
 
-<WSH>"<"article.(class|itemprop)   {BEGIN(WUMIA);}
-<WUMIA>[^<]+   ;
-<WUMIA>"<"     ;
-<WUMIA>"<p>" {BEGIN(WSHTORY);}
-<WUMIA>"<p"[^>]+">" {BEGIN(WSHTORY);}
-<WSHTORY>[^<]+   {writeText();}
-<WSHTORY>"<a href=\""[^>]+">" ;
-<WSHTORY>"<span style=\""[^"]+"\">" ;
-<WSHTORY>"<sup>" ;
-<WSHTORY>"</sup>" ;
-<WSHTORY>"<"script.async[^>]+"></script>"   ;
-<WSHTORY>"<em>This article has been updated.</em>"  ;
-<WSHTORY>"<strong>More reading:</strong>"  ;
-<WSHTORY>"<strong>Read more:</strong>"  ;
-<WSHTORY>"<strong>"  {writeText();}
-<WSHTORY>"</strong>"  {writeText();}
-<WSHTORY>"</a>"  ;
-<WSHTORY>"</span>"  ;
-<WSHTORY>"</p>"  {writeString("&#10;&#10;");BEGIN(WUMIA);}
-<WSHTORY>"<" ;
-<WUMIA>"<".article">"  {BEGIN(WSH);}
+<WSH>"<p data-elm-loc="[^>]+">"   {BEGIN(WSHSTORY);}
+<WSHSTORY>[^<]+             {writeText();}
+<WSHSTORY>"<"               {writeText();}
+<WSHSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(WSH);}
 
 <SIMPLE>"<p><i></i></p>"  ;
 <SIMPLE>"<p>&nbsp;</p>"  ;

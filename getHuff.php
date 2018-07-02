@@ -1,16 +1,5 @@
 <?php
-$urlContent = file_get_contents('https://www.huffingtonpost.com');
-
-preg_match_all('#href=\"(/entry/[^"]+)\"#U',$urlContent,$matches);
-
-$arr = "";
-
-foreach (array_unique($matches[1]) as $key => $value)
-    $arr = $arr . " " . $value;
-
-
-$output = shell_exec("./createHuff" . $arr);
-
+$output = file_get_contents('huffington.json');
 
 $outputArray = json_decode($output, true);
 

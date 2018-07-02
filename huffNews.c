@@ -1,10 +1,9 @@
 /*
-* C program that gets the latest rss feeds from bloomberg rss
-* Uses libcurl open source library to download feed.xml
+* C program that gets the latest news articles from Huffington Post
 * Uses flex lexical analyzer to parse html and top image from the harvested urls.
 * The program files flex.h and lex.yy.c are created with the following command: flex --header-file=flex.h multiple.lex
 * where multiple.lex contains the rules for extracting the html data.
-* Compile with : gcc bloombergNews.c lex.yy.c -o createBloomberg
+* Compile with : gcc huffNews.c lex.yy.c -o createHuff
 */
 
 #include <stdio.h>
@@ -17,43 +16,12 @@
 #include <time.h>
 #include <errno.h>
 
-#define OUT 0
-#define IN  1
-#define MAX_TITLES 100
-#define BUFFER_SIZE 8192
+#define BUFFER_SIZE 4096
 #define BUF_LEN 32768
-#define NUM_ITEMS 3000
-#define NUM_CATEGORIES 13
 #define URL_TITLE_LEN 512
 
 #define YY_HEADER_EXPORT_START_CONDITIONS
 #include "flex.h"
-
-struct item{
-	int type;
-	char title[URL_TITLE_LEN];
-	char agency[10];
-	char pubDate[50];
-	char url[URL_TITLE_LEN];
-} itemArray[NUM_ITEMS];
-
-#define ITEM_SIZE sizeof(struct item)
-
-struct agencyParse{
-	char* agency;
-	int parseType;
-} agencyParseArray[] = {{"CNN", CNN}, {"FOX NEWS", FOX}, {"NY TIMES", NYT},{"ABC NEWS", ABC},{"GESTION", GESTION},
-	{"PERU21", PERU21}, {"CNBC", CNBC}, {"REUTERS", REUTERS}, {"US TODAY", USTODAY}, {"WSH POST", WSH},
-	{"UPI", UPI}, {"WSJ", WSJ}, {"COMERCIO", COMERCIO}, {"BLOOMBERG", BLOOM}, {"HUFFINGTON", HUFF}} ;
-
-static int AGENCY_PARSE_SIZE = sizeof(agencyParseArray)/sizeof(agencyParseArray[0]);
-
-struct newsAgency {
-        int type;
-        char name[10];
-        char url[URL_TITLE_LEN];
-	struct newsAgency *next;
-} news_agency;
 
 struct extra {
   char imgurl[URL_TITLE_LEN];
@@ -63,14 +31,9 @@ struct extra {
 };
 
 //Function Prototypes
-static int compare_pubDates(const void* a, const void* b);
-static void cleanRssDateString(char *rssDateString);
-static int getUrls(struct newsAgency *news_agency);
 static void cleanDateString(char *rssDateString);
-static int calcDays(int month, int year);
 static size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct extra *extra);
 static char *base64_encode(char *data, size_t input_length,  size_t *output_length);
-static int fsize(const char *filename);
 static void printTime(char *msg);
 
 FILE *inputptr;
@@ -94,7 +57,7 @@ int main(int argc, char *argv[]){
 		char *encoded = NULL;
 		struct extra extra;
 		memset(&extra, 0, sizeof(struct extra));
-		char url2[4096];
+		char url2[BUFFER_SIZE];
 		strcpy(url2, "https://www.huffingtonpost.com");
 		strcat(url2, argv[i]);
 		size_t out_len = parseUrlWithFlex(url2, &encoded, HUFF, &extra);
@@ -129,124 +92,6 @@ int main(int argc, char *argv[]){
 	return 0;
 }
 
-int getUrls(struct newsAgency *news_agency){
-        char * line = NULL;
-        size_t len = 0;
-        ssize_t read;
-
-        struct newsAgency *pp = news_agency;
-
-        while ((read = getline(&line, &len, inputptr)) != -1) {
-		if(line[0] == '#') continue;  //skip comments
-                pp->next = calloc(1, sizeof(struct newsAgency));
-                sscanf( line, "%d,%10[^,],%s", &pp->type, pp->name, pp->url );
-                pp = pp->next;
-        }
-	free(line);
-        return 0;
-}
-
-// utility compare function to be used in qsort
-int compare_pubDates(const void* a, const void* b) {
-	struct item *itemA = (struct item *)a;
-	struct item *itemB = (struct item *)b;
-	struct tm tmA,tmB;
-
-	memset(&tmA, 0, sizeof(struct tm));
-	memset(&tmB, 0, sizeof(struct tm));
-
-	if(!(itemA -> pubDate)[0]) return 1;
-	if(!(itemB -> pubDate)[0]) return -1;
-
-	strptime(itemA -> pubDate,"%a, %d %b %Y %H:%M:%S %Z", &tmA);
-	strptime(itemB -> pubDate,"%a, %d %b %Y %H:%M:%S %Z", &tmB);
-
-	if(tmA.tm_year > tmB.tm_year) return -1;
-	else if (tmA.tm_year < tmB.tm_year) return 1;
-	else if (tmA.tm_mon > tmB.tm_mon) return -1;
-	else if (tmA.tm_mon < tmB.tm_mon) return 1;
-	else if (tmA.tm_mday > tmB.tm_mday) return -1;
-	else if (tmA.tm_mday < tmB.tm_mday) return 1;
-	else if (tmA.tm_hour > tmB.tm_hour) return -1;
-	else if (tmA.tm_hour < tmB.tm_hour) return 1;
-	else if (tmA.tm_min > tmB.tm_min) return -1;
-	else if (tmA.tm_min < tmB.tm_min) return 1;
-	else if (tmA.tm_sec > tmB.tm_sec) return -1;
-	else if (tmA.tm_sec < tmB.tm_sec) return 1;
-	else return 0;
-}
-
-void cleanRssDateString(char *rssDateString){
-	if(!rssDateString[0]) return;
-
-	int i=0,k=0;
-	while(rssDateString[i]){
-		if(rssDateString[i++] == ':') k++;
-	}
-	if(!k) return;
-	if(k==1){ // its missing the seconds count
-		int sz = strlen(rssDateString);
-		for(i=0;i<5;i++){
-			rssDateString[sz + 3 -i] = rssDateString[sz-i];
-		}
-		rssDateString[sz-4] = ':';
-		rssDateString[sz-3] = '0';
-		rssDateString[sz-2] = '0';
-	}
-
-        char *t;
-        if((t = strstr(rssDateString, "EST"))){
-           strcat (t, "-0500");
-        }
-
-	struct tm tmA;
-	memset(&tmA, 0, sizeof(struct tm));
-	strptime(rssDateString,"%a, %d %b %Y %H:%M:%S %Z", &tmA);
-
-	char *p = rssDateString;
-	p += strlen(p)-5;
-	int diff = 0;//7; // MST = UTC -7
-	int delta= 0;
-	if(*p == '-' || *p == '+'){
-		delta = atoi(p)/100;
-	}
-	diff += delta;
-	if(diff){
-		tmA.tm_hour -= diff;
-                if(tmA.tm_hour > 23){
-                        tmA.tm_hour -= 24;
-                        tmA.tm_mday += 1;
-                }
-		if(tmA.tm_hour < 0) {
-			tmA.tm_hour += 24;
-			if(tmA.tm_mday > 1){
-				tmA.tm_mday -= 1;
-			}else{
-				tmA.tm_mon -= 1;
-				if(tmA.tm_mon < 0){ // its January 1st!
-					tmA.tm_mon = 11;
-					tmA.tm_year -= 1;
-				}else
-					tmA.tm_mday = calcDays(tmA.tm_mon, 1900 + tmA.tm_year);
-			}
-		}
-		strftime(rssDateString, 50, "%a, %d %b %Y %H:%M:%S GMT", &tmA);
-	}
-}
-
-int calcDays(int month, int year)// calculates number of days in a given month
-{
-	int Days;
-	if (month == 3 || month == 5 || month == 8 || month == 10) Days = 30;
-	else if (month == 1) {
-		int isLeapYear = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
-		if (isLeapYear) Days = 29;
-		else Days = 28;
-	}
-	else Days = 31;
-	return Days;
-}
-
 void cleanDateString(char *rssDateString){
         struct tm tmA;
         memset(&tmA, 0, sizeof(struct tm));
@@ -259,7 +104,7 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 	strcpy(beth, "wget --timeout=180 -q -O - ");
         strcat(beth, url);
 
-	char linda[BUF_LEN*12];
+	char linda[BUF_LEN*10];
         char * line = NULL;
         size_t len = 0;
         ssize_t read;
@@ -267,6 +112,7 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 	int found = 0;
 	int foundd = 0;
 	int found2 = 0;
+	int start = 0;
 
 	FILE *ppp = popen(beth, "r");
 	if (ppp == NULL) {
@@ -275,11 +121,6 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 	}
 
 	while ((read = getline(&line, &len, ppp)) != -1) {
-		if((countFilled + read) >= BUF_LEN*12 ){
-			fprintf(logptr,"Buffer Size Exceeded!!!!:%d for %s\n", countFilled + read, url);
-			fflush(logptr);
-			return 0;
-		}
 		if(!found){
 			if(strstr(line,"property=\"og:image\"")){
 		        	char *p = strstr(line, "http");
@@ -311,13 +152,24 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 	        			char *m = strstr(p+10, "\"");
         				if(m){
         					strncpy(extra-> pubDate, p+9, m-p-9-6); //-6 takes away -0400
-//        					cleanRssDateString(pubDate);
-//        					cleanDateString(pubDate);
         					foundd = 1;
         				}
 				}
 			}
 		}
+
+		if(!start && strstr(line,"<div class=\"content-list-component")){ //start flex scanning from here
+			start = 1;
+		}
+		else if(!start){
+			continue;
+		}
+		if((countFilled + read) >= BUF_LEN*10 ){
+			fprintf(logptr,"Buffer Size Exceeded!!!!:%d for %s\n", countFilled + read, url);
+			fflush(logptr);
+			return 0;
+		}
+
 		memcpy(linda + countFilled, line, read);
 		countFilled = countFilled + read;
 	}
@@ -385,15 +237,6 @@ char *base64_encode(char *data, size_t input_length,  size_t *output_length) {
     		encoded_data[*output_length - 1 - i] = '=';
 
   	return encoded_data;
-}
-
-int fsize(const char *filename) {
-        struct stat st;
-
-        if (stat(filename, &st) == 0)
-                return (st.st_size + 0);
-
-        return -1;
 }
 
 void printTime(char *msg){
