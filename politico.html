@@ -2,7 +2,7 @@
 <html>
 <head>
 
-<title>Real Time News</title>
+<title>Politico</title>
 <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
 <meta name="keywords" content="news, world news, usa news, sports news, politics" />
 <link rel="stylesheet" href="css/tabs.css" type="text/css" media="screen" />
@@ -14,23 +14,14 @@
 <script type="text/javascript" src="js/jquery.tmpl.min.js"></script>
 <script type="text/javascript" src="js/news.js"></script>
 <script type="text/javascript">
-    var menus = [{"newsType":1, "newsTitle": "Politics"},{"newsType":2, "newsTitle": "Science"},{"newsType":3, "newsTitle": "World"},
-    	{"newsType":4, "newsTitle": "Sports"},{"newsType":5, "newsTitle": "Entertainment"},{"newsType":6, "newsTitle": "Health"},
-    	{"newsType":7, "newsTitle": "USA"},{"newsType":8, "newsTitle": "Business"}];
     $(document).ready(function(){
-        $("#newsMenu").tmpl(menus).appendTo("#tabb");
-        $(".tablinks:contains('USA')").click();
-        $("div.box-table").eq(1).click(function(e){
+        openNews({target:"politico"}, 8, 'All');
+        $("div.box-table").click(function(e){
                 if (e.target !== this)//only click on parent
                         return;
-                $('html, body').animate({scrollTop: $("div.box-table").eq(0).offset().top}, 250);
+                $('html, body').animate({scrollTop: $("div.box-table").offset().top}, 250);
         });
-        $("#tabb").append('<li><a href="#" class="tablinks" onclick="linda(\'Politico\')">Politico</a></li>');
-        $("#tabb").append('<li><a href="#" class="tablinks" onclick="linda(\'Huffington\')">Huffington</a></li>');
     });
-    function linda(site){
-    	openNews({target:site}, 8, site);
-    }
 </script>
 
 <script id="newsTemplate" type="text/x-jquery-tmpl"> 
@@ -48,17 +39,10 @@
   </tr>
 </script>
 
-<script id="newsMenu" type="text/x-jquery-tmpl"> 
-	<li><a href="#" class="tablinks" onclick="openNews(event, ${newsType}, '${newsTitle}')">${newsTitle}</a></li>
-</script>
-
 </head>
 
 <body>
-  <h2 style="text-align:center;margin-bottom:0;">Real Time News<br />updated every 15 minutes</h2>
-  <div class="box-table" >
-    <ul class="tab" id="tabb" style="padding-left:0%;"></ul>
-  </div>
+  <h2 style="text-align:center;margin-bottom:0;">Politico</h2>
   <div id="timer" style="text-align: center;font-family: 'Arial Black', Gadget, sans-serif;"></div>
   <div class="box-table">
     <table>

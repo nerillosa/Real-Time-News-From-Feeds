@@ -67,9 +67,12 @@
     function openNews(evt, newsType, newsName) {
         $(".tablinks").removeClass("active");
 
-	var urll = typeof evt.target !== 'string' ? ("getNews.php?type=" + newsType) : evt.target.toLowerCase() == "bloomberg" ? "getBloom.php" : "getHuff.php";
+	var urll = typeof evt.target !== 'string' ? ("getNews.php?type=" + newsType) :
+	evt.target.toLowerCase() == "politico" ? "getPolitico.php" :
+	evt.target.toLowerCase() == "bloomberg" ? "getBloom.php" : "getHuff.php";
+
         $.getJSON(urll, function (news) {
-		if(urll === "getHuff.php"){
+		if(typeof evt.target === 'string'){
 			news.sort(compare);
 		}
 
@@ -164,21 +167,30 @@
 		setTimeout(function(){ $(event.target).scrollView();}, 10);
     }
 
-    function getDate(jsonDate, language, offset) { //2016-12-13 19:21:45 
+    function getDate(jsonDate, language, offset) { //2016-12-13 19:21:45
         var tokens = jsonDate.split(" ");
+
         if(!offset){
         	offset = "Z";
-        }
-        jsonDate = tokens[0] + "T" + tokens[1] + offset; //2016-12-13T19:21:45Z UTC time
-            var jdt = new Date(jsonDate);
-            var rvalue = Math.ceil((Date.now() - jdt.getTime())/60000);
-            if (rvalue < 60 && rvalue > 0){
+        }else if(offset.slice(0,-4) === "HUFF"){
+		offset = "-04:00";
+	}else if(offset.slice(0,-4) === "POLITICO"){
+		return tokens[0];// remove time of day
+	}else{
+	        offset = "Z";
+	}
+
+        jsonDate = tokens[0] + "T" + tokens[1] + offset;
+        //2016-12-13T19:21:45Z (UTC time) or 2016-12-13T19:21:45-04:00 (Huffington)
+        var jdt = new Date(jsonDate);
+        var rvalue = Math.ceil((Date.now() - jdt.getTime())/60000);
+        if (rvalue < 60 && rvalue > 0){
 		if(language === 'English')
-                	return "" + rvalue + (rvalue === 1 ? " minute" : " minutes") + " ago";
+               		return "" + rvalue + (rvalue === 1 ? " minute" : " minutes") + " ago";
 		else
 			return "hace " + rvalue + (rvalue === 1 ? " minuto" : " minutos");
-	    }
-            else {
-                return jdt.toLocaleString();
-            }
+	}
+	else {
+		return jdt.toLocaleString();
+	}
     }
