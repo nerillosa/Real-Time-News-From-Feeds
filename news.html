@@ -9,7 +9,28 @@
 <link rel="stylesheet" href="css/jtempl.css" type="text/css" media="screen" />
 <link rel="icon" type="image/png" href="images/favicon.png">
 <link href='http://fonts.googleapis.com/css?family=Vollkorn:400,700' rel='stylesheet' type='text/css'>
+<style>
+ div#newsDrop{
+   line-height: 24px;
+   font-size:14px;
+   width:100px;
+   background-color:#ccc;
+   display:none;
+   position:absolute;
+   left:760px;
+   text-align:center;
+ }
 
+ div#newsDrop>div a{
+   padding: 1px 5px;
+   text-decoration: none;
+   color: black;
+ }
+
+ div#newsDrop>div:hover a{
+   background-color:#aaa;
+ } 
+</style>
 <script src="js/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="js/jquery.tmpl.min.js"></script>
 <script type="text/javascript" src="js/news.js"></script>
@@ -25,9 +46,17 @@
                         return;
                 $('html, body').animate({scrollTop: $("div.box-table").eq(0).offset().top}, 250);
         });
-        $("#tabb").append('<li><a href="#" class="tablinks" onclick="linda(\'Politico\')">Politico</a></li>');
-        $("#tabb").append('<li><a href="#" class="tablinks" onclick="linda(\'Huffington\')">Huffington</a></li>');
+        $("#tabb").append('<li class="linda"><a href="#" class="tablinks">News Sites<span style="font-size:11px;">&#9660;</span></a></li>');
+
+	$("li.linda").mouseover(function() {
+	   $("#newsDrop").toggle();
+	});
+	$("#newsDrop").mouseleave(function() {
+	   $("#newsDrop").toggle();
+	});
+
     });
+
     function linda(site){
     	openNews({target:site}, 8, site);
     }
@@ -56,8 +85,13 @@
 
 <body>
   <h2 style="text-align:center;margin-bottom:0;">Real Time News<br />updated every 15 minutes</h2>
-  <div class="box-table" >
-    <ul class="tab" id="tabb" style="padding-left:0%;"></ul>
+  <div class="box-table" style="overflow:visible;">
+    <ul class="tab" id="tabb" style="padding-left:5%;"></ul>
+    <div id="newsDrop">
+      <div><a href="#" onclick="linda('Huffington')">Huffington</a></div>
+      <div><a href="#" onclick="linda('Bloomberg')">Bloomberg</a></div>
+      <div><a href="#" onclick="linda('Politico')">Politico</a></div>
+    </div>
   </div>
   <div id="timer" style="text-align: center;font-family: 'Arial Black', Gadget, sans-serif;"></div>
   <div class="box-table">

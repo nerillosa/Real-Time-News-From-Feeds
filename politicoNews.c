@@ -1,6 +1,7 @@
 /*
 * C program that gets the latest news articles from Politico
 * Uses flex lexical analyzer to parse html from the harvested urls.
+* Program receives all news urls as arguments when invoked by script or directly.
 * The program files flex.h and lex.yy.c are created with the following command: flex --header-file=flex.h multiple.lex
 * where multiple.lex contains the rules for extracting the html data.
 * Compile with : gcc politicoNews.c lex.yy.c -o createPolitico
@@ -31,7 +32,6 @@ struct extra {
 };
 
 //Function Prototypes
-static void cleanDateString(char *rssDateString);
 static size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct extra *extra);
 static char *base64_encode(char *data, size_t input_length,  size_t *output_length);
 static void printTime(char *msg);
@@ -90,13 +90,6 @@ int main(int argc, char *argv[]){
 	return 0;
 }
 
-void cleanDateString(char *rssDateString){
-        struct tm tmA;
-        memset(&tmA, 0, sizeof(struct tm));
-        strptime(rssDateString,"%a, %d %b %Y %H:%M:%S %Z", &tmA);
-        strftime(rssDateString, 50, "%Y-%m-%d %H:%M:%S", &tmA);
-}
-
 size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct extra *extra){
         char beth[1024];
 	strcpy(beth, "wget --timeout=180 -q -O - ");
@@ -109,7 +102,9 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 	int countFilled = 0;
 	int found = 0;
 	int found2 = 0;
+	int foundd=0;
 	int start = 0;
+	char *p;
 
 	FILE *ppp = popen(beth, "r");
 	if (ppp == NULL) {
@@ -120,7 +115,7 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 	while ((read = getline(&line, &len, ppp)) != -1) {
 		if(!found){
 			if(strstr(line,"property=\"og:image\"")){
-		        	char *p = strstr(line, "http");
+		        	p = strstr(line, "http");
 	        		if(p){
 	        			char *m = strstr(p, "\"");
         				if(m){
@@ -130,9 +125,15 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 				}
 			}
 		}
+		if(!foundd){
+			if(p=strstr(line,"datetime=")){
+				strncpy(extra-> pubDate, p+10, 19);
+       				foundd = 1;
+			}
+		}
 		if(!found2){
 			if(strstr(line,"property=\"og:title\"")){
-		        	char *p = strstr(line, "content=\"");
+		        	p = strstr(line, "content=\"");
 	        		if(p){
 	        			char *m = strstr(p+10, "\"");
         				if(m){
@@ -142,6 +143,7 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 				}
 			}
 		}
+
 		if(!start && strstr(line,"<figcaption>")){ //start flex scanning from here
 			start = 1;
 		}
@@ -181,10 +183,11 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 
         yy_delete_buffer(bp);
         fclose(pp);
-
+/*
+	//https://www.politico.com/story/2018/06/27/black-womens-congressional-alliance-women-rule-678719
 	char *p = strstr(url, "/20");
 	if(p){
-		strncpy(beth, p+1, 10);
+		strncpy(beth, p+1, 10);// 2018/06/27
 		beth[10] = '\0';
                 p = &beth[0];
                 while(*p++){
@@ -192,9 +195,10 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
                 }
 		strcat(beth, " 13:00:00");
 	}else{
-		strcpy(beth,"2018-01-01");
+		strcpy(beth,"2018-01-01 13:00:00");
 	}
 	strcpy(extra-> pubDate, beth);
+*/
 	return out_len;
 }
 

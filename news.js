@@ -175,7 +175,8 @@
         }else if(offset.slice(0,-4) === "HUFF"){
 		offset = "-04:00";
 	}else if(offset.slice(0,-4) === "POLITICO"){
-		return tokens[0];// remove time of day
+		offset = "-04:00";
+		//return tokens[0];// remove time of day
 	}else{
 	        offset = "Z";
 	}
