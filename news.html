@@ -10,6 +10,11 @@
 <link rel="icon" type="image/png" href="images/favicon.png">
 <link href='http://fonts.googleapis.com/css?family=Vollkorn:400,700' rel='stylesheet' type='text/css'>
 <style>
+
+ li#linda:hover > div{
+   display:block;
+ }
+
  div#newsDrop{
    padding-top: 5px;
    line-height: 20px;
@@ -29,7 +34,17 @@
 
  div#newsDrop>div:hover a{
    background-color:#aaa;
- } 
+ }
+ 
+ div#timer{
+   text-align: center;
+   font-family: 'Arial Black', Gadget, sans-serif;
+ }
+ 
+ .arrow{
+   font-size:11px; 
+ }
+  
 </style>
 <script src="js/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="js/jquery.tmpl.min.js"></script>
@@ -47,12 +62,6 @@
                         return;
                 $('html, body').animate({scrollTop: $("div.box-table").eq(0).offset().top}, 250);
         });
-	$("#linda").mouseover(function() {
-	   $("#newsDrop").show();
-	});
-	$("#newsDrop").mouseleave(function() {
-	   $("#newsDrop").hide();
-	});
     });
 
     function linda(site){
@@ -86,7 +95,7 @@
   <div class="box-table" style="overflow:visible;">
     <ul class="tab" id="tabb" style="padding-left:5%;">
       <li id="linda">
-        <a href="#" class="tablinks">News Sites<span style="font-size:11px;">&#9660;</span></a>
+        <a href="#" class="tablinks">News Sites<span class="arrow">&#9660;</span></a>
         <div id="newsDrop">
           <div><a href="#" onclick="linda('Huffington')">Huffington</a></div>
           <div><a href="#" onclick="linda('Bloomberg')">Bloomberg</a></div>
@@ -95,7 +104,7 @@
       </li>
     </ul>
   </div>
-  <div id="timer" style="text-align: center;font-family: 'Arial Black', Gadget, sans-serif;"></div>
+  <div id="timer"></div>
   <div class="box-table">
     <table>
       <thead>
