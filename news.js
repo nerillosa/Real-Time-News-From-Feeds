@@ -72,8 +72,11 @@
 	evt.target.toLowerCase() == "bloomberg" ? "getBloom.php" : "getHuff.php";
 
         $.getJSON(urll, function (news) {
-		if(typeof evt.target === 'string'){
+		if(typeof evt.target === 'string'){ //news sites
 			news.sort(compare);
+			$(".tablinks:last").addClass("active");
+		}else{
+			$(evt.target).addClass("active");
 		}
 
                 $("#newsList").empty();
@@ -91,12 +94,11 @@
                         if(!$(this).OverFlowed()){
                                 $(this).parent().find("a").remove(); // Remove the ...more link
                         }
-			if(newsType > 8 && newsType < 14) //spanish
-                        	document.getElementById("title").innerHTML = "<br>Noticias  de  " + newsName;
-                        else
-				document.getElementById("title").innerHTML = newsName + " News";
-			$(evt.target).addClass("active");
                 });
+		if(newsType > 8 && newsType < 14) //spanish
+			document.getElementById("title").innerHTML = "<br>Noticias  de  " + newsName;
+		else
+			document.getElementById("title").innerHTML = newsName + " News";
         });
     }
 
