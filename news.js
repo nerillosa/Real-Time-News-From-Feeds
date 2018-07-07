@@ -67,14 +67,22 @@
     function openNews(evt, newsType, newsName) {
         $(".tablinks").removeClass("active");
 
-	var urll = typeof evt.target !== 'string' ? ("getNews.php?type=" + newsType) :
-	evt.target.toLowerCase() == "politico" ? "getPolitico.php" :
-	evt.target.toLowerCase() == "bloomberg" ? "getBloom.php" : "getHuff.php";
+	var url3 = "getNews.php?type=" + newsType;
 
-        $.getJSON(urll, function (news) {
+	if(typeof evt.target === 'string'){ //news sites
+		$(".tablinks:last").addClass("active");
+		var newsSite = evt.target.toLowerCase();
+		if(newsSite == "politico")
+			url3 = "getPolitico.php";
+		else if(newsSite == "bloomberg")
+			url3 = "getBloom.php";
+		else if(newsSite == "huffington")
+			url3 = "getHuff.php";
+	}
+
+        $.getJSON(url3, function (news) {
 		if(typeof evt.target === 'string'){ //news sites
 			news.sort(compare);
-			$(".tablinks:last").addClass("active");
 		}else{
 			$(evt.target).addClass("active");
 		}
