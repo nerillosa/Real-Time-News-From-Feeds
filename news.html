@@ -17,12 +17,12 @@
 
  div#newsDrop{
    padding-top: 5px;
+   padding-left: 10px;
    line-height: 20px;
-   width:100px;
+   width:118px;
    background-color:#ccc;
    display:none;
    position:absolute;
-   text-align:center;
  }
 
  div#newsDrop>div a{
@@ -44,7 +44,12 @@
  .arrow{
    font-size:11px; 
  }
-  
+
+body {
+    height: 100%;
+    overflow: auto;
+} 
+ 
 </style>
 <script src="js/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" src="js/jquery.tmpl.min.js"></script>
@@ -56,7 +61,13 @@
 
     $(document).ready(function(){
         $("#newsMenu").tmpl(menus).prependTo("#tabb");
-        $(".tablinks:contains('USA')").click();
+        var myParam = location.search.split('site=')[1];
+        if(myParam == 'forbes' || myParam == 'newyorker' || myParam == 'huffingtonpost' || myParam == 'washingtonpost' || myParam == 'time' || myParam == 'politico'){
+        	linda(myParam);
+        }
+        else {
+        	$(".tablinks:contains('USA')").click();
+        }	
         $("div.box-table").eq(1).click(function(e){
                 if (e.target !== this)//only click on parent
                         return;
@@ -97,9 +108,13 @@
       <li id="linda">
         <a href="#" class="tablinks">News Sites<span class="arrow">&#9660;</span></a>
         <div id="newsDrop">
-          <div><a href="#" onclick="linda('Huffington')">Huffington</a></div>
-          <div><a href="#" onclick="linda('Bloomberg')">Bloomberg</a></div>
-          <div><a href="#" onclick="linda('Politico')">Politico</a></div>
+          <!-- div><a href="#" onclick="linda('Bloomberg')">Bloomberg News</a></div -->
+          <div><a href="#" onclick="linda('forbes')">Forbes</a></div>
+          <div><a href="#" onclick="linda('huffingtonpost')">Huffington Post</a></div>
+          <div><a href="#" onclick="linda('politico')">Politico</a></div>
+          <div><a href="#" onclick="linda('newyorker')">The New Yorker</a></div>
+          <div><a href="#" onclick="linda('time')">Time Magazine</a></div>
+          <div><a href="#" onclick="linda('washingtonpost')">Washington Post</a></div>
         </div>
       </li>
     </ul>

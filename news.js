@@ -34,7 +34,7 @@
 
     function getHtml(html) {
         //return html.replace(/^[^(A-Z]+(.*)/g, "$1").  // this was filtering out \u201C left quotes at beginning
-	return html.replace(/^[ \t\n]*(&#10;)*/g,"").
+	return html.replace(/^[ \t\n\u00a0]*(&#10;)*/g,"").
 	replace(/[\n]&#10;[\n]/g, "\n\n").
 	replace(/&amp;nbsp;/g, " ");
     }
@@ -76,13 +76,44 @@
 			url3 = "getPolitico.php";
 		else if(newsSite == "bloomberg")
 			url3 = "getBloom.php";
-		else if(newsSite == "huffington")
-			url3 = "getHuff.php";
+		else if(newsSite == "newyorker"){
+				url3 = "getPowershell.php?type=newyorker";
+				newsName = "The New Yorker";
+			}
+		else if(newsSite == "forbes"){
+				url3 = "getPowershell.php?type=forbes";
+				newsName = "Forbes";
+			}
+		else if(newsSite == "huffingtonpost"){
+				url3 = "getHuff.php";
+				newsName = "Huffington Post";
+			}
+		else if(newsSite == "washingtonpost"){
+				url3 = "getWashingtonPost.php";
+				newsName = "Washington Post";
+			}
+		else if(newsSite == "time"){
+				url3 = "getTime.php";
+				newsName = "Time Magazine";
+			}
 	}
 
         $.getJSON(url3, function (news) {
 		if(typeof evt.target === 'string'){ //news sites
 			news.sort(compare);
+			var i = news.length;
+			var oldImg = "";
+			while (i--) {
+				if (!news[i].title || !news[i].html || news[i].html.length < 200) {
+					news.splice(i, 1);
+    				}else {
+    					if(oldImg == news[i].img){
+    						news.splice(i, 1);
+    					}else{
+    				    		oldImg = news[i].img;
+    					}
+    				}
+			}
 		}else{
 			$(evt.target).addClass("active");
 		}
@@ -186,8 +217,10 @@
 		offset = "-04:00";
 	}else if(offset.slice(0,-4) === "POLITICO"){
 		offset = "-04:00";
-		//return tokens[0];// remove time of day
-	}else{
+	}else if(offset.slice(0,-4) === "WPST" || offset.slice(0,-4) === "TIME"){
+		offset = "Z";
+	}
+	else{
 	        offset = "Z";
 	}
 

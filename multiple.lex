@@ -33,10 +33,12 @@ void writeString(char *str);
 <POLITICOSTORY>"<"               {writeText();}
 <POLITICOSTORY>"</p>"            {strcat(yybuf, "&#10;&#10;"); BEGIN(POLIT);}
 
-<HUFF>"<div class=\"content-list-component"[^>]+"><p>"   {BEGIN(HUFFSTORY);}
+<HUFF>"<div class=\"content-list-component yr-content-list-text"[^>]+">"   {BEGIN(HUFFSTORY);}
 <HUFFSTORY>[^<]+             {writeText();}
 <HUFFSTORY>"<"               {writeText();}
-<HUFFSTORY>"</p></div>"      {writeString("&#10;&#10;"); BEGIN(HUFF);}
+<HUFFSTORY>"<div data"[^>]+">"[ \t\n]* ;
+<HUFFSTORY>"</p>"      {writeString("&#10;&#10;");}
+<HUFFSTORY>"</p>"[ \t\n]*"</div>"      {writeString("&#10;&#10;"); BEGIN(HUFF);}
 
 <BLOOM>"<"span.class=\"lede[^>]+">"[ \t\n]*"<p>" ;
 <BLOOM>"<p>"   {BEGIN(BLOOMSTORY);}
