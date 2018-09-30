@@ -79,6 +79,7 @@ void writeString(char *str);
 <WSJSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(WIMPLE);}
 
 <CNBC>"<p>"[^a-zA-Z0-9" <]  ;
+<CNBC>"<p><input type=\"checkbox"   ;
 <CNBC>"<p>"   {BEGIN(CNBCSTORY);}
 <CNBC>"<p>YOUR BROWSER IS NOT SUPPORTED.</p>"  {BEGIN(INITIAL);}
 <CNBCSTORY>[^<]+  {writeText();}
@@ -105,6 +106,7 @@ void writeString(char *str);
 <FOX>"<"div.class=.article-body.">" {BEGIN(SIMPLE);}
 
 <NYT>"<"p.class=\"story.body.text[^>]+"><em>"    ;
+<NYT>"<"p.class=\"css[^P]+"Prop"[^>]+">"   ;
 <NYT>"<"p.class=\"css[^>]+">"   {BEGIN(NYTSTORY);}
 <NYT>"<"p.class=\"story.body.text[^>]+">"    {BEGIN(NYTSTORY);}
 <NYT>"<"p.class=\"Paragraph[^>]+">"    {BEGIN(NYTSTORY);}
@@ -163,6 +165,7 @@ void writeString(char *str);
 <WSHSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(WSH);}
 
 <SIMPLE>"<p><i></i></p>"  ;
+<SIMPLE>"<p>"[^b-ln-oq-z]+"</p>"  ;
 <SIMPLE>"<p>&nbsp;</p>"  ;
 <SIMPLE>"<p>"[^a-zA-Z0-9] ;
 <SIMPLE>"<p>This material may not be published" ;
