@@ -159,7 +159,7 @@ void writeString(char *str);
 <USTODAYSTORY>"</h3>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
 <USTODAYSTORY>"</h4>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
 
-<WSH>"<p data-elm-loc="[^>]+">"(<b>|<strong>)"Read more"  {BEGIN(FOX); /*Abandon ship*/}
+<WSH>"<p data-elm-loc="[^>]+">"(<b>|<strong>)*"Read more"  {BEGIN(FOX); /*Abandon ship*/}
 <WSH>"<p data-elm-loc="[^>]+">"   {BEGIN(WSHSTORY);}
 <WSHSTORY>[^<]+             {writeText();}
 <WSHSTORY>"<"               {writeText();}
