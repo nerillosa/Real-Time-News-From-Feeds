@@ -80,8 +80,10 @@ void writeString(char *str);
 
 <CNBC>"<p>"[^a-zA-Z0-9" <]  ;
 <CNBC>"<p><input type=\"checkbox"   ;
+<CNBC>"<p></p>"  ;
 <CNBC>"<p>"   {BEGIN(CNBCSTORY);}
 <CNBC>"<p>YOUR BROWSER IS NOT SUPPORTED.</p>"  {BEGIN(INITIAL);}
+<CNBC>"<p><em><strong>Like this story"   {BEGIN(INITIAL);}
 <CNBCSTORY>[^<]+  {writeText();}
 <CNBCSTORY>"<"    {writeText();}
 <CNBCSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(CNBC);}
