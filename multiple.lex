@@ -54,13 +54,12 @@ void writeString(char *str);
 <RPPSTORY>[^"]+             {writeText();}
 <RPPSTORY>\"                {BEGIN(RPP);}
 
-<ABC>"<"p.itemprop=[^<]+">"  {BEGIN(ABCSTORY);}
+<ABC>"<"div.class=\"StoryB[^>]+"><p>" {BEGIN(ABCSTORY);}
 <ABC>"<h3>"Interested  ;
-<ABC>"<h3>"  {writeText();BEGIN(ABCSTORY);}
-<ABCSTORY>[^<]+ {yymore();}
-<ABCSTORY>"<"   {yymore();}
-<ABCSTORY>"</p>"  {yyless(yyleng-4);if(yyleng>10 && !strstr(yytext,"<strong>")){writeText(); writeString("&#10;");} BEGIN(ABC);}
-<ABCSTORY>"</h3>" {writeText();BEGIN(ABC);}
+<ABCSTORY>[^<]+             {writeText();}
+<ABCSTORY>"<"               {writeText();}
+<ABCSTORY>"</p>"  {writeString("&#10;");}
+<ABCSTORY>"<"div.class=\"Story  {BEGIN(ABC);}
 
 <UPI>"<"article.itemprop  {BEGIN(PIMPLE);}
 <PIMPLE>"<".article">"  {BEGIN(INITIAL);}
