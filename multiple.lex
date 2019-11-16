@@ -28,17 +28,18 @@ void writeString(char *str);
 "<"     ;
 
 <POLITICO>"</figcaption>"   {BEGIN(POLIT);}
-<POLIT>"<p>"   {BEGIN(POLITICOSTORY);}
+<POLIT>"<p class=\" story-text__paragraph\">"   {BEGIN(POLITICOSTORY);}
 <POLITICOSTORY>[^<]+             {writeText();}
 <POLITICOSTORY>"<"               {writeText();}
 <POLITICOSTORY>"</p>"            {strcat(yybuf, "&#10;&#10;"); BEGIN(POLIT);}
 
+<HUFF>"<div class=\"content-list-component yr-content-list-text"[^>]+"><h3>" ;
 <HUFF>"<div class=\"content-list-component yr-content-list-text"[^>]+">"   {BEGIN(HUFFSTORY);}
 <HUFFSTORY>[^<]+             {writeText();}
 <HUFFSTORY>"<"               {writeText();}
 <HUFFSTORY>"<div data"[^>]+">"[ \t\n]* ;
 <HUFFSTORY>"</p>"      {writeString("&#10;&#10;");}
-<HUFFSTORY>"</p>"[ \t\n]*"</div>"      {writeString("&#10;&#10;"); BEGIN(HUFF);}
+<HUFFSTORY>[ \t\n]*"</div>"      {BEGIN(HUFF);}
 
 <BLOOM>"<"span.class=\"lede[^>]+">"[ \t\n]*"<p>" ;
 <BLOOM>"<p>"   {BEGIN(BLOOMSTORY);}
@@ -54,12 +55,10 @@ void writeString(char *str);
 <RPPSTORY>[^"]+             {writeText();}
 <RPPSTORY>\"                {BEGIN(RPP);}
 
-<ABC>"<"div.class=\"StoryB[^>]+"><p>" {BEGIN(ABCSTORY);}
-<ABC>"<h3>"Interested  ;
+<ABC>"<"p.itemprop=\"articleBody\"">" {BEGIN(ABCSTORY);}
 <ABCSTORY>[^<]+             {writeText();}
 <ABCSTORY>"<"               {writeText();}
-<ABCSTORY>"</p>"  {writeString("&#10;");}
-<ABCSTORY>"<"div.class=\"Story  {BEGIN(ABC);}
+<ABCSTORY>"</p>"  {writeString("&#10;"); BEGIN(ABC);}
 
 <UPI>"<"article.itemprop  {BEGIN(PIMPLE);}
 <PIMPLE>"<".article">"  {BEGIN(INITIAL);}
@@ -160,8 +159,9 @@ void writeString(char *str);
 <USTODAYSTORY>"</h3>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
 <USTODAYSTORY>"</h4>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
 
-<WSH>"<p data-elm-loc="[^>]+">"(<b>|<strong>)*"Read more"  {BEGIN(FOX); /*Abandon ship*/}
-<WSH>"<p data-elm-loc="[^>]+">"   {BEGIN(WSHSTORY);}
+<WSH>"<p class=\"font"[^>]+><b>How.we.got.here   {BEGIN(FOX);}
+<WSH>"<p class=\"font"[^>]+><b>Read.more:   {BEGIN(FOX);}
+<WSH>"<p class=\"font"[^>]+>   {BEGIN(WSHSTORY);}
 <WSHSTORY>[^<]+             {writeText();}
 <WSHSTORY>"<"               {writeText();}
 <WSHSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(WSH);}
@@ -169,8 +169,9 @@ void writeString(char *str);
 <SIMPLE>"<p><i></i></p>"  ;
 <SIMPLE>"<p>"[^b-ln-oq-z]+"</p>"  ;
 <SIMPLE>"<p>&nbsp;</p>"  ;
-<SIMPLE>"<p>"[^a-zA-Z0-9] ;
+<SIMPLE>"<p>"[^a-zA-Z0-9&] ;
 <SIMPLE>"<p>This material may not be published" ;
+<SIMPLE>"<p><strong>"   {BEGIN(SIMPLESTORY);}
 <SIMPLE>"<"p.class=\"speakable\"">"    {BEGIN(SIMPLESTORY);/*This is for first paragraphs of FOX NEWS*/}
 <SIMPLE>"<"p.class=\"story-body[^"]+\"">" {BEGIN(SIMPLESTORY); /*First line of BBC NEWS */}
 <SIMPLE>"<p>"   {BEGIN(SIMPLESTORY);}

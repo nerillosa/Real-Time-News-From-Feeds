@@ -210,40 +210,45 @@ extern char *yytext;
 #ifdef YY_HEADER_EXPORT_START_CONDITIONS
 #define INITIAL 0
 #define WSH 1
-#define REUTERS 2
-#define BLOOM 3
-#define NYT 4
-#define ABC 5
-#define USTODAY 6
-#define SIMPLE 7
-#define CNN 8
-#define FOX 9
-#define CNBC 10
-#define PERU21 11
-#define GESTION 12
-#define GIMPLE 13
-#define PIMPLE 14
-#define WIMPLE 15
-#define WSJ 16
-#define UPI 17
-#define COMERCIO 18
-#define WUMIA 19
-#define BLOOMSTORY 20
-#define WSHTORY 21
-#define REUTSTORY 22
-#define NYTSTORY 23
-#define ABCSTORY 24
-#define SIMPLESTORY 25
-#define USTODAYSTORY 26
-#define CNNSTORY 27
-#define CNBCSTORY 28
-#define PERU21STORY 29
-#define GESTIONSTORY 30
-#define WSJSTORY 31
-#define UPISTORY 32
-#define COMSTORY 33
-#define RPP 34
-#define RPPSTORY 35
+#define POLITICO 2
+#define POLIT 3
+#define HUFF 4
+#define REUTERS 5
+#define BLOOM 6
+#define NYT 7
+#define ABC 8
+#define USTODAY 9
+#define SIMPLE 10
+#define CNN 11
+#define FOX 12
+#define CNBC 13
+#define PERU21 14
+#define GESTION 15
+#define GIMPLE 16
+#define PIMPLE 17
+#define WIMPLE 18
+#define WSJ 19
+#define UPI 20
+#define COMERCIO 21
+#define WUMIA 22
+#define POLITICOSTORY 23
+#define HUFFSTORY 24
+#define BLOOMSTORY 25
+#define WSHSTORY 26
+#define REUTSTORY 27
+#define NYTSTORY 28
+#define ABCSTORY 29
+#define SIMPLESTORY 30
+#define USTODAYSTORY 31
+#define CNNSTORY 32
+#define CNBCSTORY 33
+#define PERU21STORY 34
+#define GESTIONSTORY 35
+#define WSJSTORY 36
+#define UPISTORY 37
+#define COMSTORY 38
+#define RPP 39
+#define RPPSTORY 40
 
 #endif
 
@@ -347,9 +352,9 @@ extern int yylex (void);
 #undef YY_DECL
 #endif
 
-#line 190 "multiple.lex"
+#line 195 "multiple.lex"
 
 
-#line 354 "flex.h"
+#line 359 "flex.h"
 #undef yyIN_HEADER
 #endif /* yyHEADER_H */

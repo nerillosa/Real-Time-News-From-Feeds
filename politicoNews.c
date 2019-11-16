@@ -35,6 +35,7 @@ struct extra {
 static size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct extra *extra);
 static char *base64_encode(char *data, size_t input_length,  size_t *output_length);
 static void printTime(char *msg);
+static void AddDays(char * msg, size_t maxsize, int daysToAdd);
 
 FILE *inputptr;
 FILE *logptr;
@@ -42,17 +43,24 @@ char *yybuf;
 int agencyState;
 int main(int argc, char *argv[]){
         if(argc<2){
-                fprintf(logptr, "usage: %s url-args \n", argv[0]);
+                fprintf(stdout, "usage: %s url-args \n", argv[0]);
                 exit(EXIT_FAILURE);
         }
 
-	logptr = fopen("politico.log", "a");
+	logptr = fopen("politico.log", "w");
 	printTime("Start");
 	setbuf(stdout, NULL);
         int i = 1;
         fprintf(stdout,"[");
+        char today[50];
+        char yesterday[50];
+        AddDays(today, 49, 0); // 2018/07/08
+        AddDays(yesterday, 49, -1); // 2018/07/07
 
         for(;i<argc;i++){
+                if(!strstr(argv[i],today) && !strstr(argv[i],yesterday)){ // only news from today or yesterday
+                        continue;
+                }
 		char *encoded = NULL;
 		struct extra extra;
 		memset(&extra, 0, sizeof(struct extra));
@@ -127,7 +135,7 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 		}
 		if(!foundd){
 			if(p=strstr(line,"datetime=")){
-				strncpy(extra-> pubDate, p+10, 19);
+				strncpy(extra-> pubDate, p+10, 19); //2018-01-01 13:00:00
        				foundd = 1;
 			}
 		}
@@ -144,7 +152,7 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 			}
 		}
 
-		if(!start && strstr(line,"<figcaption>")){ //start flex scanning from here
+		if(!start && strstr(line,"<figcaption")){ //start flex scanning from here
 			start = 1;
 		}
 		else if(!start){
@@ -249,3 +257,17 @@ void printTime(char *msg){
         strftime(s+strlen(msg)+2, URL_TITLE_LEN-strlen(msg)-2, "%c", tm);
         fprintf(logptr, "%s\n", s);
 }
+
+void AddDays(char * msg, size_t maxsize, int daysToAdd)
+{
+    time_t t = time(NULL);
+    struct tm *tm = localtime(&t);
+    time_t oneDay = 24 * 60 * 60;
+     // Seconds since start of epoch --> 01/01/1970 at 00:00hrs
+    time_t date_seconds = mktime(tm) + (daysToAdd * oneDay);
+
+    *tm = *localtime(&date_seconds);
+
+    strftime(msg, maxsize, "%Y/%m/%d", tm);
+}
+
