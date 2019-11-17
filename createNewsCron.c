@@ -184,7 +184,7 @@ static void getLatestItems(){
 	int j,k;
 	for(j=1;j<=NUM_CATEGORIES;j++){
 		for(i=0,k=0;i<currentItemsCount;i++){
-			if(k==NUM_REFRESH) break; //no more than NUM_REFRESH every 10 minutes
+			if(k==NUM_REFRESH) break; //no more than NUM_REFRESH every 15 minutes
 	     		if(j==itemArray[i].type) {
 	     			k++;
 		        	char *p;
@@ -202,9 +202,23 @@ static void getLatestItems(){
 			        	memmove(itemArray[i].url, p, URL_TITLE_LEN-diff );
 	        	        }
 	        	        buff[0] = '\0';
-				getInsertString(&itemArray[i], buff, itemArray[i].type);
-				if (buff[0] && mysql_query(con, buff)){
+				strcpy(buff, "delete from news where news_type=");
+			        char beth[5];
+			        sprintf(beth, "%d", itemArray[i].type);
+			        strcat(buff, beth);
+				strcat(buff, " and (title='");
+				strcat(buff, itemArray[i].title);
+				strcat(buff, "' or url='");
+				strcat(buff, itemArray[i].url);
+				strcat(buff, "')");
+				if (mysql_query(con, buff)){
 					fprintf(logptr, "ERROR:%s\n", mysql_error(con));
+				}else{
+	        		        buff[0] = '\0';
+					getInsertString(&itemArray[i], buff, itemArray[i].type);
+					if (buff[0] && mysql_query(con, buff)){
+						fprintf(logptr, "ERROR:%s\n", mysql_error(con));
+					}
 				}
 			}
 		}
@@ -732,7 +746,7 @@ void initMysql(){
                 fprintf(logptr, "ERROR:mysql_init() failed\n");
                 exit(EXIT_FAILURE);
         }
-	if (mysql_real_connect(con, "localhost", "XXXXX_neri", "XXXXX", "XXXXX_neri", 0, NULL, 0) == NULL){
+	if (mysql_real_connect(con, "localhost", "nerillos_neri", "carpa1", "nerillos_neri", 0, NULL, 0) == NULL){
                 fprintf(logptr, "ERROR:%s\n", mysql_error(con));
                 mysql_close(con);
                 exit(EXIT_FAILURE);

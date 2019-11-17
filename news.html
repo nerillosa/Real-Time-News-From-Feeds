@@ -17,6 +17,7 @@
 
  div#newsDrop{
    padding-top: 5px;
+   padding-bottom: 5px;
    padding-left: 10px;
    line-height: 20px;
    width:118px;
@@ -62,8 +63,8 @@ body {
     $(document).ready(function(){
         $("#newsMenu").tmpl(menus).prependTo("#tabb");
         var myParam = location.search.split('site=')[1];
-        if(myParam == 'forbes' || myParam == 'newyorker' || myParam == 'huffingtonpost' || myParam == 'washingtonpost' || myParam == 'time' || myParam == 'politico'){
-        	linda(myParam);
+        if(myParam == 'forbes' || myParam == 'newyorker' || myParam == 'huffingtonpost' || myParam == 'washingtonpost' || myParam == 'time' || myParam == 'politico' || myParam == 'nytimes'){
+        	openNews({target:myParam}, 8, myParam);
         }
         else {
         	$(".tablinks:contains('USA')").click();
@@ -89,8 +90,8 @@ body {
   <div class="htext" style="font-size: 1.2em;font-weight:bold;">${getHtml(html)}</div>
   </td>
      <td class="user-photo"><img style="cursor:pointer;" class="user-tumb" src="images/${logo}" onclick="tumia(event)"/><a 
-     style="font-weight:bold;padding-left:12px;text-decoration:none;" href="${url}" 
-     target="_blank">View <br> full article</a></td>
+     style="padding-left:10px;text-decoration:none;" href="${url}" 
+     target="_blank"><div style="font-weight:bold;background-color:#abf;text-align:center"><div>View</div><div>full article</div></div></a></td>
      <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate,'English',$data.logo)}</td>
   </tr>
 </script>
@@ -113,6 +114,7 @@ body {
           <div><a href="#" onclick="linda('huffingtonpost')">Huffington Post</a></div>
           <div><a href="#" onclick="linda('politico')">Politico</a></div>
           <div><a href="#" onclick="linda('newyorker')">The New Yorker</a></div>
+          <div><a href="#" onclick="linda('nytimes')">The NY Times</a></div>
           <div><a href="#" onclick="linda('time')">Time Magazine</a></div>
           <div><a href="#" onclick="linda('washingtonpost')">Washington Post</a></div>
         </div>
@@ -120,6 +122,7 @@ body {
     </ul>
   </div>
   <div id="timer"></div>
+
   <div class="box-table">
     <table>
       <thead>
