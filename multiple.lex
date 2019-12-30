@@ -55,10 +55,11 @@ void writeString(char *str);
 <RPPSTORY>[^"]+             {writeText();}
 <RPPSTORY>\"                {BEGIN(RPP);}
 
-<ABC>"<"p.itemprop=\"articleBody\"">" {BEGIN(ABCSTORY);}
+<ABC>"<"article.class=\"Article..Content   {BEGIN(PIMPLE);}
+<PIMPLE>"<p>"   {BEGIN(ABCSTORY);}
 <ABCSTORY>[^<]+             {writeText();}
 <ABCSTORY>"<"               {writeText();}
-<ABCSTORY>"</p>"  {writeString("&#10;"); BEGIN(ABC);}
+<ABCSTORY>"</p>" {writeString("&#10;"); BEGIN(PIMPLE);}
 
 <UPI>"<"article.itemprop  {BEGIN(PIMPLE);}
 <PIMPLE>"<".article">"  {BEGIN(INITIAL);}
@@ -105,15 +106,10 @@ void writeString(char *str);
 
 <FOX>"<"div.class=.article-body.">" {BEGIN(SIMPLE);}
 
-<NYT>"<"p.class=\"story.body.text[^>]+"><em>"    ;
-<NYT>"<"p.class=\"css[^P]+"Prop"[^>]+">"   ;
 <NYT>"<"p.class=\"css[^>]+">"   {BEGIN(NYTSTORY);}
-<NYT>"<"p.class=\"story.body.text[^>]+">"    {BEGIN(NYTSTORY);}
-<NYT>"<"p.class=\"Paragraph[^>]+">"    {BEGIN(NYTSTORY);}
-<NYT>"<div class=\"bottom-of-article\">"  {BEGIN(FOX);}
 <NYTSTORY>[^<]+             {writeText();}
 <NYTSTORY>"<"               {writeText();}
-<NYTSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(NYT);}
+<NYTSTORY>"</p>"            {strcat(yybuf, "&#10;&#10;"); BEGIN(NYT);}
 
 <COMERCIO>"<"p.class=\"parrafo.first.parrafo[^>]+">"      {BEGIN(COMSTORY);}
 <COMSTORY>[^<]+             {writeText();}
