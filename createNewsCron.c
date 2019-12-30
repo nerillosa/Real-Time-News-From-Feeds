@@ -156,6 +156,16 @@ static void getLatestItems(){
                 	chunk.memory = malloc(1);
         	        chunk.size = 0;
        	        	loadFeed(pp ->url); // Loads feed into memory.
+/*       	        if(!strcmp(pp ->name, "NY TIMES")){
+       	        		fprintf(logptr, "NY_TIMES_URL_CARAJO:%s\n", pp ->url);
+				fprintf(logptr, "SIZE_MEMORY:%zu\n", chunk.size);
+       	        		fprintf(logptr, "LETTERS:%c", chunk.memory[0]);
+       	        		fprintf(logptr, "%c", chunk.memory[1]);
+       	        		fprintf(logptr, "%c", chunk.memory[2]);
+       	        		fprintf(logptr, "%c", chunk.memory[3]);
+       	        		fprintf(logptr, "%c", chunk.memory[4]);
+       	        		fprintf(logptr, "%c\n\n", chunk.memory[5]);
+       	        	} */
         	        getFeedItems(pp ->name, pp ->type, chunk.memory);
        	        	free(chunk.memory);
 		}while((pp = pp ->next) != NULL);
@@ -257,6 +267,7 @@ void getFeedItems(char *agency, int type, char *buff)
         char buffer[BUFFER_SIZE];
         char identifier[12];
         memset(identifier, 0, 12);
+
         do { //this do loop will capture all the texts in between item tags
                 a = buff[i];
                 if(!a) {
@@ -566,7 +577,7 @@ void getInsertString(struct item *item, char *json, int type){
 	sprintf(beth, "%d", type);
 //update news set title = (select concat('http://nllosa.com/images/',logo) from agency limit 1) where title='ABC.png';
 	if(extra.html[0]){ // there is html
-		if(!extra.imgurl[0] || strstr(extra.imgurl, "You must")){// get the logo image
+		if(!extra.imgurl[0] || strstr(extra.imgurl, "You must") || !strcmp(extra.imgurl, "null")){//get the logo image
 			strcpy(json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency,create_date) values ('");
 			strcat(json, item ->url);
 			strcat(json, "','");
@@ -736,7 +747,7 @@ void loadFeed(char *url)
   res = curl_easy_perform(curl_handle);
   /* check for errors */
   if(res != CURLE_OK) {
-    fprintf(stderr, "curl_easy_perform() %s failed: %s\n", url, curl_easy_strerror(res));
+    fprintf(logptr, "curl_easy_perform() %s failed: %s\n", url, curl_easy_strerror(res));
   }
 }
 
