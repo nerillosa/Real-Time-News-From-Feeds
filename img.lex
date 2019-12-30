@@ -19,7 +19,7 @@
 
 <STRT>=\"image_src\".href=\" {BEGIN(STORY); /* CNN  */}
 <STRT>=\"og:image\"[ ]+content=["'] {BEGIN(STORY); /* ABC, NYT, US TODAY, WSH POST, RPP */}
-<STRT>=\"og:image\".itemprop=\"image\".content=\" {BEGIN(STORY); /* CNBC  */}
+<STRT>=\"og:image\".item[pP]rop=\"image\".content=\" {BEGIN(STORY); /* CNBC  */}
 <STORY>[^"']+   {ECHO;}
 <STORY>["']     {printf("\n");BEGIN(INITIAL);}
 
