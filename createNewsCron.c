@@ -297,7 +297,14 @@ void getFeedItems(char *agency, int type, char *buff)
                                 if(countTitleWords(buffer)){
                                         struct item item;
 					memset(&item, 0, sizeof(struct item));
-                                        getContent(50, item.pubDate, "<pubDate>", "</pubDate>", buffer);
+                                        char kitty[50];
+                                        getContent(50, kitty, "<pubDate>", "</pubDate>", buffer);
+                                        char* front = kitty;
+                                        while(isspace(*front)) front++; // need to trim it
+					char* back = front + strlen(front);
+					while(isspace(*--back));
+					*(back+1) = '\0';
+                                        strcpy(item.pubDate, front);
                                         getContent(URL_TITLE_LEN, item.title, "<title>", "</title>", buffer);
                                         getContent(URL_TITLE_LEN, item.url, "<link>", "</link>", buffer);
                                         cleanUrl(item.url);
@@ -359,7 +366,7 @@ void getTitle(char *line){
 	static char *cdata = "<![CDATA[";
 	static char *watch = "WATCH:";
 	static char buff[BUFFER_SIZE];
-
+	char *p;
 	int i =0;
 	while(line[i] && i<BUFFER_SIZE-1){
 		buff[i] = line[i];
@@ -369,8 +376,8 @@ void getTitle(char *line){
 
 	char *p1 = &buff[0];
 
-	if(strstr(p1, cdata) == p1){ // starts with cdata
-		p1 += strlen(cdata);
+	if(strstr(p1, cdata)){ // contains cdata
+		p1 = strstr(p1, cdata) +  strlen(cdata);
 	}
 	if(strstr(p1, watch) == p1){ // starts with watch
 		p1 += strlen(watch);
@@ -379,8 +386,9 @@ void getTitle(char *line){
 	while(isspace(p1[k])) k++; //get rid of leading whitespace
 	p1 += k;
 
-	if(strstr(p1, "]]>") == p1+strlen(p1)-3){ // ends with ]]>
-		p1[strlen(p1)-3] = '\0';
+	if(p=strstr(p1, "]]>")){ // ends with ]]>
+		*p = '\0';
+		//p1[strlen(p1)-3] = '\0';
 	}
 
 	if(strstr(p1, "[Video]") == p1+strlen(p1)-7){ // ends with Video

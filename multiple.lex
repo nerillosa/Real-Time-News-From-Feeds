@@ -107,11 +107,11 @@ void writeString(char *str);
 <FOX>"<"div.class=.article-body.">" {BEGIN(SIMPLE);}
 
 <NYT>"<"p.class=\"css[^>]+">"   {BEGIN(NYTSTORY);}
-<NYTSTORY>[^<]+             {writeText();}
-<NYTSTORY>"<"               {writeText();}
-<NYTSTORY>"</p>"            {strcat(yybuf, "&#10;&#10;"); BEGIN(NYT);}
+<NYTSTORY>[^<]+             {yymore();}
+<NYTSTORY>"<"               {yymore();}
+<NYTSTORY>"</p>"            {if(strncmp(yytext, "By", 2)){writeText(); strcat(yybuf, "&#10;&#10;");} BEGIN(NYT);/*remove <p>s starting with By...*/}
 
-<COMERCIO>"<"p.class=\"parrafo.first.parrafo[^>]+">"      {BEGIN(COMSTORY);}
+<COMERCIO>"<"p.class=\"story-content[^>]+">"    {BEGIN(COMSTORY);}
 <COMSTORY>[^<]+             {writeText();}
 <COMSTORY>"<"               {writeText();}
 <COMSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(COMERCIO);}

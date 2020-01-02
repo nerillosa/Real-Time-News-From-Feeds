@@ -4,11 +4,11 @@
 4,FOX NEWS,http://feeds.foxnews.com/foxnews/sports?format=xml
 5,FOX NEWS,http://feeds.foxnews.com/foxnews/entertainment?format=xml
 7,FOX NEWS,http://feeds.foxnews.com/foxnews/national?format=xml
-1,NY TIMES,http://rss.nytimes.com/services/xml/rss/nyt/Politics.xml
-2,NY TIMES,http://rss.nytimes.com/services/xml/rss/nyt/Science.xml
-3,NY TIMES,http://rss.nytimes.com/services/xml/rss/nyt/World.xml
-4,NY TIMES,http://rss.nytimes.com/services/xml/rss/nyt/Sports.xml
-6,NY TIMES,http://rss.nytimes.com/services/xml/rss/nyt/Health.xml
+1,NY TIMES,https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml
+2,NY TIMES,https://rss.nytimes.com/services/xml/rss/nyt/Science.xml
+3,NY TIMES,https://rss.nytimes.com/services/xml/rss/nyt/World.xml
+4,NY TIMES,https://rss.nytimes.com/services/xml/rss/nyt/Sports.xml
+6,NY TIMES,https://rss.nytimes.com/services/xml/rss/nyt/Health.xml
 1,CNN,http://rss.cnn.com/rss/cnn_allpolitics.rss
 3,CNN,http://rss.cnn.com/rss/cnn_world.rss
 5,CNN,http://rss.cnn.com/rss/cnn_showbiz.rss
@@ -22,6 +22,7 @@
 5,ABC NEWS,https://abcnews.go.com/abcnews/entertainmentheadlines
 6,ABC NEWS,https://abcnews.go.com/abcnews/healthheadlines
 7,ABC NEWS,https://abcnews.go.com/abcnews/usheadlines
+8,ABC NEWS,https://abcnews.go.com/abcnews/moneyheadlines
 1,REUTERS,http://feeds.reuters.com/Reuters/PoliticsNews
 2,REUTERS,http://feeds.reuters.com/reuters/scienceNews
 3,REUTERS,http://feeds.reuters.com/Reuters/worldNews
@@ -30,7 +31,6 @@
 6,REUTERS,http://feeds.reuters.com/reuters/healthNews
 7,REUTERS,http://feeds.reuters.com/Reuters/domesticNews
 8,REUTERS,http://feeds.reuters.com/reuters/businessNews
-8,BLOOMBERG,https://www.bloomberg.com/view/rss/topics/economics.rss
 1,US TODAY,http://rssfeeds.usatoday.com/usatodaycomwashington-topstories&x=1
 4,US TODAY,http://rssfeeds.usatoday.com/usatodaycomsports-topstories&x=1
 5,US TODAY,http://rssfeeds.usatoday.com/usatoday-lifetopstories&amp;x=1
@@ -40,21 +40,16 @@
 #5,WSH POST,http://feeds.washingtonpost.com/rss/rss_going-out-gurus
 #7,WSH POST,http://feeds.washingtonpost.com/rss/rss_post-nation
 #8,WSH POST,http://feeds.washingtonpost.com/rss/national/energy-environment
-9,COMERCIO,https://elcomercio.pe/feed/peru
-10,COMERCIO,https://elcomercio.pe/feed/deporte-total
-11,COMERCIO,https://elcomercio.pe/feed/politica
-12,COMERCIO,https://elcomercio.pe/feed/luces
-13,COMERCIO,https://elcomercio.pe/feed/economia
+#9,COMERCIO,https://archivo.elcomercio.pe/feed/vamos/peru.xml
+#10,COMERCIO,https://archivo.elcomercio.pe/feed/deporte-total.xml
+#11,COMERCIO,https://archivo.elcomercio.pe/feed/politica.xml
+#12,COMERCIO,https://archivo.elcomercio.pe/feed/luces.xml
+#13,COMERCIO,https://archivo.elcomercio.pe/feed/economia.xml
 9,RPP,http://rpp.pe/feed/actualidad
-10,RPP,http://rpp.pe/feed/deportes
-11,RPP,http://rpp.pe/feed/politica
-12,RPP,http://rpp.pe/feed/entretenimiento
-13,RPP,http://rpp.pe/feed/economia
-9,PERU21,http://archivo.peru21.pe/feed/actualidad
-10,PERU21,https://peru21.pe/feed/deportes
-11,PERU21,https://peru21.pe/feed/economia
-12,PERU21,https://peru21.pe/feed/espectaculos
-13,PERU21,https://peru21.pe/feed/economia
+10,RPP,https://rpp.pe/feed/deportes
+11,RPP,https://rpp.pe/feed/politica
+12,RPP,https://rpp.pe/feed/entretenimiento
+13,RPP,https://rpp.pe/feed/economia
 9,PERU,https://peru.com/feed/actualidad
 10,PERU,https://peru.com/feed/deportes
 11,PERU,https://peru.com/feed/actualidad/politicas
@@ -65,11 +60,12 @@
 3,BBC,http://feeds.bbci.co.uk/news/world/rss.xml
 2,BBC,http://feeds.bbci.co.uk/news/science_and_environment/rss.xml
 8,BBC,http://feeds.bbci.co.uk/news/business/rss.xml
-1,CNBC,http://www.cnbc.com/id/10000113/device/rss/rss.html
-2,CNBC,http://www.cnbc.com/id/19854910/device/rss/rss.html
-3,CNBC,http://www.cnbc.com/id/100727362/device/rss/rss.html
+1,CNBC,https://www.cnbc.com/id/10000113/device/rss/rss.html
+2,CNBC,https://www.cnbc.com/id/19854910/device/rss/rss.html
+3,CNBC,https://www.cnbc.com/id/100727362/device/rss/rss.html
 6,CNBC,http://www.cnbc.com/id/10000108/device/rss/rss.html
-7,CNBC,http://www.cnbc.com/id/15837362/device/rss/rss.html
+7,CNBC,https://www.cnbc.com/id/15837362/device/rss/rss.html
+8,CNBC,https://www.cnbc.com/id/10001147/device/rss/rss.html
 3,UPI,https://rss.upi.com/news/tn_int.rss
 5,UPI,https://rss.upi.com/news/entertainment_news.rss
 6,UPI,https://rss.upi.com/news/health_news.rss
