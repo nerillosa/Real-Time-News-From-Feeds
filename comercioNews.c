@@ -76,7 +76,7 @@ void createNewsSection(struct section *section){
 	char tumia[BUFFER_SIZE];
 	char *pch;
 
-	strcpy(tumia, "perl comercio.pl ");
+	strcpy(tumia, "perl /home1/nerillos/public_html/comercio.pl ");
 	strcat(tumia, section ->name);
 
 	FILE *pp = popen(tumia, "r");
