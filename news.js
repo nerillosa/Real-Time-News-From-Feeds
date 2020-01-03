@@ -20,9 +20,14 @@
         });
     };
 
-    function setTimeOnScreen(){
+    function setTimeOnScreen(isSpanish){
 	var date = new Date();
-	$("#timer").text(date.toDateString() + ' ' + date.toLocaleTimeString());
+	if(!isSpanish)
+		$("#timer").text(date.toDateString() + ' ' + date.toLocaleTimeString());
+	else{
+		var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+		$("#timer").text(date.toLocaleDateString('es-ES', options));
+	}
     }
 
     function htmlDecode(input){
@@ -33,9 +38,12 @@
     }
 
     function getHtml(html) {
-        //return html.replace(/^[^(A-Z]+(.*)/g, "$1").  // this was filtering out \u201C left quotes at beginning
-	return html.replace(/^[ \t\n\u00a0]*(&#10;)*/g,"").
+	return html.replace(/^[ \t\n\u00a0]*(&#10;)*[\n]*/g,"").
 	replace(/[\n]&#10;[\n]/g, "\n\n").
+	replace(/[ ]+\n[ ]*,/g, ",").
+	replace(/\n[ ]+/g, "").
+	//replace(/&amp;amp;/g, "&amp;").
+	//replace(/&amp;frac12;/g, "&frac12;").
 	replace(/&amp;nbsp;/g, " ");
     }
 
@@ -46,6 +54,7 @@
     function cuando(evt){
 	if($(evt.target).hasClass("clickable")){
 		evt.target.style.height = evt.target.clientHeight*2 + "px";
+		evt.target.style.paddingBottom = "5px";
 		$(evt.target).removeClass("clickable").addClass("doubled");
 		$(evt.target).css("cursor","");
 	}
@@ -83,6 +92,10 @@
 		else if(newsSite == "forbes"){
 				url3 = "getPowershell.php?type=forbes";
 				newsName = "Forbes";
+			}
+		else if(newsSite == "nytimes"){
+				url3 = "getPowershell.php?type=nytimes";
+				newsName = "NY Times";
 			}
 		else if(newsSite == "huffingtonpost"){
 				url3 = "getHuff.php";
@@ -124,7 +137,7 @@
                         var dd = htmlDecode($(this)[0].childNodes[0].nodeValue);
                         $(this)[0].childNodes[0].nodeValue = dd;
                 });
-                setTimeOnScreen();
+                setTimeOnScreen(newsType > 8 && newsType < 14);
                 $(".htext").each(function(){
                         var dina = $(this).html().replace(/&lt;\/b&gt;/g,'</b>').replace(/&lt;b&gt;/g,'<b>');
                         $(this).html('');
@@ -143,12 +156,14 @@
 
     function hrefClick(event){
 	event.preventDefault();
-	var elem = $(event.target).parent().next().next();
+	var href = $(event.target);
+	var parentTd = href.parent().parent();
+	var elem = href.parent().siblings(':last');
 	var english = false;
-	if($(event.target).text() == "less..." || $(event.target).text() == "more..."){
+	if(href.text() == "less..." || href.text() == "more..."){
 		english = true;
 	}
-	if($(event.target).text() == "mas..." || $(event.target).text() == "more..."){
+	if(href.text() == "mas..." || href.text() == "more..."){
 		if(savetds.length >0){
 			var tdd = $("table tbody").find("td[colspan='3']");
 			tdd.find('img:last').remove();
@@ -166,19 +181,18 @@
 			$(":last-child", tdd).addClass("htext");
 			tdd.find("a").text(english? "more..." : "mas...");
 		}
-		savetds.push($(event.target).parent().parent().next().clone()); //remove the img and date
+		savetds.push(parentTd.next().clone()); //remove the img and date
 
-		var immg = $(event.target).parent().parent().next().find('img:first').clone();
+		var immg = parentTd.next().find('img:first').clone();
 
-		$(event.target).parent().parent().next().remove();
-		savetds.push($(event.target).parent().parent().next().clone());
+		parentTd.next().remove();
+		savetds.push(parentTd.next().clone());
 
-		$(event.target).parent().parent().next().remove();
+		parentTd.next().remove();
+		parentTd.attr("colspan", "3"); //have td occupy all 3 columns
+		parentTd.find('img:first').addClass("clickable").css("cursor","pointer");
 
-		var ttd = $(event.target).parent().parent();
-		ttd.attr("colspan", "3"); //have td occupy all 3 columns
-		ttd.find('img:first').addClass("clickable").css("cursor","pointer");
-		var pre =  $(event.target).parent().parent().find('pre:first');
+		var pre =  parentTd.find('pre:first');
 	        pre.dblclick(function(event){ //when clicking on the expanded pre text, un-expand it
 			event.stopPropagation();
 			$(event.target).unbind( "dblclick" );
@@ -186,39 +200,36 @@
         	});
 
 		immg.css("float","right").removeAttr("onclick").attr("onclick","mary(event)");
-		immg.insertAfter($(event.target).parent().parent().find('img:first'));
+		immg.insertAfter(parentTd.find('img:first'));
 		elem.removeClass("htext");
-        	$(event.target).text(english? "less..." : "menos...");
+        	href.text(english? "less..." : "menos...");
         }else{
-		$(event.target).parent().parent().parent().append(savetds[0]);
-		$(event.target).parent().parent().parent().append(savetds[1]);
+		parentTd.parent().append(savetds[0]);
+		parentTd.parent().append(savetds[1]);
 		savetds = [];
-		$(event.target).parent().parent().removeAttr("colspan");
-		var iimg = $(event.target).parent().parent().find('img:first');
+		parentTd.removeAttr("colspan");
+		var iimg = parentTd.find('img:first');
 		iimg.removeClass("clickable");
                 if(iimg.hasClass("doubled")){
 	                iimg.removeClass("doubled");
         	        iimg[0].style.height = iimg[0].clientHeight/2 + "px";
                 }
-		elem.next().addClass("htext");
-        	$(event.target).text(english? "more..." : "mas...");
-        	$(event.target).parent().parent().find('img.user-tumb').remove();
+		elem.addClass("htext");
+        	href.text(english? "more..." : "mas...");
+        	parentTd.find('img.user-tumb').remove();
 
         }
-		setTimeout(function(){ $(event.target).scrollView();}, 10);
+		setTimeout(function(){ href.scrollView();}, 10);
     }
 
     function getDate(jsonDate, language, offset) { //2016-12-13 19:21:45
+	jsonDate = jsonDate.replace(/T/g, " ");
         var tokens = jsonDate.split(" ");
 
         if(!offset){
         	offset = "Z";
-        }else if(offset.slice(0,-4) === "HUFF"){
+        }else if(offset.slice(0,-4) === "HUFF" || offset.slice(0,-4) === "POLITICO"){
 		offset = "-04:00";
-	}else if(offset.slice(0,-4) === "POLITICO"){
-		offset = "-04:00";
-	}else if(offset.slice(0,-4) === "WPST" || offset.slice(0,-4) === "TIME"){
-		offset = "Z";
 	}
 	else{
 	        offset = "Z";
