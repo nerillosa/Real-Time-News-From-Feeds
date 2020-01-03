@@ -232,7 +232,6 @@ size_t parseUrlWithFlex(char *url, char **encoded, struct extra *extra){
 }
 
 void getInsertString(struct item *item, char *buff, struct extra *extra){
-
 	if(extra -> html[0]){ // there is html
 			char beth[5];
 			sprintf(beth, "%d", item -> type);
@@ -247,9 +246,9 @@ void getInsertString(struct item *item, char *buff, struct extra *extra){
 			strcat(buff, beth);
 			strcat(buff, ",'");
 			strcat(buff, extra ->title);
-			strcat(buff, "',STR_TO_DATE('");
+			strcat(buff, "',DATE_ADD(STR_TO_DATE('");
 			strcat(buff, extra -> pubDate);
-			strcat(buff, "','%Y-%m-%d %H:%i:%S'),'");
+			strcat(buff, "','%Y-%m-%d %H:%i:%S'),INTERVAL 5 HOUR),'");
 			strcat(buff, item ->agency);
 			strcat(buff, "',now())");
 	}
