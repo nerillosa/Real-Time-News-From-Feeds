@@ -76,7 +76,7 @@ void createNewsSection(struct section *section){
 	char tumia[BUFFER_SIZE];
 	char *pch;
 
-	strcpy(tumia, "perl /home1/nerillos/public_html/comercio.pl ");
+	strcpy(tumia, "perl /home1/XXXXX/public_html/comercio.pl ");
 	strcat(tumia, section ->name);
 
 	FILE *pp = popen(tumia, "r");
@@ -299,7 +299,7 @@ void initMysql(){
                 fprintf(stderr, "ERROR:mysql_init() failed\n");
                 exit(EXIT_FAILURE);
         }
-	if (mysql_real_connect(con, "localhost", "nerillos_neri", "carpa1", "nerillos_neri", 0, NULL, 0) == NULL){
+	if (mysql_real_connect(con, "localhost", "XXXXX_neri", "XXXXX", "XXXXX_neri", 0, NULL, 0) == NULL){
                 fprintf(stderr, "ERROR:%s\n", mysql_error(con));
                 mysql_close(con);
                 exit(EXIT_FAILURE);
