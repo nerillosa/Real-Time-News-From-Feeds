@@ -87,36 +87,37 @@ void createNewsSection(struct section *section){
 			pch = strtok (tumia, " ");
 			int isErr = 0;
   			while (pch != NULL){
-				char *encoded = NULL;
-				struct extra extra;
-				memset(&extra, 0, sizeof(struct extra));
-				size_t out_len = parseUrlWithFlex(pch, &encoded, &extra);
+  				if(strstr(pch, "-")){ //url needs to have a dash
+					char *encoded = NULL;
+					struct extra extra;
+					memset(&extra, 0, sizeof(struct extra));
+					size_t out_len = parseUrlWithFlex(pch, &encoded, &extra);
 
-				if(out_len>20 && out_len<BUF_LEN*4){
-					strncpy(extra.html, encoded, out_len );
-					extra.html[out_len] = '\0'; //terminate
-					if(!extra.imgurl[0]){
-						strcpy(extra.imgurl, "http://nllosa.com/images/COMERCIO.png");
+					if(out_len>20 && out_len<BUF_LEN*4){
+						strncpy(extra.html, encoded, out_len );
+						extra.html[out_len] = '\0'; //terminate
+						if(!extra.imgurl[0]){
+							strcpy(extra.imgurl, "http://nllosa.com/images/COMERCIO.png");
+						}
+						char buff[BUF_LEN*8];
+						buff[0] = '\0';
+						struct item item;
+						memset(&item, 0, sizeof(struct item));
+						item.type = section ->news_type;
+						strcpy(item.agency, "COMERCIO");
+						strcpy(item.url, "https://elcomercio.pe");
+						strcat(item.url, pch);
+						getInsertString(&item, buff, &extra);
+						if (buff[0] && mysql_query(con, buff)){
+							fprintf(stderr, "ERROR ADDING RECORD for %s: %s\n", pch, mysql_error(con));
+							isErr = 1;
+						}
+						//fprintf(stdout, "Insert String:%s\n", buff);
+					}else{
+        					fprintf(stderr, "Error for Url: %s\n", pch);
 					}
-					char buff[BUF_LEN*8];
-					buff[0] = '\0';
-					struct item item;
-					memset(&item, 0, sizeof(struct item));
-					item.type = section ->news_type;
-					strcpy(item.agency, "COMERCIO");
-					strcpy(item.url, "https://elcomercio.pe");
-					strcat(item.url, pch);
-					getInsertString(&item, buff, &extra);
-					if (buff[0] && mysql_query(con, buff)){
-						fprintf(stderr, "ERROR ADDING RECORD for %s: %s\n", pch, mysql_error(con));
-						isErr = 1;
-					}
-					//fprintf(stdout, "Insert String:%s\n", buff);
-				}else{
-        				fprintf(stderr, "Error for Url: %s\n", pch);
+					free(encoded);
 				}
-				free(encoded);
-
    				pch = strtok (NULL, " ");
   			}
 
@@ -125,7 +126,7 @@ void createNewsSection(struct section *section){
 			}
 
   		}
-           pclose(pp);
+        	pclose(pp);
 	}
 	else{
 		fprintf(stderr, "Error could not open pipe: %s\n", strerror(errno));
