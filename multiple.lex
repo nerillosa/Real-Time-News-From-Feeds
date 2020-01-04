@@ -17,6 +17,7 @@ extern int agencyState;
 extern char *yybuf;
 void writeText();
 void writeString(char *str);
+int hasRightArrow();
 %}
 %s WSH POLITICO POLIT HUFF REUTERS BLOOM NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI COMERCIO
 %x WUMIA POLITICOSTORY HUFFSTORY BLOOMSTORY WSHSTORY REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
@@ -111,10 +112,10 @@ void writeString(char *str);
 <NYTSTORY>"<"               {yymore();}
 <NYTSTORY>"</p>"            {if(strncmp(yytext, "By", 2)){writeText(); strcat(yybuf, "&#10;&#10;");} BEGIN(NYT);/*remove <p>s starting with By...*/}
 
-<COMERCIO>"<"p.class=\"story-content[^>]+">"    {BEGIN(COMSTORY);}
-<COMSTORY>[^<]+             {writeText();}
-<COMSTORY>"<"               {writeText();}
-<COMSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(COMERCIO);}
+<COMERCIO>"<"p.class=\"story-content__font[^>]+">"    {BEGIN(COMSTORY);}
+<COMSTORY>[^<]+             {yymore();}
+<COMSTORY>"<"               {yymore();}
+<COMSTORY>"</p>"            {if(!hasRightArrow()) {writeText(); writeString("&#10;&#10;");} BEGIN(COMERCIO);}
 
 <REUTERS>"<p class=\"\">"    {BEGIN(REUTSTORY);writeString("&#10;&#10;");}
 <REUTERS>"<p><span>" ;
@@ -201,3 +202,16 @@ void writeString(char *str){
                 strcat(yybuf, str);
         }
 }
+
+int hasRightArrow(){
+	int n;
+	char linda[20];
+	for(n=0; n<6; n++)
+		sprintf(linda+2*n, "%02x",(unsigned char)yytext[n]);
+	*(linda+2*n) = '\0';
+	if(!strcmp(linda, "3c623ee296ba")|| !strncmp(linda, "e296ba",6)){ /* <b>E296BA or E296BA */
+		return 1;
+	}
+	return 0;
+}
+
