@@ -19,8 +19,8 @@ void writeText();
 void writeString(char *str);
 int hasRightArrow();
 %}
-%s WSH POLITICO POLIT HUFF REUTERS BLOOM NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI COMERCIO
-%x WUMIA POLITICOSTORY HUFFSTORY BLOOMSTORY WSHSTORY REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
+%s TIME WSH POLITICO POLIT HUFF REUTERS BLOOM NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI COMERCIO
+%x TIMESTORY WUMIA POLITICOSTORY HUFFSTORY BLOOMSTORY WSHSTORY REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
 %option noyywrap
 %%
 	BEGIN(agencyState);
@@ -33,6 +33,11 @@ int hasRightArrow();
 <POLITICOSTORY>[^<]+             {writeText();}
 <POLITICOSTORY>"<"               {writeText();}
 <POLITICOSTORY>"</p>"            {strcat(yybuf, "&#10;&#10;"); BEGIN(POLIT);}
+
+<TIME>"<p>"   {BEGIN(TIMESTORY);}
+<TIMESTORY>[^<]+  {writeText();}
+<TIMESTORY>"<"    {writeText();}
+<TIMESTORY>"</p>" {strcat(yybuf, "&#10;&#10;"); BEGIN(TIME);}
 
 <HUFF>"<div class=\"content-list-component yr-content-list-text"[^>]+"><h3>" ;
 <HUFF>"<div class=\"content-list-component yr-content-list-text"[^>]+">"   {BEGIN(HUFFSTORY);}
@@ -69,6 +74,7 @@ int hasRightArrow();
 <UPISTORY>"<script" {BEGIN(PIMPLE);}
 <UPISTORY>[^<]+  {writeText();}
 <UPISTORY>"<"    {writeText();}
+<UPISTORY>"<div class=\"ad_slot\">"  {writeString("&#10;&#10;"); BEGIN(PIMPLE);}
 <UPISTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(PIMPLE);}
 
 <WSJ>"<"div.class=.wsj.snippet.body.">"  {BEGIN(WIMPLE);}
@@ -78,7 +84,7 @@ int hasRightArrow();
 <WSJSTORY>"<"    {writeText();}
 <WSJSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(WIMPLE);}
 
-<CNBC>"<p>"[^a-zA-Z0-9" <]  ;
+<CNBC>"<p>"[^a-zA-Z0-9&" <]  ;
 <CNBC>"<p><input type=\"checkbox"   ;
 <CNBC>"<p></p>"  ;
 <CNBC>"<p>"   {BEGIN(CNBCSTORY);}
@@ -130,31 +136,10 @@ int hasRightArrow();
 <REUTSTORY>"</p>"   {BEGIN(REUTERS);}
 <REUTSTORY>[^<]+    {writeText();}
 
-<USTODAY>"<p>"USA  ;
-<USTODAY>"<p>"We.re.sorry   ;
-<USTODAY>"<p>"something.went.wrong   ;
-<USTODAY>"<p>"[^a-zA-Z0-9]  ;
-<USTODAY>"<"p.class=\"speakable-p-..p-text\"">"    {BEGIN(USTODAYSTORY);}
-<USTODAY>"<"p.class=["']speakable-p-..p-text["']">"    {BEGIN(USTODAYSTORY);}
-
-<USTODAY>"<"p.class=["']p-text["']"><strong>"  {writeString("<strong>");BEGIN(USTODAYSTORY);}
-<USTODAY>"<"p.class=["']p-text["']"><b>"  {writeString("<b>");BEGIN(USTODAYSTORY);}
-<USTODAY>"<"p.class=["']p-text["']"><span style=\"line-height:normal\">"  {writeString("<span>");BEGIN(USTODAYSTORY);}
-
-
-<USTODAY>"<"p.class=["']p-text["']"><"    ;
-<USTODAY>"<"p.class=["']p-text["']">"    {BEGIN(USTODAYSTORY);}
-<USTODAY>"<"p.class=\"MsoNoSpacing\"">"    {BEGIN(USTODAYSTORY);}
-<USTODAY>"<"h2.class=\"presto.h2\"">" {writeString("&lt;b&gt;");BEGIN(USTODAYSTORY);}
-<USTODAY>"<"h3.class=\"presto.h3\"">" {writeString("&lt;b&gt;");BEGIN(USTODAYSTORY);}
-<USTODAY>"<"h4.class=\"presto.h4\"">" {writeString("&lt;b&gt;");BEGIN(USTODAYSTORY);}
-<USTODAY>"<p>"   {BEGIN(USTODAYSTORY);}
+<USTODAY>"<p class=gnt"[^>]+>  {BEGIN(USTODAYSTORY);}
 <USTODAYSTORY>[^<]+  {writeText();}
 <USTODAYSTORY>"<"    {writeText();}
 <USTODAYSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(USTODAY);}
-<USTODAYSTORY>"</h2>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
-<USTODAYSTORY>"</h3>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
-<USTODAYSTORY>"</h4>" {writeString("&lt;/b&gt;&#10;"); BEGIN(USTODAY);}
 
 <WSH>"<p class=\"font"[^>]+><b>How.we.got.here   {BEGIN(FOX);}
 <WSH>"<p class=\"font"[^>]+><b>Read.more:   {BEGIN(FOX);}
@@ -176,7 +161,7 @@ int hasRightArrow();
 <SIMPLESTORY>"<"    {writeText();}
 <SIMPLESTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(SIMPLE);}
 
-<PERU21>"<p class=\"parrafo first-parrafo"  {writeText(); BEGIN(PERU21STORY);}
+<PERU21>"<"p.class=\"story-content__font[^>]+">"    {BEGIN(PERU21STORY);}
 <PERU21STORY>[^<]+  {writeText();}
 <PERU21STORY>"<"    {writeText();}
 <PERU21STORY>"</p>" {writeString("&#10;&#10;"); BEGIN(PERU21);}
