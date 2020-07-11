@@ -19,7 +19,7 @@ void writeText();
 void writeString(char *str);
 int hasRightArrow();
 %}
-%s TIME WSH POLITICO POLIT HUFF REUTERS BLOOM NYT ABC USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI COMERCIO
+%s TIME WSH POLITICO POLIT HUFF REUTERS BLOOM NYT ABC ABCIMPLE USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI COMERCIO
 %x TIMESTORY WUMIA POLITICOSTORY HUFFSTORY BLOOMSTORY WSHSTORY REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
 %option noyywrap
 %%
@@ -61,21 +61,20 @@ int hasRightArrow();
 <RPPSTORY>[^"]+             {writeText();}
 <RPPSTORY>\"                {BEGIN(RPP);}
 
-<ABC>"<"article.class=\"Article..Content   {BEGIN(PIMPLE);}
-<PIMPLE>"<p>"   {BEGIN(ABCSTORY);}
-<ABCSTORY>[^<]+             {writeText();}
-<ABCSTORY>"<"               {writeText();}
-<ABCSTORY>"</p>" {writeString("&#10;"); BEGIN(PIMPLE);}
-
 <UPI>"<"article.itemprop  {BEGIN(PIMPLE);}
-<PIMPLE>"<".article">"  {BEGIN(INITIAL);}
+<PIMPLE>"<div class=\"read-more-block lato\">" {BEGIN(INITIAL);}
 <PIMPLE>"<p>"   {BEGIN(UPISTORY);}
-<PIMPLE>"</script>" {BEGIN(UPISTORY);}
-<UPISTORY>"<script" {BEGIN(PIMPLE);}
+<PIMPLE>"</p>" {BEGIN(UPISTORY);}
 <UPISTORY>[^<]+  {writeText();}
 <UPISTORY>"<"    {writeText();}
-<UPISTORY>"<div class=\"ad_slot\">"  {writeString("&#10;&#10;"); BEGIN(PIMPLE);}
+<UPISTORY>"<div class=\"ad_slot\">"  {BEGIN(PIMPLE);}
 <UPISTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(PIMPLE);}
+
+<ABC>"<"article.class=\"Article..Content   {BEGIN(ABCIMPLE);}
+<ABCIMPLE>"<p>"   {BEGIN(ABCSTORY);}
+<ABCSTORY>[^<]+             {writeText();}
+<ABCSTORY>"<"               {writeText();}
+<ABCSTORY>"</p>" {writeString("&#10;"); BEGIN(ABCIMPLE);}
 
 <WSJ>"<"div.class=.wsj.snippet.body.">"  {BEGIN(WIMPLE);}
 <WSJSTORY>"</div>"  {writeString("&#10;&#10;");BEGIN(INITIAL);}
