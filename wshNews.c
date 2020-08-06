@@ -88,7 +88,7 @@ int main(int argc, char *argv[]){
 			if(i<argc-1) fprintf(stdout,",");
 
 		}else{
-        		fprintf(logptr, "Error Carajo for %s\n", url2);
+        		//fprintf(logptr, "Error Carajo for %s\n", url2);
 		}
 		free(encoded);
         }
@@ -160,12 +160,12 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 							linda = 1;
 							if(cc==227){
 								size_t n = strlen(&extra->title[ii+3]);
-        	                                                fprintf(logptr,"!227!!!!:%02X%02X%02X\n",extra->title[ii],extra->title[ii+1],extra->title[ii+2]);
+        	                                                //fprintf(logptr,"!227!!!!:%02X%02X%02X\n",extra->title[ii],extra->title[ii+1],extra->title[ii+2]);
 	                  //                                      fflush(logptr);
                           //                              	memmove(&extra->title[ii], &extra->title[ii+3], n); //skip three bytes
 								memset(&extra->title[ii+n], 0x00, 3);
                                                         }else{
-        	                                                fprintf(logptr,"UTF: %u,%02X\n",cc,cc);
+        	                                                //fprintf(logptr,"UTF: %u,%02X\n",cc,cc);
 	                                                        fflush(logptr);
 							}
 						}
@@ -209,7 +209,7 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 	}
 	free(line);
 	if(countFilled){
-		fprintf(logptr,"%d, %s\n", countFilled, url);
+		//fprintf(logptr,"%d, %s\n", countFilled, url);
 		fflush(logptr);
 	}
 	pclose(ppp);

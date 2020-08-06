@@ -47,9 +47,8 @@ struct item{
 struct agencyParse{
 	char* agency;
 	int parseType;
-} agencyParseArray[] = {{"CNN", CNN}, {"FOX NEWS", FOX}, {"NY TIMES", NYT},{"ABC NEWS", ABC},{"GESTION", GESTION},
-	{"PERU21", PERU21}, {"CNBC", CNBC}, {"REUTERS", REUTERS}, {"US TODAY", USTODAY}, {"WSH POST", WSH},
-	{"UPI", UPI}, {"WSJ", WSJ}, {"COMERCIO", COMERCIO}, {"BLOOMBERG", BLOOM}} ;
+} agencyParseArray[] = {{"CNN", CNN}, {"FOX NEWS", FOX}, {"ABC NEWS", ABC}, {"CNBC", CNBC}, {"REUTERS", REUTERS},
+{"US TODAY", USTODAY}, {"UPI", UPI}, {"PERU", PERU}} ;
 
 static int AGENCY_PARSE_SIZE = sizeof(agencyParseArray)/sizeof(agencyParseArray[0]);
 
@@ -297,21 +296,27 @@ void getFeedItems(char *agency, int type, char *buff)
                                 if(countTitleWords(buffer)){
                                         struct item item;
 					memset(&item, 0, sizeof(struct item));
-                                        char kitty[50];
-                                        getContent(50, kitty, "<pubDate>", "</pubDate>", buffer);
-                                        char* front = kitty;
-                                        while(isspace(*front)) front++; // need to trim it
+					char kitty[50];
+					getContent(50, kitty, "<pubDate>", "</pubDate>", buffer);
+					char* front = kitty;
+					while(isspace(*front)) front++; // need to trim it
 					char* back = front + strlen(front);
 					while(isspace(*--back));
 					*(back+1) = '\0';
-                                        strcpy(item.pubDate, front);
-                                        getContent(URL_TITLE_LEN, item.title, "<title>", "</title>", buffer);
-                                        getContent(URL_TITLE_LEN, item.url, "<link>", "</link>", buffer);
-                                        cleanUrl(item.url);
-                                        getTitle(item.title);
-                                        strcpy(item.agency, agency);
+					strcpy(item.pubDate, front);
+					getContent(URL_TITLE_LEN, item.title, "<title>", "</title>", buffer);
+					getContent(URL_TITLE_LEN, item.url, "<link>", "</link>", buffer);
+					cleanUrl(item.url);
+					getTitle(item.title);
+					strcpy(item.agency, agency);
 					item.type = type;
-                                        write(pfd[1], &item, ITEM_SIZE);
+					write(pfd[1], &item, ITEM_SIZE);
+//					if(strstr(item.url, "peru")){
+//						fprintf(logptr, "url:%s\n", item.url);
+//						fprintf(logptr, "title:%s\n", item.title);
+//						fprintf(logptr, "pubdate:%s\n", item.pubDate);
+//						fprintf(logptr, "type:%d\n", item.type);
+//					}
                                 }
                         }
                 }
@@ -602,8 +607,8 @@ void getInsertString(struct item *item, char *json, int type){
 			strcat(json, "','%Y-%m-%d %H:%i:%S'),'");
 			strcat(json, item ->agency);
 			strcat(json, "',now())");
-			if(!strstr(item->url, "video"))
-				fprintf(logptr, "No Image type %d, url:%s\n", type, item ->url);
+			//if(!strstr(item->url, "video"))
+				//fprintf(logptr, "No Image type %d, url:%s\n", type, item ->url);
 		}else{
 			strcpy(json, "REPLACE INTO news (url,html,img,news_type,title,pubdate,agency,create_date) values ('");
 			strcat(json, item ->url);
@@ -636,7 +641,13 @@ void setOwnEncodedHtml(struct item *item, struct extra *extra){
 		}
 	}
 
+
+//	if(strstr(item->url, "peru.com") != NULL){
+//		fprintf(logptr, "PERU ParseType:%d, imgurl: %s\n", parseType, extra->imgurl);
+//	}
+
 	size_t out_len = parseUrlWithFlex(item->url, &encoded, parseType);
+
 
 	if(out_len>20 && out_len<BUF_LEN*4){
 		strncpy(extra->html, encoded, out_len );
@@ -765,7 +776,7 @@ void initMysql(){
                 fprintf(logptr, "ERROR:mysql_init() failed\n");
                 exit(EXIT_FAILURE);
         }
-	if (mysql_real_connect(con, "localhost", "XXXXX_neri", "XXXXX", "XXXXX_neri", 0, NULL, 0) == NULL){
+	if (mysql_real_connect(con, "localhost", "nerillos_neri", "carpa1", "nerillos_neri", 0, NULL, 0) == NULL){
                 fprintf(logptr, "ERROR:%s\n", mysql_error(con));
                 mysql_close(con);
                 exit(EXIT_FAILURE);

@@ -1,3 +1,15 @@
-*/15 * * * * export LD_LIBRARY_PATH=/home1/nerillos/opt/flex-2-5-39/lib:/usr/local/lib && /home1/nerillos/run_create.sh
-0 0 * * 0 echo "$(tail -1000 /home1/nerillos/news.log)" > /home1/nerillos/news.log
+MAILTO="nerillos"
+SHELL="/usr/local/cpanel/bin/jailshell"
+*/22 * * * * export LD_LIBRARY_PATH=/home1/nerillos/opt/flex-2-5-39/lib:/usr/local/lib && ./run_create.sh
+0 0 * * 0 ./trim_logs.sh
+*/28 * * * * cd public_html && cat time.sh politico.sh huffington.sh | bash
+0 6 * * * ./rmfiles.sh
+30 4,11,16 * * * ./public_html/washingtonpost.sh
+*/31 * * * * ./larepublica.sh && ./reuters.sh
+
+
+
+
+
+
 
