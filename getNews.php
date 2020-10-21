@@ -6,7 +6,7 @@
 
 	if (filter_var($type, FILTER_VALIDATE_INT) === false) {
     		echo("type variable is not an integer");
-		$output = shell_exec("/home1/nerillos/public_html/log_error.sh $type");
+		$output = shell_exec("/home4/nerillos/public_html/log_error.sh $type");
     		return;
 	}
 
@@ -18,7 +18,7 @@
 
 	if($type > ($maxType+1) || $type < 1) {
 		echo("Non valid type");
-		$output = shell_exec("/home1/nerillos/public_html/log_error.sh $type");
+		$output = shell_exec("/home4/nerillos/public_html/log_error.sh $type");
 		return;
 	}
 
@@ -58,10 +58,29 @@
 
 	        $pattern = '/<\/b>|<\/strong>/s';
         	if($agency != "COMERCIO" && $agency != "RPP")
-        		$html = preg_replace($pattern, '&lt;/b&gt;', $html);
+        	$html = preg_replace($pattern, '&lt;/b&gt;', $html);
 
 	        $html = filter_var($html, FILTER_SANITIZE_STRING);//removes all xml characters
 
+		//for UPI multiple tabs issues
+		$html = trim(preg_replace('/[\t{3,}|\n{2,}|&#4;]/', '', $html));
+
+		$html = preg_replace('/(&?#?x01C;?)|(&?#?x01D;?)/', '"', $html);
+		$html = preg_replace('/(&#x019;)|(x019)|(&#9;)/', '&apos;', $html);
+		$html = preg_replace('/(&#xA0;)|(xA0)/', '&nbsp;', $html);
+
+        	$html = preg_replace('/1010/', '&#10;&#10;', $html);
+
+
+
+//		$pattern = '/&#4;/s';
+//        	$html = preg_replace($pattern, '', $html);
+
+		$position = strpos($html, "Sign up");
+		if(is_numeric($position)){
+			$html = substr($html, 0, $position);
+		}
+//		$html = substr($variable, 0, strpos($html, "Leave a comment"));
 		// If it's not already UTF-8, convert to it. Mysql saves in iso-8859-1 (Latin 1)
 		// Solves the bad chars \u00e2\u0080\u0098 and \u00e2\u0080\u0099 which are converted to
 		// \u2018 and \u2019 which are utf-8 left and right double quotes
@@ -74,9 +93,10 @@
                 //$news_r[] = array('html' => $html, 'pubdate' => $pubdate, 'url' => $url, 'title' => utf8_encode($title),
                 //'agency' =>$agency,'logo' => $logo,'img'=>$img );
 
-                $news_r[] = array('html' => $html, 'pubdate' => $pubdate, 'url' => $url, 'title' => $title,
-                'agency' =>$agency,'logo' => $logo,'img'=>$img );
+                $news_r[] = array('html' => $html, 'pubdate' => $pubdate, 'url' => $url, 'title' => $title, 'agency' =>$agency,'logo' => $logo,'img'=>$img );
 	}
+
+
 	echo json_encode($news_r); //convert the array to JSON string
 
 ?>

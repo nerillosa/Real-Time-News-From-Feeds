@@ -76,7 +76,7 @@ void createNewsSection(struct section *section){
 	char tumia[BUFFER_SIZE];
 	char *pch;
 
-	strcpy(tumia, "perl /home1/nerillos/public_html/reuters.pl ");
+	strcpy(tumia, "perl /home4/nerillos/public_html/reuters.pl ");
 	strcat(tumia, section ->name);
 
 	FILE *pp = popen(tumia, "r");
@@ -165,6 +165,9 @@ size_t parseUrlWithFlex(char *url, char **encoded, struct extra *extra){
         				if(m){
         					strncpy(extra-> imgurl, p, m-p);
         					found = 1;
+        					if(strlen(extra->imgurl) < 15){
+        					   strcpy(extra-> imgurl, "http://nllosa.com/images/REUTERS.png");
+        					}
         					//fprintf(stderr, "FOUND: %d\n", found);
         				}
 				}
@@ -195,7 +198,7 @@ size_t parseUrlWithFlex(char *url, char **encoded, struct extra *extra){
 			}
 		}
 
-		if(!start && strstr(line,"StandardArticle")){ //start flex scanning from here
+		if(!start && found && foundd && found2){ //start flex scanning from here
 			start = 1;
 		}
 		else if(!start){

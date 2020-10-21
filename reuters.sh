@@ -1,8 +1,8 @@
 #!/bin/bash
 
-actualsize=$(wc -c <"/home1/nerillos/public_html/reuters.log")
+actualsize=$(wc -c <"/home4/nerillos/public_html/reuters.log")
 if [ $actualsize -ge 100000 ]; then
-    echo "" > /home1/nerillos/public_html/reuters.log
+    echo "" > /home4/nerillos/public_html/reuters.log
 fi
-/home1/nerillos/public_html/createReuters 2>>/home1/nerillos/public_html/reuters.log
+/home4/nerillos/public_html/createReuters 2>>/home4/nerillos/public_html/reuters.log
 

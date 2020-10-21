@@ -152,7 +152,7 @@ size_t parseUrlWithFlex(char *url, char **encoded, int flexStartState, struct ex
 			}
 		}
 
-		if(!start && strstr(line,"<figcaption")){ //start flex scanning from here
+		if(!start && found && found2 && foundd){ //start flex scanning from here
 			start = 1;
 		}
 		else if(!start){
