@@ -19,8 +19,8 @@ void writeText();
 void writeString(char *str);
 int hasRightArrow();
 %}
-%s TIME WSH POLITICO HUFF REUTERS BLOOM NYT ABC ABCIMPLE USTODAY SIMPLE CNN FOX CNBC PERU21 GESTION GIMPLE PIMPLE WIMPLE WSJ UPI COMERCIO
-%x TIMESTORY WUMIA POLITICOSTORY HUFFSTORY BLOOMSTORY WSHSTORY REUTSTORY NYTSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
+%s TIME WSH WSHEXAM POLITICO HUFF REUTERS NYT ABC ABCIMPLE USTODAY SIMPLE CNN FOX CNBC PERU21 PERU PEMPLE GIMPLE PIMPLE WIMPLE WSJ UPI
+%x TIMESTORY WSHEXAMSTORY WUMIA POLITICOSTORY HUFFSTORY WSHSTORY REUTSTORY NYTSTORY PERUSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
 %option noyywrap
 %%
 	BEGIN(agencyState);
@@ -32,6 +32,11 @@ int hasRightArrow();
 <POLITICOSTORY>[^<]+             {writeText();}
 <POLITICOSTORY>"<"               {writeText();}
 <POLITICOSTORY>"</p>"            {strcat(yybuf, "&#10;&#10;"); BEGIN(POLITICO);}
+
+<WSHEXAM>"<p>"  {BEGIN(WSHEXAMSTORY);}
+<WSHEXAMSTORY>[^<]+  {writeText();}
+<WSHEXAMSTORY>"<"    {writeText();}
+<WSHEXAMSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(WSHEXAM);}
 
 <TIME>"<p>"   {BEGIN(TIMESTORY);}
 <TIMESTORY>[^<]+  {writeText();}
@@ -46,13 +51,11 @@ int hasRightArrow();
 <HUFFSTORY>"</p>"      {writeString("&#10;&#10;");}
 <HUFFSTORY>[ \t\n]*"</div>"      {BEGIN(HUFF);}
 
-<BLOOM>"<"span.class=\"lede[^>]+">"[ \t\n]*"<p>" ;
-<BLOOM>"<p>"   {BEGIN(BLOOMSTORY);}
-<BLOOMSTORY>[^<]+  {writeText();}
-<BLOOMSTORY>"<"    {writeText();}
-<BLOOMSTORY>"<a href=\"#footnote"[^>]+>[ \t\n]* ;
-<BLOOMSTORY>"<span id=\"footnote"[^>]+"></span>"[ \t\n]*[1-9][ \t\n]*"</a>" ;
-<BLOOMSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(BLOOM);}
+<PERU>"<div id=\"nota_body\""   {BEGIN(PEMPLE);}
+<PEMPLE>"<p>"   {BEGIN(PERUSTORY);}
+<PERUSTORY>[^<]+             {writeText();}
+<PERUSTORY>"<"               {writeText();}
+<PERUSTORY>"</p>" {writeString("&#10;"); BEGIN(PEMPLE);}
 
 <RPP>[^"]+   ;
 <RPP>\"      ;
@@ -74,7 +77,7 @@ int hasRightArrow();
 <UPISTORY>"<slide" {BEGIN(INITIAL);}
 <UPISTORY>"<div class=\"montserrat bold\""  {BEGIN(INITIAL);}
 
-<ABC>"<"article.class=\"Article..Content   {BEGIN(ABCIMPLE);}
+<ABC>"<"section.class=\"Article..Content   {BEGIN(ABCIMPLE);}
 <ABCIMPLE>"<p>"   {BEGIN(ABCSTORY);}
 <ABCSTORY>[^<]+             {writeText();}
 <ABCSTORY>"<"               {writeText();}
@@ -121,11 +124,6 @@ int hasRightArrow();
 <NYTSTORY>"<"               {yymore();}
 <NYTSTORY>"</p>"            {if(strncmp(yytext, "By", 2)){writeText(); strcat(yybuf, "&#10;&#10;");} BEGIN(NYT);/*remove <p>s starting with By...*/}
 
-<COMERCIO>"<"p.class=\"story-content__font[^>]+">"    {BEGIN(COMSTORY);}
-<COMSTORY>[^<]+             {yymore();}
-<COMSTORY>"<"               {yymore();}
-<COMSTORY>"</p>"            {if(!hasRightArrow()) {writeText(); writeString("&#10;&#10;");} BEGIN(COMERCIO);}
-
 <REUTERS>"<p class=\"Paragraph"[^>]+">"    {BEGIN(REUTSTORY);writeString("&#10;&#10;");}
 <REUTERS>"<p><span>" ;
 <REUTERS>"<p><a href" ;
@@ -163,18 +161,10 @@ int hasRightArrow();
 <SIMPLESTORY>"<"    {writeText();}
 <SIMPLESTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(SIMPLE);}
 
-<PERU21>"<"p.class=\"story-content__font[^>]+">"    {BEGIN(PERU21STORY);}
+<PERU21>"<"p.itemProp=\"description\".class=\"story-content[^>]+">"    {BEGIN(PERU21STORY);}
 <PERU21STORY>[^<]+  {writeText();}
 <PERU21STORY>"<"    {writeText();}
 <PERU21STORY>"</p>" {writeString("&#10;&#10;"); BEGIN(PERU21);}
-
-<GESTION>"<div class="  {BEGIN(GIMPLE);}
-<GIMPLE>"<p>"[^a-zA-Z0-9]  ;
-<GIMPLE>"<p>"Env  {BEGIN(INITIAL);}
-<GIMPLE>"<p>"   {BEGIN(GESTIONSTORY);}
-<GESTIONSTORY>[^<]+  {writeText();}
-<GESTIONSTORY>"<"    {writeText();}
-<GESTIONSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(GIMPLE);}
 
 %%
 

@@ -39,12 +39,16 @@
 
     function getHtml(html) {
 	return html.replace(/^[ \t\n\u00a0]*(&#10;)*[\n]*/g,"").
-	replace(/[\n]&#10;[\n]/g, "\n\n").
-	replace(/[ ]+\n[ ]*,/g, ",").
-	replace(/\n[ ]+/g, "").
+	replace(/\t\n/g, "").
+	replace(/\t/g, "");
+//	replace(/[\n]&#10;[\n]/g, "\n\n").
+//	replace(/[ ]+\n[ ]*,/g, ",").
+//	replace(/\n[ ]+/g, "").
+//	replace(/ltbrgtltbrgt/g, "\n\n").
+//	replace(/1010/g, "\n\n").
 	//replace(/&amp;amp;/g, "&amp;").
 	//replace(/&amp;frac12;/g, "&frac12;").
-	replace(/&amp;nbsp;/g, " ");
+//	replace(/&amp;nbsp;/g, " ");
     }
 
     function tumia(evt){
@@ -83,8 +87,10 @@
 		var newsSite = evt.target.toLowerCase();
 		if(newsSite == "politico")
 			url3 = "getPolitico.php";
-		else if(newsSite == "bloomberg")
-			url3 = "getBloom.php";
+		else if(newsSite == "washingtonexaminer"){
+				url3 = "getWshExaminer.php";
+				newsName = "Washington Examiner";
+			}
 		else if(newsSite == "newyorker"){
 				url3 = "getPowershell.php?type=newyorker";
 				newsName = "The New Yorker";
@@ -116,6 +122,7 @@
 			news.sort(compare);
 			var i = news.length;
 			var oldImg = "";
+			/*
 			while (i--) {
 				if (!news[i].title || !news[i].html || news[i].html.length < 200) {
 					news.splice(i, 1);
@@ -126,7 +133,7 @@
     				    		oldImg = news[i].img;
     					}
     				}
-			}
+			}*/
 		}else{
 			$(evt.target).addClass("active");
 		}
