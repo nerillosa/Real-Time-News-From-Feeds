@@ -81,15 +81,19 @@
         $(".tablinks").removeClass("active");
 
 	var url3 = "getNews.php?type=" + newsType;
-
+	var newsSite;
 	if(typeof evt.target === 'string'){ //news sites
 		$(".tablinks:last").addClass("active");
-		var newsSite = evt.target.toLowerCase();
+		newsSite = evt.target.toLowerCase();
 		if(newsSite == "politico")
 			url3 = "getPolitico.php";
 		else if(newsSite == "washingtonexaminer"){
 				url3 = "getWshExaminer.php";
 				newsName = "Washington Examiner";
+			}
+		else if(newsSite == "hackernews"){
+				url3 = "getHackerNews.php";
+				newsName = "Hacker News";
 			}
 		else if(newsSite == "newyorker"){
 				url3 = "getPowershell.php?type=newyorker";
@@ -122,18 +126,6 @@
 			news.sort(compare);
 			var i = news.length;
 			var oldImg = "";
-			/*
-			while (i--) {
-				if (!news[i].title || !news[i].html || news[i].html.length < 200) {
-					news.splice(i, 1);
-    				}else {
-    					if(oldImg == news[i].img){
-    						news.splice(i, 1);
-    					}else{
-    				    		oldImg = news[i].img;
-    					}
-    				}
-			}*/
 		}else{
 			$(evt.target).addClass("active");
 		}
@@ -143,6 +135,17 @@
                 $(".links").each(function(){
                         var dd = htmlDecode($(this)[0].childNodes[0].nodeValue);
                         $(this)[0].childNodes[0].nodeValue = dd;
+                });
+                $(".newsRow").each(function(i){
+                	$(this).attr("id",(i+1).toString());
+                	var res = "http://nllosa.com/news.html";
+                	if(url3.substring(0,11) == "getNews.php"){
+                		res += url3.substring(11, url3.length);
+                	}else{
+                		res += "?site=" + newsSite;
+                	}
+                	res += "#" + (i+1);
+                	$(this).find("a.counter").attr("href", res).find("div").css("font-size","1.2em").text("" + (i+1));
                 });
                 setTimeOnScreen(newsType > 8 && newsType < 14);
                 $(".htext").each(function(){

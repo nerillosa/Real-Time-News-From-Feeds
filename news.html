@@ -62,18 +62,44 @@ body {
 
     $(document).ready(function(){
         $("#newsMenu").tmpl(menus).prependTo("#tabb");
+
         var myParam = location.search.split('site=')[1];
-        if(myParam == 'forbes' || myParam == 'newyorker' || myParam == 'huffingtonpost' || myParam == 'washingtonpost' || myParam == 'time' || myParam == 'politico' || myParam == 'nytimes'){
+
+        if(!myParam){
+        	myParam = location.search.split('type=')[1];
+	}
+
+        var indx = myParam ? myParam.indexOf("&") : 0;
+        if(indx > 0){
+           myParam = myParam.substring(0,indx)	
+        }
+
+        if(myParam == 'forbes' || myParam == 'newyorker' || myParam == 'washingtonexaminer' || myParam == 'huffingtonpost' 
+        || myParam == 'hackernews' || myParam == 'time' || myParam == 'politico' || myParam == 'nytimes'){
         	openNews({target:myParam}, 8, myParam);
         }
+	else if(myParam){
+		var typ = parseInt(myParam);
+		for (var i = 0; i < menus.length; i++) {
+			if(menus[i]["newsType"] == typ){
+				openNews({target: $(".tablinks").eq(typ-1)[0]}, typ, menus[i]["newsTitle"])
+				break;
+			}
+	    	}
+	}
         else {
-        	$(".tablinks:contains('USA')").click();
+        	$(".tablinks:contains('Politics')").click();
         }	
+        
+	if(location.hash){ //click on the ...more link
+		setTimeout(function(){$(location.hash).find('td:first a:first').click(); }, 1500);
+	}	
+
         $("div.box-table").eq(1).click(function(e){
-                if (e.target !== this)//only click on parent
-                        return;
-                $('html, body').animate({scrollTop: $("div.box-table").eq(0).offset().top}, 250);
-        });
+       	        if (e.target !== this)//only click on parent
+               	        return;
+               	$('html, body').animate({scrollTop: $("div.box-table").eq(0).offset().top}, 250);
+       	});
     });
 
     function linda(site){
@@ -82,16 +108,17 @@ body {
 </script>
 
 <script id="newsTemplate" type="text/x-jquery-tmpl"> 
-  <tr>
+  <tr class="newsRow">
   <td>
   <div class="links">${title}&nbsp;&nbsp;&nbsp;<a href="#" onclick="hrefClick(event)" 
   title="${title}">more...</a></div>
   <img class="lavida" src="${img}" onclick="cuando(event)"/>
   <div class="htext" style="font-size: 1.2em;font-weight:bold;">${getHtml(html)}</div>
   </td>
-     <td class="user-photo"><img style="cursor:pointer;" class="user-tumb" src="images/${logo}" onclick="tumia(event)"/><a 
-     style="padding-left:10px;text-decoration:none;" href="${url}" 
-     target="_blank"><div style="font-weight:bold;background-color:#abf;text-align:center"><div>View</div><div>full article</div></div></a></td>
+     <td class="user-photo"><img style="cursor:pointer;" class="user-tumb" src="images/${logo}" onclick="tumia(event)"/>
+     <a style="padding-left:10px;text-decoration:none;" href="${url}" 
+     target="_blank"><div style="font-weight:bold;background-color:#abf;text-align:center"><div>View</div><div>full article</div></div></a>
+     <a style="padding-left:10px;text-decoration:none;" class="counter"><div style="text-align:center;"></div></a></td>
      <td style="color:black;font-size:1.1em;text-align:center;">${getDate(pubdate,'English',$data.logo)}</td>
   </tr>
 </script>
@@ -116,7 +143,8 @@ body {
           <div><a href="#" onclick="linda('newyorker')">The New Yorker</a></div>
           <div><a href="#" onclick="linda('nytimes')">The NY Times</a></div>
           <div><a href="#" onclick="linda('time')">Time Magazine</a></div>
-          <div><a href="#" onclick="linda('washingtonpost')">Washington Post</a></div>
+          <div><a href="#" onclick="linda('washingtonexaminer')">Washn Examiner</a></div>
+          <div><a href="#" onclick="linda('hackernews')">Hacker News</a></div>
         </div>
       </li>
     </ul>
