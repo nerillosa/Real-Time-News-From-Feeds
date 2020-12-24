@@ -22,13 +22,31 @@
 
     function setTimeOnScreen(isSpanish){
 	var date = new Date();
-	if(!isSpanish)
-		$("#timer").text(date.toDateString() + ' ' + date.toLocaleTimeString());
-	else{
+	if(!isSpanish){
+		var appp = "&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' onclick='writeTitles()'>Titles</a>";
+		$("#timer").text(date.toDateString() + ' ' + date.toLocaleTimeString()).append(appp);
+	}else{
+		var appp = "&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' onclick='$(\".titlesModal\").show()'>Titulos</a>";
 		var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-		$("#timer").text(date.toLocaleDateString('es-ES', options));
+		$("#timer").text(date.toLocaleDateString('es-ES', options)).append(appp);
 	}
     }
+
+    function writeTitles(){
+	$(".titlesModal").show();
+	var i = 0;
+	$(".newsRow").each(function(){
+		if(i==10 ) return false; // break from .each
+		var title = $(this).find("div.links a").attr("title");
+		var hrf = $(this).find("td.user-photo a.counter").attr("href");
+		var src = $(this).find("td.user-photo img.user-tumb").attr("src");
+		if(title){
+			i++;
+			$('#titles').append('<span><img src="' + src + '" width="25"></span>').append('<a href="' + hrf  + '">' + title + '</a><br>')
+		}
+	});
+    }
+
 
     function htmlDecode(input){
 	var e = document.createElement('div');
@@ -41,14 +59,6 @@
 	return html.replace(/^[ \t\n\u00a0]*(&#10;)*[\n]*/g,"").
 	replace(/\t\n/g, "").
 	replace(/\t/g, "");
-//	replace(/[\n]&#10;[\n]/g, "\n\n").
-//	replace(/[ ]+\n[ ]*,/g, ",").
-//	replace(/\n[ ]+/g, "").
-//	replace(/ltbrgtltbrgt/g, "\n\n").
-//	replace(/1010/g, "\n\n").
-	//replace(/&amp;amp;/g, "&amp;").
-	//replace(/&amp;frac12;/g, "&frac12;").
-//	replace(/&amp;nbsp;/g, " ");
     }
 
     function tumia(evt){
@@ -128,6 +138,7 @@
 			var oldImg = "";
 		}else{
 			$(evt.target).addClass("active");
+			//history.pushState({}, null, "http://nllosa.com/news.html");
 		}
 
                 $("#newsList").empty();
@@ -136,6 +147,7 @@
                         var dd = htmlDecode($(this)[0].childNodes[0].nodeValue);
                         $(this)[0].childNodes[0].nodeValue = dd;
                 });
+
                 $(".newsRow").each(function(i){
                 	$(this).attr("id",(i+1).toString());
                 	var res = "http://nllosa.com/news.html";

@@ -41,7 +41,37 @@
    text-align: center;
    font-family: 'Arial Black', Gadget, sans-serif;
  }
- 
+
+ div.titlesModal{
+   position:fixed;
+   top:27%;
+   left:10%;
+   width:80%;
+   height:350px;
+   overflow-y: auto;
+   z-index:10000;
+   background-color:#f8f8f8;
+   border: 1px solid black;
+   font-size: .9em;
+ }
+
+ div.titlesModal a{
+   margin-left: 10px;
+   line-height: 1.6;
+ }
+
+ div.titlesModal h3{
+   text-align:center;
+   font-size:1.2em;
+   margin-top: 5px; 
+   margin-bottom: 5px;
+ }
+
+ div.titlesModal button{
+   float:right;
+   margin-right:10%;
+ }
+
  .arrow{
    font-size:11px; 
  }
@@ -61,24 +91,23 @@ body {
     	{"newsType":7, "newsTitle": "USA"},{"newsType":8, "newsTitle": "Business"}];
 
     $(document).ready(function(){
-        $("#newsMenu").tmpl(menus).prependTo("#tabb");
+	$("#newsMenu").tmpl(menus).prependTo("#tabb");
 
         var myParam = location.search.split('site=')[1];
 
-        if(!myParam){
-        	myParam = location.search.split('type=')[1];
+	if(!myParam){
+		myParam = location.search.split('type=')[1];
 	}
 
-        var indx = myParam ? myParam.indexOf("&") : 0;
-        if(indx > 0){
-           myParam = myParam.substring(0,indx)	
-        }
+	var indx = myParam ? myParam.indexOf("&") : 0;
+	if(indx > 0){
+		myParam = myParam.substring(0,indx)	
+	}
 
-        if(myParam == 'forbes' || myParam == 'newyorker' || myParam == 'washingtonexaminer' || myParam == 'huffingtonpost' 
-        || myParam == 'hackernews' || myParam == 'time' || myParam == 'politico' || myParam == 'nytimes'){
-        	openNews({target:myParam}, 8, myParam);
-        }
-	else if(myParam){
+	if(myParam == 'forbes' || myParam == 'newyorker' || myParam == 'washingtonexaminer' || myParam == 'huffingtonpost' 
+		|| myParam == 'hackernews' || myParam == 'time' || myParam == 'politico' || myParam == 'nytimes'){
+		openNews({target:myParam}, 8, myParam);
+	}else if(myParam){
 		var typ = parseInt(myParam);
 		for (var i = 0; i < menus.length; i++) {
 			if(menus[i]["newsType"] == typ){
@@ -86,20 +115,25 @@ body {
 				break;
 			}
 	    	}
-	}
-        else {
-        	$(".tablinks:contains('Politics')").click();
-        }	
+	}else {
+		$(".tablinks:contains('Politics')").click();
+	}	
         
 	if(location.hash){ //click on the ...more link
 		setTimeout(function(){$(location.hash).find('td:first a:first').click(); }, 1500);
 	}	
 
-        $("div.box-table").eq(1).click(function(e){
-       	        if (e.target !== this)//only click on parent
-               	        return;
-               	$('html, body').animate({scrollTop: $("div.box-table").eq(0).offset().top}, 250);
-       	});
+	$("div.box-table").click(function(e){
+		$('#titles').empty();$('.titlesModal').hide();
+	});
+
+	$("div.box-table").eq(1).click(function(e){
+		//$('#titles').empty();$('.titlesModal').hide();
+		if (e.target !== this){//only click on parent
+			return;
+		}	
+		$('html, body').animate({scrollTop: $("div.box-table").eq(0).offset().top}, 250);
+	});
     });
 
     function linda(site){
@@ -160,6 +194,13 @@ body {
     </table>
   </div>
   <div class="loadingDiv"><img src="images/loading_green.gif" width="100px;"></div>
+
+<div class="titlesModal" style="display: none;">
+	<h3>Titles</h3><button onclick="$('#titles').empty();$('.titlesModal').hide()">OK</button>
+	<div id="titles" style="margin-left: 5px;"></div>
+	<br>
+	<!-- div id="button"><button onclick="$('#titles').empty();$('.titlesModal').hide()">OK</button></div -->
+</div>
 
 
 </body>
