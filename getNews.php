@@ -56,7 +56,9 @@
     			$title = mb_convert_encoding($title, 'utf-8', 'iso-8859-1'); //convert from latin1 to utf-8
 		}
 		//http://www.conandalton.net/2011/03/convert-your-mysql-database-from-latin.html
-		$htitle = bin2hex($title); // characters were double encoded utf
+		$htitle = bin2hex($title); 
+		$htitle = str_replace("c3a2e282ace2809c","e28093",$htitle); // EN Dash
+		$htitle = str_replace("c3a2e282ace2809d","e28094",$htitle); // EM Dash
 		$htitle = str_replace("c3a2e282acc593","e2809c",$htitle); // left double quotation mark
 		$htitle = str_replace("c3a2e282acc29d","e2809d",$htitle); // right double quotation mark
 		$htitle = str_replace("c3a2e282accb9c","e28098",$htitle); // left single quote

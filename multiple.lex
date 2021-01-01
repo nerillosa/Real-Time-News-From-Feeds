@@ -19,8 +19,8 @@ void writeText();
 void writeString(char *str);
 int hasRightArrow();
 %}
-%s TIME WSH WSHEXAM POLITICO HUFF REUTERS NYT ABC ABCIMPLE USTODAY SIMPLE CNN FOX CNBC PERU21 PERU PEMPLE GIMPLE PIMPLE WIMPLE WSJ UPI
-%x TIMESTORY WSHEXAMSTORY WUMIA POLITICOSTORY HUFFSTORY WSHSTORY REUTSTORY NYTSTORY PERUSTORY ABCSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
+%s TIME WSH HACK WSHEXAM POLITICO HUFF REUTERS NYT ABC ABCIMPLE USTODAY SIMPLE CNN FOX CNBC PERU21 PERU PEMPLE GIMPLE PIMPLE WIMPLE WSJ UPI
+%x TIMESTORY HACKSTORY WSHEXAMSTORY WUMIA POLITICOSTORY HUFFSTORY WSHSTORY REUTSTORY NYTSTORY PERUSTORY ABCSTORY SSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
 %option noyywrap
 %%
 	BEGIN(agencyState);
@@ -37,6 +37,12 @@ int hasRightArrow();
 <WSHEXAMSTORY>[^<]+  {writeText();}
 <WSHEXAMSTORY>"<"    {writeText();}
 <WSHEXAMSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(WSHEXAM);}
+
+<HACK>"<p>"   {BEGIN(HACKSTORY);}
+<HACK>"<p>Sign up"  {BEGIN(INITIAL);}
+<HACKSTORY>[^<]+  {writeText();}
+<HACKSTORY>"<"    {writeText();}
+<HACKSTORY>"</p>" {strcat(yybuf, "&#10;&#10;"); BEGIN(HACK);}
 
 <TIME>"<p>"   {BEGIN(TIMESTORY);}
 <TIMESTORY>[^<]+  {writeText();}
@@ -72,6 +78,7 @@ int hasRightArrow();
 <UPISTORY>[^<]+  {writeText();}
 <UPISTORY>"<"    {writeText();}
 <UPISTORY>"<div class=\"ad_slot\">"  {BEGIN(PIMPLE);}
+<UPISTORY>"<div class='story-offset ad_slot'>"  {BEGIN(PIMPLE);}
 <UPISTORY>"</p></p>" {BEGIN(INITIAL);}
 <UPISTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(PIMPLE);}
 <UPISTORY>"<slide" {BEGIN(INITIAL);}
@@ -79,9 +86,10 @@ int hasRightArrow();
 
 <ABC>"<"section.class=\"Article..Content   {BEGIN(ABCIMPLE);}
 <ABCIMPLE>"<p>"   {BEGIN(ABCSTORY);}
+<ABCIMPLE>"<p id=\""[^"]+"\">"  {BEGIN(ABCSTORY);}
 <ABCSTORY>[^<]+             {writeText();}
 <ABCSTORY>"<"               {writeText();}
-<ABCSTORY>"</p>" {writeString("&#10;"); BEGIN(ABCIMPLE);}
+<ABCSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(ABCIMPLE);}
 
 <WSJ>"<"div.class=.wsj.snippet.body.">"  {BEGIN(WIMPLE);}
 <WSJSTORY>"</div>"  {writeString("&#10;&#10;");BEGIN(INITIAL);}
@@ -151,7 +159,7 @@ int hasRightArrow();
 <SIMPLE>"<p><i></i></p>"  ;
 <SIMPLE>"<p>"[^b-ln-oq-z]+"</p>"  ;
 <SIMPLE>"<p>&nbsp;</p>"  ;
-<SIMPLE>"<p>"[^a-zA-Z0-9&] ;
+<SIMPLE>"<p>"[^a-zA-Z0-9&<] ;
 <SIMPLE>"<p>This material may not be published" ;
 <SIMPLE>"<p><strong>"   {BEGIN(SIMPLESTORY);}
 <SIMPLE>"<"p.class=\"speakable\"">"    {BEGIN(SIMPLESTORY);/*This is for first paragraphs of FOX NEWS*/}
@@ -160,6 +168,10 @@ int hasRightArrow();
 <SIMPLESTORY>[^<]+  {writeText();}
 <SIMPLESTORY>"<"    {writeText();}
 <SIMPLESTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(SIMPLE);}
+<SIMPLESTORY>"<style" {BEGIN(SSTORY);}
+<SSTORY>[^<]+  ;
+<SSTORY>"<"    ;
+<SSTORY>"</style>" {BEGIN(SIMPLESTORY);}
 
 <PERU21>"<"p.itemProp=\"description\".class=\"story-content[^>]+">"    {BEGIN(PERU21STORY);}
 <PERU21STORY>[^<]+  {writeText();}
