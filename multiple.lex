@@ -19,14 +19,20 @@ void writeText();
 void writeString(char *str);
 int hasRightArrow();
 %}
-%s TIME WSH HACK WSHEXAM POLITICO HUFF REUTERS NYT ABC ABCIMPLE USTODAY SIMPLE CNN FOX CNBC PERU21 PERU PEMPLE GIMPLE PIMPLE WIMPLE WSJ UPI
-%x TIMESTORY HACKSTORY WSHEXAMSTORY WUMIA POLITICOSTORY HUFFSTORY WSHSTORY REUTSTORY NYTSTORY PERUSTORY ABCSTORY SSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
+%s GUARDIAN TIME WSH HACK WSHEXAM POLITICO HUFF REUTERS NYT ABC ABCIMPLE USTODAY SIMPLE CNN FOX CNBC PERU21 PERU PEMPLE GIMPLE PIMPLE WIMPLE WSJ UPI
+%x GUARDIANSTORY TIMESTORY HACKSTORY WSHEXAMSTORY WUMIA POLITICOSTORY HUFFSTORY WSHSTORY REUTSTORY NYTSTORY PERUSTORY ABCSTORY SSTORY SIMPLESTORY USTODAYSTORY CNNSTORY CNBCSTORY PERU21STORY GESTIONSTORY WSJSTORY UPISTORY COMSTORY RPP RPPSTORY
 %option noyywrap
 %%
 	BEGIN(agencyState);
 
 [^<]+   ;
 "<"     ;
+
+<GUARDIAN>"<p class=\"css"[^>]+">Last modified"  ;
+<GUARDIAN>"<p class=\"css"[^>]+">"    {BEGIN(GUARDIANSTORY);}
+<GUARDIANSTORY>[^<]+             {writeText();}
+<GUARDIANSTORY>"<"               {writeText();}
+<GUARDIANSTORY>"</p>"            {writeString("&#10;&#10;"); BEGIN(GUARDIAN);}
 
 <POLITICO>"<p class=\" story-text__paragraph\">"   {BEGIN(POLITICOSTORY);}
 <POLITICOSTORY>[^<]+             {writeText();}
@@ -108,19 +114,16 @@ int hasRightArrow();
 <CNBCSTORY>"<"    {writeText();}
 <CNBCSTORY>"</p>" {writeString("&#10;&#10;"); BEGIN(CNBC);}
 
-<CNN>"<"p.class=\"zn-body..paragraph\"">"    {BEGIN(CNNSTORY);}
-<CNN>"<"div.class=\"zn-body..paragraph\"">"  {BEGIN(CNNSTORY);}
-<CNN>"<"p.class=\"zn-body..paragraph.speakable\"">"    {BEGIN(CNNSTORY);}
-<CNN>"<"div.class=\"zn-body..paragraph.speakable\"">"  {BEGIN(CNNSTORY);}
+<CNN>"<p class=\"zn-body__paragraph"[^>]+">"    {BEGIN(CNNSTORY);}
+<CNN>"<div class=\"zn-body__paragraph"[^>]+">"    {BEGIN(CNNSTORY);}
 <CNN>"<"p.class=\"speakable\"">"  {BEGIN(CNNSTORY);}
 <CNN>"<"h2.class=\"speakable\"">" {BEGIN(CNNSTORY);}
 <CNNSTORY>[^<]+    {writeText();}
 <CNNSTORY>"<"      {writeText();}
 <CNNSTORY>"<h3>"   {writeString("&lt;b&gt;");}
 <CNNSTORY>"</h3>"  {writeString("&lt;/b&gt;");}
-<CNNSTORY>"<cite class=".+"</cite>"    ;
 <CNNSTORY>"</p>"[ \t\n]+"<p>"  {writeString("&#10;&#10;");}
-<CNNSTORY>"</p>"[ \t\n]+"<"div[ \t\n]+id=\"[a-zA-Z0-9_ ]+\""></div>"[ \t\n]+"<p>"  {writeString("&#10;&#10;");} 
+<CNNSTORY>"</p>"[ \t\n]+"<"div[ \t\n]+id=\"[a-zA-Z0-9_ ]+\""></div>"[ \t\n]+"<p>"  {writeString("&#10;&#10;");}
 <CNNSTORY>"</p>"   {writeString("&#10;&#10;"); BEGIN(CNN);}
 <CNNSTORY>"</div>" {writeString("&#10;&#10;"); BEGIN(CNN);}
 <CNNSTORY>"</h2>" {writeString("&#10;&#10;"); BEGIN(CNN);}
@@ -144,6 +147,7 @@ int hasRightArrow();
 <REUTSTORY>"</p>"   {BEGIN(REUTERS);}
 <REUTSTORY>[^<]+    {writeText();}
 
+<USTODAY>"<p class=gnt_ar_b_p><strong class=gnt_ar_b_al>More:</strong>" ;
 <USTODAY>"<p class=gnt"[^>]+>  {BEGIN(USTODAYSTORY);}
 <USTODAYSTORY>[^<]+  {writeText();}
 <USTODAYSTORY>"<"    {writeText();}
@@ -161,7 +165,8 @@ int hasRightArrow();
 <SIMPLE>"<p>&nbsp;</p>"  ;
 <SIMPLE>"<p>"[^a-zA-Z0-9&<] ;
 <SIMPLE>"<p>This material may not be published" ;
-<SIMPLE>"<p><strong>"   {BEGIN(SIMPLESTORY);}
+<SIMPLE>"<p><strong>"   ;
+<SIMPLE>"<p><a href="[^>]+"><strong>" ;
 <SIMPLE>"<"p.class=\"speakable\"">"    {BEGIN(SIMPLESTORY);/*This is for first paragraphs of FOX NEWS*/}
 <SIMPLE>"<"p.class=\"story-body[^"]+\"">" {BEGIN(SIMPLESTORY); /*First line of BBC NEWS */}
 <SIMPLE>"<p>"   {BEGIN(SIMPLESTORY);}
