@@ -6,11 +6,11 @@
 
 	if (filter_var($type, FILTER_VALIDATE_INT) === false) {
     		echo("type variable is not an integer");
-		$output = shell_exec("/home4/nerillos/public_html/log_error.sh $type");
+		$output = shell_exec("/************/log_error.sh $type");
     		return;
 	}
 
-	$db = new MySqli('localhost', 'nerillos_neri', 'carpa1', 'nerillos_neri');
+	$db = new MySqli('localhost', '***********', '********', '************');
 
 	$result = $db->query("SELECT MAX(id) FROM news_type");
 	$row = $result->fetch_row();
@@ -18,7 +18,7 @@
 
 	if($type > ($maxType+1) || $type < 1) {
 		echo("Non valid type");
-		$output = shell_exec("/home4/nerillos/public_html/log_error.sh $type");
+		$output = shell_exec("/home******************** $type");
 		return;
 	}
 
